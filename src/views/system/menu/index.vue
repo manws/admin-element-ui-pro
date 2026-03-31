@@ -364,7 +364,6 @@ import MenuAPI from "@/api/system/menu";
 import type { MenuQueryParams, MenuForm, MenuItem } from "@/types/api";
 import type { FormInstance, FormRules } from "element-plus";
 import { MenuScopeEnum, MenuTypeEnum } from "@/enums/business";
-import { isTenantEnabled } from "@/utils/tenant";
 
 defineOptions({
   name: "SysMenu",
@@ -406,8 +405,8 @@ const initialMenuFormData = ref<MenuForm>({
 const formData = ref({ ...initialMenuFormData.value });
 const selectedMenuId = ref<string | undefined>();
 
-// 多租户关闭时，隐藏菜单范围
-const showMenuScope = computed(() => isTenantEnabled());
+// 多租户已移除，隐藏菜单范围
+const showMenuScope = computed(() => false);
 
 // 抽屉宽度
 const drawerSize = computed(() => (appStore.device === DeviceEnum.DESKTOP ? "600px" : "90%"));

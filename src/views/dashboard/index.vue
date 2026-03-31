@@ -1,8 +1,5 @@
 ﻿<template>
   <div class="relative p-6">
-    <!-- github 角标 -->
-    <github-corner class="absolute top-0 right-0 z-1 border-0" />
-
     <el-card shadow="never" class="mt-2">
       <div class="flex flex-wrap">
         <!-- 左侧问候语区域 -->

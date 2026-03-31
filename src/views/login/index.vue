@@ -53,13 +53,10 @@
             <div class="auth-panel__title-row">
               <span class="auth-panel__title">{{ appConfig.title }}</span>
             </div>
-            <div v-if="appConfig.version || tenantEnabled" class="auth-panel__version-row">
+            <div v-if="appConfig.version" class="auth-panel__version-row">
               <el-text size="small" type="info">VERSION</el-text>
               <el-tag v-if="appConfig.version" size="small" effect="light" round>
                 {{ `v${appConfig.version}` }}
-              </el-tag>
-              <el-tag v-if="tenantEnabled" type="success" size="small" effect="light" round>
-                多租户
               </el-tag>
             </div>
           </div>
@@ -89,8 +86,6 @@ type LayoutMap = "login" | "register" | "resetPwd";
 
 const { t } = useI18n();
 const component = ref<LayoutMap>("login");
-
-const tenantEnabled = appConfig.tenantEnabled;
 
 const formComponents = {
   login: defineAsyncComponent(() => import("./components/Login.vue")),
