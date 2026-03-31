@@ -52,18 +52,6 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/error/404.vue"),
         meta: { hidden: true },
       },
-      {
-        path: "profile",
-        name: "Profile",
-        component: () => import("@/views/profile/index.vue"),
-        meta: { title: "个人中心", icon: "user", hidden: true },
-      },
-      {
-        path: "my-notice",
-        name: "MyNotice",
-        component: () => import("@/views/profile/notice/index.vue"),
-        meta: { title: "我的通知", icon: "user", hidden: true },
-      },
     ],
   },
 ];

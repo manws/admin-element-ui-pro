@@ -22,10 +22,6 @@
         <LangSelect />
       </div>
 
-      <!-- 通知 -->
-      <div class="navbar-actions__item">
-        <NoticeDropdown />
-      </div>
     </template>
 
     <!-- 用户菜单 -->
@@ -43,10 +39,7 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="handleProfileClick">
-              {{ t("navbar.profile") }}
-            </el-dropdown-item>
-            <el-dropdown-item divided @click="logout">
+            <el-dropdown-item @click="logout">
               {{ t("navbar.logout") }}
             </el-dropdown-item>
           </el-dropdown-menu>
@@ -73,7 +66,8 @@ import CommandPalette from "@/components/CommandPalette/index.vue";
 import Fullscreen from "@/components/Fullscreen/index.vue";
 import SizeSelect from "@/components/SizeSelect/index.vue";
 import LangSelect from "@/components/LangSelect/index.vue";
-import NoticeDropdown from "@/components/NoticeDropdown/index.vue";
+
+
 
 const { t } = useI18n();
 const appStore = useAppStore();
@@ -85,13 +79,6 @@ const router = useRouter();
 
 // 是否为桌面设备
 const isDesktop = computed(() => appStore.device === DeviceEnum.DESKTOP);
-
-/**
- * 打开个人中心页面
- */
-function handleProfileClick() {
-  router.push({ name: "Profile" });
-}
 
 // 根据主题和侧边栏配色方案选择样式类
 const navbarActionsClass = computed(() => {

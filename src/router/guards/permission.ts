@@ -3,7 +3,6 @@ import NProgress from "@/plugins/nprogress";
 import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";
 import { addRecentMenu } from "@/composables/useRecentMenus";
-import { setupSse } from "@/composables";
 
 /**
  * 路由权限守卫
@@ -43,8 +42,6 @@ export function setupPermissionGuard() {
       if (!permissionStore.isRouteGenerated) {
         if (!userStore.userInfo?.roles?.length) {
           await userStore.getUserInfo();
-          // 用户信息加载完成后初始化 SSE
-          setupSse();
         }
 
         const dynamicRoutes = await permissionStore.generateRoutes();
