@@ -1,7 +1,11 @@
 <template>
   <div class="layout" :class="layoutClass">
     <!-- 移动端遮罩层 -->
-    <div v-if="isMobile && isSidebarOpen" class="layout__overlay" @click="closeSidebar" />
+    <div
+      v-if="isMobile && isSidebarOpen"
+      class="layout__overlay"
+      @click="closeSidebar"
+    />
 
     <!-- 布局内容插槽 -->
     <slot />

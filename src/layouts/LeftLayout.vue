@@ -1,7 +1,10 @@
 <template>
   <BaseLayout>
     <!-- 左侧菜单 -->
-    <div class="layout__sidebar" :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }">
+    <div
+      class="layout__sidebar"
+      :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }"
+    >
       <div :class="{ 'has-logo': showLogo }" class="layout-sidebar">
         <LayoutLogo v-if="showLogo" :collapse="!isSidebarOpen" />
         <el-scrollbar>

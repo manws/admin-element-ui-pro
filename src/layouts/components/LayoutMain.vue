@@ -4,7 +4,10 @@
       <template #default="{ Component, route }">
         <transition :name="transitionName" mode="out-in">
           <keep-alive :include="cachedViews">
-            <component :is="currentComponent(Component, route)" :key="route.fullPath" />
+            <component
+              :is="currentComponent(Component, route)"
+              :key="route.fullPath"
+            />
           </keep-alive>
         </transition>
       </template>
@@ -29,7 +32,10 @@ const settingsStore = useSettingsStore();
 
 // 当前组件
 const wrapperMap = new Map<string, Component>();
-const currentComponent = (component: Component, route: RouteLocationNormalized) => {
+const currentComponent = (
+  component: Component,
+  route: RouteLocationNormalized,
+) => {
   if (!component) return;
 
   const { fullPath: componentName } = route; // 使用路由路径作为组件名称
@@ -42,7 +48,10 @@ const currentComponent = (component: Component, route: RouteLocationNormalized) 
         try {
           return h(component);
         } catch (error) {
-          console.error(`Error rendering component for route: ${componentName}`, error);
+          console.error(
+            `Error rendering component for route: ${componentName}`,
+            error,
+          );
           return h(Error404);
         }
       },

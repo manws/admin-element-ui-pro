@@ -2,7 +2,6 @@ import type { RouteRecordRaw } from "vue-router";
 import NProgress from "@/plugins/nprogress";
 import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";
-import { addRecentMenu } from "@/composables/useRecentMenus";
 
 /**
  * 路由权限守卫
@@ -74,13 +73,7 @@ export function setupPermissionGuard() {
     }
   });
 
-  router.afterEach((to) => {
+  router.afterEach(() => {
     NProgress.done();
-
-    // 记录最近访问
-    if (to.meta?.title && to.path) {
-      const icon = typeof to.meta.icon === "string" ? to.meta.icon : undefined;
-      addRecentMenu(to.path, to.meta.title as string, icon);
-    }
   });
 }
