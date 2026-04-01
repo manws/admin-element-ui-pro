@@ -114,7 +114,6 @@
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^31.0.0",
     "vite": "^8.0.0",
-    "vite-plugin-mock-dev-server": "^2.1.0",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.5"
   },

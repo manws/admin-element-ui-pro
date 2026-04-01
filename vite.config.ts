@@ -5,8 +5,6 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
 
-import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
-
 import UnoCSS from "unocss/vite";
 import { name, version, engines, dependencies, devDependencies } from "./package.json";
 
@@ -50,7 +48,6 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
     },
     plugins: [
       vue(),
-      ...(env.VITE_MOCK_DEV_SERVER === "true" ? [mockDevServerPlugin()] : []),
       UnoCSS(),
       // API 自动导入
       AutoImport({
