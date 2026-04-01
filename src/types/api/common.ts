@@ -5,33 +5,33 @@
 /** API 响应结构 */
 export interface ApiResponse<T = any> {
   /** 响应码 */
-  code: string;
+  code: number;
   /** 响应数据 */
-  data: T;
+  result: T;
   /** 响应消息 */
-  msg: string;
+  message: string;
 }
 
 /** 基础查询参数 */
 export interface BaseQueryParams {
   /** 页码 */
-  pageNum: number;
+  pageIndex: number;
   /** 每页记录数 */
   pageSize: number;
-
-  /** 排序字段 */
-  sortBy?: string;
-
-  /** 排序方式（正序:ASC；反序:DESC） */
-  order?: string;
 }
 
-/** 分页数据结构（仅分页接口） */
+/** 分页数据结构 */
 export interface PageResult<T> {
   /** 数据列表 */
   list: T[];
   /** 总记录数 */
   total: number;
+  /** 分页信息 */
+  page?: {
+    pageIndex: number;
+    pageSize: number;
+    totalCount: number;
+  };
 }
 
 /** 下拉选项 */
@@ -47,7 +47,7 @@ export interface OptionItem {
 /** Excel 导入结果 */
 export interface ExcelResult {
   /** 响应码 */
-  code: string;
+  code: number;
   /** 无效数据数量 */
   invalidCount: number;
   /** 有效数据数量 */

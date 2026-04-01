@@ -41,6 +41,9 @@ importers:
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
+      js-md5:
+        specifier: ^0.8.3
+        version: 0.8.3
       lodash-es:
         specifier: ^4.17.23
         version: 4.17.23
@@ -93,6 +96,9 @@ importers:
       '@types/codemirror':
         specifier: ^5.60.17
         version: 5.60.17
+      '@types/js-md5':
+        specifier: ^0.8.0
+        version: 0.8.0
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -899,6 +905,9 @@ packages:
 
   '@types/event-emitter@0.3.5':
     resolution: {integrity: sha512-zx2/Gg0Eg7gwEiOIIh5w9TrhKKTeQh7CPCOPNc0el4pLSwzebA8SmnHwZs2dWlLONvyulykSwGSQxQHLhjGLvQ==}
+
+  '@types/js-md5@0.8.0':
+    resolution: {integrity: sha512-gQkc1Felhyj+aB9jmz/ICLm1fDPQx7l/60JIBSSEC+j09JeaINlzd0Wj9LZlQkHnV5rJYkroOHE5wdbDgADJrw==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -2310,6 +2319,9 @@ packages:
   jiti@2.6.1:
     resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
     hasBin: true
+
+  js-md5@0.8.3:
+    resolution: {integrity: sha512-qR0HB5uP6wCuRMrWPTrkMaev7MJZwJuuw4fnwAzRgP4J4/F8RwtodOKpGp4XpqsLBFzzgqIO42efFAyz2Et6KQ==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -4199,6 +4211,8 @@ snapshots:
 
   '@types/event-emitter@0.3.5': {}
 
+  '@types/js-md5@0.8.0': {}
+
   '@types/json-schema@7.0.15': {}
 
   '@types/lodash-es@4.17.12':
@@ -5813,6 +5827,8 @@ snapshots:
   isexe@2.0.0: {}
 
   jiti@2.6.1: {}
+
+  js-md5@0.8.3: {}
 
   js-tokens@4.0.0: {}
 

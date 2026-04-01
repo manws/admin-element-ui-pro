@@ -6,22 +6,28 @@
  * 登录请求参数
  */
 export interface LoginRequest {
-  /** 用户名 */
-  username: string;
-  /** 密码 */
-  password: string;
-  /** 记住我 */
-  rememberMe?: boolean;
+  /** 用户账号 */
+  userCode: string;
+  /** 用户密码 */
+  userPwd: string;
+  /** 登录时间戳（秒） */
+  loginOn: number;
+  /** 签名 */
+  sign: string;
 }
 
 /**
- * 登录响应
+ * 登录响应 - 用户信息
  */
-export interface LoginResponse {
-  /** 访问令牌 */
-  accessToken: string;
-  /** 令牌类型 */
-  tokenType?: string;
-  /** 过期时间(单位:秒) */
-  expiresIn?: number;
+export interface UserInfo {
+  userId?: string;
+  userCode?: string;
+  userName?: string;
+  nickname?: string;
+  avatar?: string;
+  phone?: string;
+  email?: string;
+  roles?: string[];
+  perms?: string[];
+  [key: string]: any;
 }

@@ -39,8 +39,8 @@ export function setupPermissionGuard() {
 
       // 动态路由生成
       if (!permissionStore.isRouteGenerated) {
-        if (!userStore.userInfo?.roles?.length) {
-          await userStore.getUserInfo();
+        if (!userStore.userInfo?.userId) {
+          userStore.getUserInfo();
         }
 
         const dynamicRoutes = await permissionStore.generateRoutes();

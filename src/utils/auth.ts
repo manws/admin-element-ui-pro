@@ -3,32 +3,18 @@ import { STORAGE_KEYS, ROLE_ROOT } from "@/constants";
 import { useUserStoreHook } from "@/store/modules/user";
 import router from "@/router";
 
-// 负责本地凭证与偏好的读写
+// 负责本地凭证的读写
 export const AuthStorage = {
   getAccessToken(): string {
-    const isRememberMe = Storage.get<boolean>(STORAGE_KEYS.REMEMBER_ME, false);
-    return isRememberMe
-      ? Storage.get(STORAGE_KEYS.ACCESS_TOKEN, "")
-      : Storage.sessionGet(STORAGE_KEYS.ACCESS_TOKEN, "");
+    return Storage.get(STORAGE_KEYS.ACCESS_TOKEN, "");
   },
 
-  setToken(accessToken: string, rememberMe: boolean): void {
-    Storage.set(STORAGE_KEYS.REMEMBER_ME, rememberMe);
-    if (rememberMe) {
-      Storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    } else {
-      Storage.sessionSet(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-      Storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-    }
+  setToken(accessToken: string): void {
+    Storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
   },
 
   clearAuth(): void {
     Storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-    Storage.sessionRemove(STORAGE_KEYS.ACCESS_TOKEN);
-  },
-
-  getRememberMe(): boolean {
-    return Storage.get<boolean>(STORAGE_KEYS.REMEMBER_ME, false);
   },
 };
 
@@ -56,7 +42,9 @@ export function hasPerm(value: string | string[], type: "button" | "role" = "but
 /**
  * 重定向到登录页面
  */
-export async function redirectToLogin(message: string = "请重新登录"): Promise<void> {
+export async function redirectToLogin(
+  message: string = "请重新登录",
+): Promise<void> {
   ElNotification({
     title: "提示",
     message,

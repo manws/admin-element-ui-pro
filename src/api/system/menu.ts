@@ -1,12 +1,21 @@
 import request from "@/utils/request";
-import type { MenuQueryParams, MenuItem, MenuForm, RouteItem, OptionItem } from "@/types/api";
+import type {
+  MenuQueryParams,
+  MenuItem,
+  MenuForm,
+  RouteItem,
+  OptionItem,
+} from "@/types/api";
 
-const MENU_BASE_URL = "/api/v1/menus";
+const MENU_BASE_URL = "/api/v2/Menu";
 
 const MenuAPI = {
-  /** 获取当前用户的路由列表 */
-  getRoutes() {
-    return request<any, RouteItem[]>({ url: `${MENU_BASE_URL}/routes`, method: "get" });
+  /** 获取当前用户的菜单路由列表 */
+  getRoutes(projectDB?: string) {
+    return request({
+      url: `${MENU_BASE_URL}/list${projectDB ? "/" + projectDB : ""}`,
+      method: "post",
+    });
   },
   /** 获取菜单树形列表 */
   getList(queryParams: MenuQueryParams) {
@@ -26,7 +35,10 @@ const MenuAPI = {
   },
   /** 获取菜单表单数据 */
   getFormData(id: string) {
-    return request<any, MenuForm>({ url: `${MENU_BASE_URL}/${id}/form`, method: "get" });
+    return request<any, MenuForm>({
+      url: `${MENU_BASE_URL}/${id}/form`,
+      method: "get",
+    });
   },
   /** 新增菜单 */
   create(data: MenuForm) {

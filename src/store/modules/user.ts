@@ -1,8 +1,7 @@
 import { store } from "@/store";
 
 import AuthAPI from "@/api/auth";
-import UserAPI from "@/api/system/user";
-import type { LoginRequest, UserInfo } from "@/types/api";
+import type { LoginRequest, UserInfo } from "@/types/api/auth";
 
 import { AuthStorage } from "@/utils/auth";
 import { usePermissionStoreHook } from "@/store/modules/permission";
@@ -10,36 +9,53 @@ import { useTagsViewStore } from "@/store";
 
 export const useUserStore = defineStore("user", () => {
   // 用户信息
-  const userInfo = ref<UserInfo>({} as UserInfo);
-  // 记住我状态
-  const rememberMe = ref(AuthStorage.getRememberMe());
+  const userInfo = ref<UserInfo>(
+    localStorage.getItem("User")
+      ? JSON.parse(localStorage.getItem("User")!)
+      : ({} as UserInfo),
+  );
 
   /**
    * 登录
    */
-  async function login(loginRequest: LoginRequest): Promise<void> {
-    const { accessToken } = await AuthAPI.login(loginRequest);
-    rememberMe.value = loginRequest.rememberMe ?? false;
-    AuthStorage.setToken(accessToken, rememberMe.value);
+  async function login(loginRequest: LoginRequest): Promise<UserInfo> {
+    const response = await AuthAPI.login(loginRequest);
+    const { code, message, result } = response.data;
+
+    if (code === 200) {
+      const user = result?.userInfo;
+      if (user) {
+        userInfo.value = user;
+        localStorage.setItem("User", JSON.stringify(user));
+        return user;
+      }
+      throw new Error("登录失败：未获取到用户信息");
+    }
+    throw new Error(message || "登录失败");
   }
 
   /**
-   * 获取用户信息
+   * 获取用户信息（从本地缓存读取）
    */
-  async function getUserInfo(): Promise<UserInfo> {
-    const data = await UserAPI.getInfo();
-    if (!data) {
-      throw new Error("Verification failed, please Login again.");
+  function getUserInfo(): UserInfo {
+    const cached = localStorage.getItem("User");
+    if (cached) {
+      const data = JSON.parse(cached);
+      Object.assign(userInfo.value, data);
+      return data;
     }
-    Object.assign(userInfo.value, data);
-    return data;
+    return userInfo.value;
   }
 
   /**
    * 登出
    */
   async function logout(): Promise<void> {
-    await AuthAPI.logout();
+    try {
+      await AuthAPI.logout();
+    } catch {
+      // 登出接口失败不阻断流程
+    }
     resetAllState();
   }
 
@@ -58,11 +74,11 @@ export const useUserStore = defineStore("user", () => {
   function resetUserState(): void {
     AuthStorage.clearAuth();
     userInfo.value = {} as UserInfo;
+    localStorage.removeItem("User");
   }
 
   return {
     userInfo,
-    rememberMe,
     isLoggedIn: () => !!AuthStorage.getAccessToken(),
     login,
     logout,

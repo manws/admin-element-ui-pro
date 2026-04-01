@@ -4,13 +4,15 @@ import axios, {
 } from "axios";
 import qs from "qs";
 import { ApiCodeEnum } from "@/enums/api";
-import { usePermissionStoreHook } from "@/store/modules/permission";
 import { AuthStorage, redirectToLogin } from "@/utils/auth";
+
+/** Token 在请求头中的字段名（与后端约定） */
+const TOKEN_HEADER = "sn-score-token";
 
 // HTTP 请求实例
 const http = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API,
-  timeout: 50000,
+  timeout: 5 * 60 * 1000,
   headers: { "Content-Type": "application/json;charset=utf-8" },
   paramsSerializer: (params) => qs.stringify(params, { arrayFormat: "repeat" }),
 });
@@ -19,11 +21,8 @@ const http = axios.create({
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = AuthStorage.getAccessToken();
-
-    if (config.headers.Authorization === "no-auth") {
-      delete config.headers.Authorization;
-    } else if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers[TOKEN_HEADER] = token;
     }
 
     return config;
@@ -33,59 +32,50 @@ http.interceptors.request.use(
 
 // 响应拦截器
 http.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
+  (response: AxiosResponse) => {
     const { responseType } = response.config;
 
-    // 二进制数据直接返回
+    // 二进制数据（文件下载）：返回 { data, fileName }
     if (responseType === "blob" || responseType === "arraybuffer") {
-      return response;
+      let fileName = Date.now() + ".xlsx";
+      if (response.headers["content-disposition"]) {
+        const splitArr = decodeURI(
+          response.headers["content-disposition"],
+        ).split("UTF-8");
+        if (splitArr.length >= 2) {
+          fileName = splitArr[1].replace("''", "");
+        }
+      }
+      return { data: response.data, fileName } as any;
     }
 
-    // 如果响应头中带了新 token，自动更新存储
-    const newToken = response.headers["new-token"];
-    if (newToken) {
-      AuthStorage.setToken(newToken, AuthStorage.getRememberMe());
+    // 如果响应头中带了新 token，自动续期
+    if (response.status === 200 && response.headers[TOKEN_HEADER]) {
+      AuthStorage.setToken(response.headers[TOKEN_HEADER]);
     }
 
-    const { code, data, msg } = response.data;
+    const { code, message } = response.data;
 
+    // Token 失效
+    if (code === ApiCodeEnum.TOKEN_INVALID) {
+      redirectToLogin("登录已过期，请重新登录");
+      return Promise.reject(new Error(message || "Token Invalid"));
+    }
+
+    // 业务成功
     if (code === ApiCodeEnum.SUCCESS) {
-      return data;
+      return { data: response.data, status: response.status, message } as any;
     }
 
-    ElMessage.error(msg || "系统出错");
-    return Promise.reject(new Error(msg || "系统出错"));
+    // 其他业务错误（不弹窗，由调用方处理）
+    return { data: response.data, status: response.status, message } as any;
   },
 
-  async (error) => {
-    const { response } = error;
-
-    if (!response) {
+  (error) => {
+    if (!error.response) {
       ElMessage.error("网络连接失败");
-      return Promise.reject(error);
     }
-
-    const { code, msg } = response.data as ApiResponse;
-
-    // Token 无效或过期：跳转登录
-    if (
-      code === ApiCodeEnum.ACCESS_TOKEN_INVALID ||
-      code === ApiCodeEnum.REFRESH_TOKEN_INVALID
-    ) {
-      await redirectToLogin("登录已过期，请重新登录");
-      return Promise.reject(new Error("Token Invalid"));
-    }
-
-    // 权限不足：刷新权限快照后提示
-    if (code === ApiCodeEnum.PERMISSION_DENIED) {
-      const permissionStore = usePermissionStoreHook();
-      await permissionStore.reloadPermissionSnapshotOnce();
-      ElMessage.error(msg || "权限不足");
-      return Promise.reject(new Error(msg || "权限不足"));
-    }
-
-    ElMessage.error(msg || "请求失败");
-    return Promise.reject(new Error(msg || "请求失败"));
+    return Promise.reject(error);
   },
 );
 

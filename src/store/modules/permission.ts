@@ -32,15 +32,24 @@ export const usePermissionStore = defineStore("permission", () => {
   /** 生成动态路由 */
   async function generateRoutes(): Promise<RouteRecordRaw[]> {
     try {
-      const data = await MenuAPI.getRoutes(); // 获取当前登录人的菜单路由
-      const dynamicRoutes = transformRoutes(data);
+      const response = await MenuAPI.getRoutes();
+      const { code, result } = (response as any).data;
+
+      if (code !== 200 || !result) {
+        throw new Error("获取菜单路由失败");
+      }
+
+      // result 可能是 { menuList: [...] } 或直接是路由数组
+      const routeData = result.menuList || result;
+      const dynamicRoutes = transformRoutes(
+        Array.isArray(routeData) ? routeData : [],
+      );
 
       routes.value = [...constantRoutes, ...dynamicRoutes];
       isRouteGenerated.value = true;
 
       return dynamicRoutes;
     } catch (error) {
-      // 路由生成失败，重置状态
       isRouteGenerated.value = false;
       throw error;
     }

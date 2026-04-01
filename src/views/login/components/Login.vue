@@ -9,8 +9,8 @@
       :validate-on-rule-change="false"
     >
       <!-- 用户名 -->
-      <el-form-item prop="username">
-        <el-input v-model.trim="loginFormData.username" :placeholder="t('login.username')">
+      <el-form-item prop="userCode">
+        <el-input v-model.trim="loginFormData.userCode" :placeholder="t('login.username')">
           <template #prefix>
             <el-icon><User /></el-icon>
           </template>
@@ -19,9 +19,9 @@
 
       <!-- 密码 -->
       <el-tooltip :visible="isCapsLock" :content="t('login.capsLock')" placement="right">
-        <el-form-item prop="password">
+        <el-form-item prop="userPwd">
           <el-input
-            v-model.trim="loginFormData.password"
+            v-model.trim="loginFormData.userPwd"
             :placeholder="t('login.password')"
             type="password"
             show-password
@@ -35,13 +35,6 @@
         </el-form-item>
       </el-tooltip>
 
-      <div class="flex-x-between w-full">
-        <el-checkbox v-model="loginFormData.rememberMe">{{ t("login.rememberMe") }}</el-checkbox>
-        <el-link type="primary" underline="never" @click="toOtherForm('resetPwd')">
-          {{ t("login.forgetPassword") }}
-        </el-link>
-      </div>
-
       <!-- 登录按钮 -->
       <el-form-item>
         <el-button :loading="loading" type="primary" class="w-full" @click="handleLoginSubmit">
@@ -49,44 +42,14 @@
         </el-button>
       </el-form-item>
     </el-form>
-
-    <div flex-center gap-10px>
-      <el-text size="default">{{ t("login.noAccount") }}</el-text>
-      <el-link type="primary" underline="never" @click="toOtherForm('register')">
-        {{ t("login.reg") }}
-      </el-link>
-    </div>
-
-    <!-- 第三方登录 -->
-    <div class="third-party-login">
-      <div class="divider-container">
-        <div class="divider-line"></div>
-        <span class="divider-text">{{ t("login.otherLoginMethods") }}</span>
-        <div class="divider-line"></div>
-      </div>
-      <div class="social-login">
-        <div class="social-login__item">
-          <div class="i-svg:wechat" />
-        </div>
-        <div class="social-login__item">
-          <div class="i-svg:qq" />
-        </div>
-        <div class="social-login__item">
-          <div class="i-svg:github" />
-        </div>
-        <div class="social-login__item">
-          <div class="i-svg:gitee" />
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 <script setup lang="ts">
 import type { FormInstance } from "element-plus";
-import type { LoginRequest } from "@/types/api";
+import type { LoginRequest } from "@/types/api/auth";
 import router from "@/router";
 import { useUserStore } from "@/store";
-import { AuthStorage } from "@/utils/auth";
+import md5 from "js-md5";
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -94,26 +57,23 @@ const route = useRoute();
 
 const loginFormRef = ref<FormInstance>();
 const loading = ref(false);
-// 是否大写锁定
 const isCapsLock = ref(false);
-// 记住我
-const rememberMe = AuthStorage.getRememberMe();
-const loginFormData = ref<LoginRequest>({
-  username: "admin",
-  password: "123456",
-  rememberMe,
+
+const loginFormData = ref({
+  userCode: "",
+  userPwd: "",
 });
 
 const loginRules = computed(() => {
   return {
-    username: [
+    userCode: [
       {
         required: true,
         trigger: "blur",
         message: t("login.message.username.required"),
       },
     ],
-    password: [
+    userPwd: [
       {
         required: true,
         trigger: "blur",
@@ -132,28 +92,35 @@ const loginRules = computed(() => {
  * 登录提交
  */
 async function handleLoginSubmit() {
-  // 1. 表单验证
   const valid = await loginFormRef.value?.validate().then(
     () => true,
-    () => false
+    () => false,
   );
   if (!valid) return;
 
   loading.value = true;
   try {
-    // 2. 执行登录
-    await userStore.login(loginFormData.value);
-    // 登录成功，跳转到目标页面
+    const loginOn = Math.floor(Date.now() / 1000);
+    const sign = `userCode=${loginFormData.value.userCode}&&userPwd=${loginFormData.value.userPwd}&&loginOn=${loginOn}&&key=xhedc_jiangbo_wangshuang_123!@#`;
+
+    const param: LoginRequest = {
+      userCode: loginFormData.value.userCode,
+      userPwd: loginFormData.value.userPwd,
+      loginOn,
+      sign: md5(sign),
+    };
+
+    await userStore.login(param);
     const redirectPath = (route.query.redirect as string) || "/";
     await router.push(decodeURIComponent(redirectPath));
+  } catch (error: any) {
+    ElMessage.error(error?.message || "登录失败");
   } finally {
     loading.value = false;
   }
 }
 
-// 检查输入大小写
 function checkCapsLock(event: KeyboardEvent) {
-  // 防止浏览器密码自动填充时报错
   if (event instanceof KeyboardEvent) {
     isCapsLock.value = event.getModifierState("CapsLock");
   }
