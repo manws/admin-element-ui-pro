@@ -1,11 +1,12 @@
 import request from "@/utils/request";
 import type { LoginRequest } from "@/types/api/auth";
+import { HttpResponse } from "@/types";
 
 const AUTH_BASE_URL = "/api/v2/User";
 
 const AuthAPI = {
   /** 登录接口 */
-  login(data: LoginRequest) {
+  login(data: LoginRequest): Promise<HttpResponse> {
     return request({
       url: `${AUTH_BASE_URL}/login/pc`,
       method: "post",

@@ -12,6 +12,16 @@ export interface ApiResponse<T = any> {
   message: string;
 }
 
+/** 统一 HTTP 响应结构（经拦截器处理后） */
+export interface HttpResponse<T = any> {
+  /** 原始响应数据 { code, message, result } */
+  data: T;
+  /** HTTP 状态码 */
+  status: number;
+  /** 业务消息 */
+  message: string;
+}
+
 /** 基础查询参数 */
 export interface BaseQueryParams {
   /** 页码 */

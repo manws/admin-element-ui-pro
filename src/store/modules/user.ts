@@ -20,6 +20,7 @@ export const useUserStore = defineStore("user", () => {
    */
   async function login(loginRequest: LoginRequest): Promise<UserInfo> {
     const response = await AuthAPI.login(loginRequest);
+    console.log("[store-user]", JSON.stringify(response));
     const { code, message, result } = response.data;
 
     if (code === 200) {

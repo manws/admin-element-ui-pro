@@ -5,6 +5,7 @@ import axios, {
 import qs from "qs";
 import { ApiCodeEnum } from "@/enums/api";
 import { AuthStorage, redirectToLogin } from "@/utils/auth";
+import type { HttpResponse } from "@/types/api/common";
 
 /** Token 在请求头中的字段名（与后端约定） */
 const TOKEN_HEADER = "sn-score-token";
@@ -24,7 +25,6 @@ http.interceptors.request.use(
     if (token) {
       config.headers[TOKEN_HEADER] = token;
     }
-
     return config;
   },
   (error) => Promise.reject(error),
@@ -62,13 +62,14 @@ http.interceptors.response.use(
       return Promise.reject(new Error(message || "Token Invalid"));
     }
 
-    // 业务成功
-    if (code === ApiCodeEnum.SUCCESS) {
-      return { data: response.data, status: response.status, message } as any;
-    }
+    // 统一返回结构
+    const result: HttpResponse = {
+      data: response.data,
+      status: response.status,
+      message,
+    };
 
-    // 其他业务错误（不弹窗，由调用方处理）
-    return { data: response.data, status: response.status, message } as any;
+    return result;
   },
 
   (error) => {

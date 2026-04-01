@@ -2,7 +2,13 @@
  * 应用配置
  */
 
-import { LayoutMode, ComponentSize, SidebarColor, ThemeMode, LanguageEnum } from "@/enums";
+import {
+  LayoutMode,
+  ComponentSize,
+  SidebarColor,
+  ThemeMode,
+  LanguageEnum,
+} from "@/enums";
 
 const env = import.meta.env;
 const { pkg } = __APP_INFO__;
@@ -15,6 +21,14 @@ export const appConfig = {
   name: pkg.name as string,
   version: pkg.version as string,
   title: (env.VITE_APP_TITLE as string) || pkg.name,
+
+  /**
+   * 是否从后端获取菜单生成路由
+   *
+   * - true:  调用后端接口获取菜单，动态生成路由（需要后端支持）
+   * - false: 使用本地定义的 localRoutes 作为路由（纯前端开发时使用）
+   */
+  isRemoteRoute: false,
 } as const;
 
 // ============================================

@@ -3,6 +3,7 @@ import { constantRoutes } from "@/router";
 import { store } from "@/store";
 import router from "@/router";
 import { useUserStoreHook } from "@/store/modules/user";
+import { appConfig } from "@/settings";
 
 import MenuAPI from "@/api/system/menu";
 import { RouteItem } from "@/types";
@@ -32,18 +33,25 @@ export const usePermissionStore = defineStore("permission", () => {
   /** 生成动态路由 */
   async function generateRoutes(): Promise<RouteRecordRaw[]> {
     try {
-      const response = await MenuAPI.getRoutes();
-      const { code, result } = (response as any).data;
+      let dynamicRoutes: RouteRecordRaw[];
 
-      if (code !== 200 || !result) {
-        throw new Error("获取菜单路由失败");
+      if (appConfig.isRemoteRoute) {
+        // 远程模式：从后端获取菜单路由
+        const response = await MenuAPI.getRoutes();
+        const { code, result } = (response as any).data;
+
+        if (code !== 200 || !result) {
+          throw new Error("获取菜单路由失败");
+        }
+
+        const routeData = result.menuList || result;
+        dynamicRoutes = transformRoutes(
+          Array.isArray(routeData) ? routeData : [],
+        );
+      } else {
+        // 本地模式：业务路由已在 constantRoutes 中，无需额外动态路由
+        dynamicRoutes = [];
       }
-
-      // result 可能是 { menuList: [...] } 或直接是路由数组
-      const routeData = result.menuList || result;
-      const dynamicRoutes = transformRoutes(
-        Array.isArray(routeData) ? routeData : [],
-      );
 
       routes.value = [...constantRoutes, ...dynamicRoutes];
       isRouteGenerated.value = true;
