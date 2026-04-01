@@ -1,12 +1,11 @@
-import axios, { type InternalAxiosRequestConfig, type AxiosResponse } from "axios";
+import axios, {
+  type InternalAxiosRequestConfig,
+  type AxiosResponse,
+} from "axios";
 import qs from "qs";
 import { ApiCodeEnum } from "@/enums/api";
-import { useUserStoreHook } from "@/store/modules/user";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { AuthStorage, redirectToLogin } from "@/utils/auth";
-
-// 记录已重试的请求，防止无限循环
-const retriedConfigs = new WeakSet<InternalAxiosRequestConfig>();
 
 // HTTP 请求实例
 const http = axios.create({
@@ -29,7 +28,7 @@ http.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // 响应拦截器
@@ -40,6 +39,12 @@ http.interceptors.response.use(
     // 二进制数据直接返回
     if (responseType === "blob" || responseType === "arraybuffer") {
       return response;
+    }
+
+    // 如果响应头中带了新 token，自动更新存储
+    const newToken = response.headers["new-token"];
+    if (newToken) {
+      AuthStorage.setToken(newToken, AuthStorage.getRememberMe());
     }
 
     const { code, data, msg } = response.data;
@@ -53,7 +58,7 @@ http.interceptors.response.use(
   },
 
   async (error) => {
-    const { config, response } = error;
+    const { response } = error;
 
     if (!response) {
       ElMessage.error("网络连接失败");
@@ -62,36 +67,13 @@ http.interceptors.response.use(
 
     const { code, msg } = response.data as ApiResponse;
 
-    // Token 过期：尝试刷新 token 后自动重试一次
-    if (code === ApiCodeEnum.ACCESS_TOKEN_INVALID) {
-      // 已重试过，直接跳登录
-      if (retriedConfigs.has(config)) {
-        await redirectToLogin("登录已过期，请重新登录");
-        return Promise.reject(new Error("Token Invalid"));
-      }
-
-      retriedConfigs.add(config);
-
-      try {
-        const userStore = useUserStoreHook();
-        await userStore.refreshTokenOnce();
-
-        const token = AuthStorage.getAccessToken();
-        if (token) {
-          config.headers.set("Authorization", `Bearer ${token}`);
-        }
-
-        return http(config);
-      } catch {
-        await redirectToLogin("登录已过期，请重新登录");
-        return Promise.reject(new Error("Token refresh failed"));
-      }
-    }
-
-    // Refresh token 失效：无法续期，跳转登录
-    if (code === ApiCodeEnum.REFRESH_TOKEN_INVALID) {
+    // Token 无效或过期：跳转登录
+    if (
+      code === ApiCodeEnum.ACCESS_TOKEN_INVALID ||
+      code === ApiCodeEnum.REFRESH_TOKEN_INVALID
+    ) {
       await redirectToLogin("登录已过期，请重新登录");
-      return Promise.reject(new Error(msg || "Token Invalid"));
+      return Promise.reject(new Error("Token Invalid"));
     }
 
     // 权限不足：刷新权限快照后提示
@@ -104,7 +86,7 @@ http.interceptors.response.use(
 
     ElMessage.error(msg || "请求失败");
     return Promise.reject(new Error(msg || "请求失败"));
-  }
+  },
 );
 
 export default http;

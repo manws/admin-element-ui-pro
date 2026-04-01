@@ -10,10 +10,6 @@ export interface LoginRequest {
   username: string;
   /** 密码 */
   password: string;
-  /** 验证码缓存key */
-  captchaId?: string;
-  /** 验证码 */
-  captchaCode?: string;
   /** 记住我 */
   rememberMe?: boolean;
 }
@@ -24,20 +20,8 @@ export interface LoginRequest {
 export interface LoginResponse {
   /** 访问令牌 */
   accessToken: string;
-  /** 刷新令牌 */
-  refreshToken: string;
   /** 令牌类型 */
-  tokenType: string;
+  tokenType?: string;
   /** 过期时间(单位:秒) */
-  expiresIn: number;
-}
-
-/**
- * 验证码响应
- */
-export interface CaptchaInfo {
-  /** 验证码缓存key */
-  captchaId: string;
-  /** 验证码图片Base64 */
-  captchaBase64: string;
+  expiresIn?: number;
 }

@@ -1,10 +1,10 @@
 import request from "@/utils/request";
-import type { LoginRequest, LoginResponse, CaptchaInfo } from "@/types/api/auth";
+import type { LoginRequest, LoginResponse } from "@/types/api/auth";
 
 const AUTH_BASE_URL = "/api/v1/auth";
 
 const AuthAPI = {
-  /** 登录接口*/
+  /** 登录接口 */
   login(data: LoginRequest) {
     return request<any, LoginResponse>({
       url: `${AUTH_BASE_URL}/login`,
@@ -12,20 +12,6 @@ const AuthAPI = {
       data: {
         username: data.username,
         password: data.password,
-        captchaId: data.captchaId,
-        captchaCode: data.captchaCode,
-      },
-    });
-  },
-
-  /** 刷新 token 接口*/
-  refreshToken(refreshToken: string) {
-    return request<any, LoginResponse>({
-      url: `${AUTH_BASE_URL}/refresh-token`,
-      method: "post",
-      params: { refreshToken },
-      headers: {
-        Authorization: "no-auth",
       },
     });
   },
@@ -35,14 +21,6 @@ const AuthAPI = {
     return request({
       url: `${AUTH_BASE_URL}/logout`,
       method: "delete",
-    });
-  },
-
-  /** 获取验证码接口*/
-  getCaptcha() {
-    return request<any, CaptchaInfo>({
-      url: `${AUTH_BASE_URL}/captcha`,
-      method: "get",
     });
   },
 };
