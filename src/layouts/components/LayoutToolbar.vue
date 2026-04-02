@@ -3,22 +3,22 @@
     <!-- 桌面端工具项 -->
     <template v-if="isDesktop">
       <!-- 搜索 -->
-      <div class="navbar-actions__item">
+      <div v-if="appConfig.showSearch" class="navbar-actions__item">
         <CommandPalette />
       </div>
 
       <!-- 全屏 -->
-      <div class="navbar-actions__item">
+      <div v-if="appConfig.showFullscreen" class="navbar-actions__item">
         <Fullscreen />
       </div>
 
       <!-- 布局大小 -->
-      <div class="navbar-actions__item">
+      <div v-if="appConfig.showSizeSelect" class="navbar-actions__item">
         <SizeSelect />
       </div>
 
       <!-- 语言选择 -->
-      <div class="navbar-actions__item">
+      <div v-if="appConfig.showLangSelect" class="navbar-actions__item">
         <LangSelect />
       </div>
     </template>
@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import { defaults } from "@/settings";
+import { defaults, appConfig } from "@/settings";
 import {
   DeviceEnum,
   SidebarColor,

@@ -26,9 +26,19 @@ export const appConfig = {
    * 是否从后端获取菜单生成路由
    *
    * - true:  调用后端接口获取菜单，动态生成路由（需要后端支持）
-   * - false: 使用本地定义的 localRoutes 作为路由（纯前端开发时使用）
+   * - false: 使用本地定义的 constantRoutes 中的业务路由
    */
   isRemoteRoute: false,
+
+  // ===== 工具栏显隐配置 =====
+  /** 显示搜索（命令面板） */
+  showSearch: false,
+  /** 显示全屏切换 */
+  showFullscreen: true,
+  /** 显示布局大小选择 */
+  showSizeSelect: false,
+  /** 显示语言选择 */
+  showLangSelect: false,
 } as const;
 
 // ============================================
