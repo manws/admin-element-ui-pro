@@ -17,17 +17,19 @@ export interface LoginRequest {
 }
 
 /**
- * 登录响应 - 用户信息
+ * 用户信息
  */
 export interface UserInfo {
-  userId?: string;
-  userCode?: string;
-  userName?: string;
-  nickname?: string;
+  /** 用户ID */
+  userId: number;
+  /** 用户账号 */
+  userCode: string;
+  /** 用户名称 */
+  userName: string;
+  /** 手机号 */
+  phone: string;
+  /** 邮箱 */
+  email: string;
+  /** 头像 */
   avatar?: string;
-  phone?: string;
-  email?: string;
-  roles?: string[];
-  perms?: string[];
-  [key: string]: any;
 }

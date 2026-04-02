@@ -21,21 +21,18 @@
       <div class="navbar-actions__item">
         <LangSelect />
       </div>
-
     </template>
 
     <!-- 用户菜单 -->
     <div class="navbar-actions__item">
       <el-dropdown trigger="click">
         <div class="user-profile">
-          <div style="width: 28px; height: 28px; overflow: hidden; border-radius: 50%">
-            <img
-              :src="userStore.userInfo.avatar"
-              class="user-profile__avatar"
-              style="width: 100%; height: 100%; object-fit: cover; object-position: center"
-            />
-          </div>
-          <span class="user-profile__name">{{ userStore.userInfo.username }}</span>
+          <el-avatar :size="28" :src="userStore.userInfo.avatar">
+            <el-icon :size="16"><User /></el-icon>
+          </el-avatar>
+          <span class="user-profile__name">{{
+            userStore.userInfo.userName || userStore.userInfo.userCode || "用户"
+          }}</span>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -48,7 +45,11 @@
     </div>
 
     <!-- 系统设置 -->
-    <div v-if="defaults.showSettings" class="navbar-actions__item" @click="handleSettingsClick">
+    <div
+      v-if="defaults.showSettings"
+      class="navbar-actions__item"
+      @click="handleSettingsClick"
+    >
       <div class="i-svg:setting" />
     </div>
   </div>
@@ -58,7 +59,12 @@
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { defaults } from "@/settings";
-import { DeviceEnum, SidebarColor, ThemeMode, LayoutMode } from "@/enums/settings";
+import {
+  DeviceEnum,
+  SidebarColor,
+  ThemeMode,
+  LayoutMode,
+} from "@/enums/settings";
 import { useAppStore, useSettingsStore, useUserStore } from "@/store";
 
 // 导入子组件
@@ -66,8 +72,6 @@ import CommandPalette from "@/components/CommandPalette/index.vue";
 import Fullscreen from "@/components/Fullscreen/index.vue";
 import SizeSelect from "@/components/SizeSelect/index.vue";
 import LangSelect from "@/components/LangSelect/index.vue";
-
-
 
 const { t } = useI18n();
 const appStore = useAppStore();
@@ -126,7 +130,7 @@ function logout() {
  * 打开系统设置页面
  */
 function handleSettingsClick() {
-  settingStore.settingsVisible = true;
+  settingStore.$patch({ settingsVisible: true });
 }
 </script>
 
