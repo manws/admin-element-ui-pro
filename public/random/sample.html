@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>宣海科技医学统计平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f0f4fa;
+        --panel: rgba(255, 255, 255, 0.65);
+        --panel-strong: rgba(255, 255, 255, 0.82);
+        --line: rgba(0, 0, 0, 0.06);
+        --line-strong: rgba(0, 0, 0, 0.1);
+        --text: #1a2744;
+        --text-soft: #5b6b88;
+        --accent: #0071e3;
+        --accent-2: #00a4b4;
+        --accent-deep: #0058b0;
+        --success: #30d158;
+        --warning: #ff9f0a;
+        --sidebar-width: 276px;
+        --topbar-height: 88px;
+        --shadow: 0 8px 40px rgba(0, 60, 120, 0.06), 0 1.5px 4px rgba(0, 60, 120, 0.04);
+        --shadow-soft: 0 4px 20px rgba(0, 60, 120, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background:
+          linear-gradient(135deg, #e8eef6 0%, #f0f4fa 40%, #eaf0f8 100%);
+        color: var(--text);
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 80, 160, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 80, 160, 0.035) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 95%);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .shell {
+        position: relative;
+        min-height: 100vh;
+        padding: 22px;
+      }
+
+      .app {
+        position: relative;
+        min-height: calc(100vh - 44px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        backdrop-filter: blur(18px);
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 12% 14%, rgba(0, 164, 180, 0.04), transparent 22%),
+          radial-gradient(circle at 82% 8%, rgba(0, 113, 227, 0.04), transparent 24%);
+        pointer-events: none;
+      }
+
+      .topbar {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        height: var(--topbar-height);
+        padding: 0 34px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 280px;
+      }
+
+      .brand-mark {
+        position: relative;
+        width: 46px;
+        height: 46px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 16px 28px rgba(0, 113, 227, 0.15);
+      }
+
+      .brand-mark::before,
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .brand-mark::before {
+        width: 22px;
+        height: 4px;
+        left: 12px;
+        top: 21px;
+      }
+
+      .brand-mark::after {
+        width: 4px;
+        height: 22px;
+        left: 21px;
+        top: 12px;
+      }
+
+      .brand-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .brand-copy strong {
+        font-family: "Noto Serif SC", serif;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .brand-copy span {
+        color: var(--text-soft);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .top-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .top-nav button {
+        position: relative;
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 20px;
+        background: transparent;
+        color: #4c6888;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: 0.28s ease;
+        white-space: nowrap;
+      }
+
+      .top-nav button:hover {
+        color: var(--accent-deep);
+        background: rgba(13, 132, 255, 0.08);
+      }
+
+      .top-nav button.active {
+        color: var(--text);
+        background: linear-gradient(135deg, #0f83ff, #1ec6c8);
+        box-shadow: 0 18px 34px rgba(16, 120, 226, 0.24);
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 132px;
+        justify-content: flex-end;
+        color: var(--text-soft);
+        font-size: 13px;
+      }
+
+      .status-chip::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2ad67e, #7ee7ba);
+        box-shadow: 0 0 0 6px rgba(42, 214, 126, 0.12);
+      }
+
+      .workspace {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        min-height: calc(100vh - 44px - var(--topbar-height));
+      }
+
+      .sidebar {
+        position: relative;
+        padding: 28px 22px 24px;
+        border-right: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
+      }
+
+      .sidebar::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        top: 28px;
+        bottom: 28px;
+        width: 1px;
+        background: linear-gradient(180deg, transparent, rgba(32, 197, 201, 0.22), transparent);
+      }
+
+      .sidebar-head {
+        padding: 0 4px 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .sidebar-head h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .sidebar-head p {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .menu-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .menu-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid transparent;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.6);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+      }
+
+      .menu-card:hover {
+        transform: translateX(4px);
+        border-color: var(--text-soft);
+        box-shadow: 0 14px 26px rgba(56, 102, 157, 0.1);
+      }
+
+      .menu-card.active {
+        border-color: rgba(13, 132, 255, 0.18);
+        background: linear-gradient(135deg, rgba(13, 132, 255, 0.14), rgba(32, 197, 201, 0.14));
+        box-shadow: 0 18px 30px rgba(0, 113, 227, 0.04);
+      }
+
+      .menu-index {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+        background: rgba(13, 132, 255, 0.1);
+        color: var(--accent-deep);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .menu-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+      }
+
+      .menu-meta strong {
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .menu-meta span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .content {
+        position: relative;
+        padding: 28px;
+      }
+
+      .content-shell {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 520px;
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(243, 249, 255, 0.9)),
+          linear-gradient(180deg, rgba(13, 132, 255, 0.04), rgba(32, 197, 201, 0.05));
+        overflow: hidden;
+      }
+
+      .content-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 10% 12%, rgba(0, 164, 180, 0.04), transparent 18%),
+          radial-gradient(circle at 84% 18%, rgba(13, 132, 255, 0.1), transparent 20%),
+          linear-gradient(rgba(127, 162, 200, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(127, 162, 200, 0.08) 1px, transparent 1px);
+        background-size: auto, auto, 42px 42px, 42px 42px;
+        pointer-events: none;
+      }
+
+      .content-bar {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 22px 26px;
+        border-bottom: 1px solid rgba(120, 157, 199, 0.12);
+        background: rgba(255, 255, 255, 0.42);
+      }
+
+      .content-title {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .content-title strong {
+        font-size: 22px;
+      }
+
+      .content-title span {
+        color: var(--text-soft);
+        font-size: 13px;
+      }
+
+      .outline-tag {
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 999px;
+        color: var(--accent-deep);
+        background: rgba(13, 132, 255, 0.06);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .content-main {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 18px;
+        padding: 24px;
+        overflow: auto;
+      }
+
+      .info-grid,
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        position: relative;
+        padding: 20px;
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 40%);
+        pointer-events: none;
+      }
+
+      .card-header {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .card-header strong {
+        font-size: 18px;
+      }
+
+      .card-header span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .markdown-body {
+        position: relative;
+        z-index: 1;
+        color: #2a4768;
+        line-height: 1.85;
+        font-size: 14px;
+      }
+
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3 {
+        color: var(--text);
+        margin-top: 0;
+      }
+
+      .markdown-body h1 {
+        font-size: 24px;
+        margin-bottom: 14px;
+      }
+
+      .markdown-body h2 {
+        margin-top: 18px;
+        font-size: 18px;
+      }
+
+      .markdown-body p,
+      .markdown-body ul {
+        margin: 10px 0;
+      }
+
+      .markdown-body ul {
+        padding-left: 20px;
+      }
+
+      .param-list {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 14px;
+      }
+
+      .param-item {
+        padding: 14px 16px;
+        border: 1px solid rgba(0, 113, 227, 0.04);
+        border-radius: 18px;
+        background: rgba(245, 250, 255, 0.86);
+      }
+
+      .param-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 15px;
+      }
+
+      .param-item p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.7;
+        font-size: 13px;
+      }
+
+      .simulate-form {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+        gap: 14px;
+        align-items: end;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field span {
+        font-size: 13px;
+        font-weight: 600;
+        color: #33557a;
+      }
+
+      .field small {
+        color: var(--text-soft);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .field input {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .field input:focus {
+        border-color: rgba(13, 132, 255, 0.34);
+        box-shadow: 0 0 0 4px rgba(13, 132, 255, 0.08);
+      }
+
+      .primary-btn {
+        height: 48px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 18px 32px rgba(13, 132, 255, 0.22);
+      }
+
+      .form-footnote {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+        color: var(--text-soft);
+        font-size: 12px;
+        line-height: 1.75;
+      }
+
+      .metric-card {
+        position: relative;
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .metric-card span {
+        display: block;
+        color: var(--text-soft);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .metric-card strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .metric-card p {
+        margin: 10px 0 0;
+        color: #5b7a9d;
+        font-size: 12px;
+      }
+
+      .metric-card.accent {
+        background: linear-gradient(135deg, rgba(0, 113, 227, 0.04), rgba(0, 164, 180, 0.04));
+      }
+
+      .metric-card.success {
+        background: linear-gradient(135deg, rgba(25, 180, 107, 0.12), rgba(126, 231, 186, 0.12));
+      }
+
+      .metric-card.warning {
+        background: linear-gradient(135deg, rgba(255, 182, 72, 0.14), rgba(255, 224, 164, 0.14));
+      }
+
+      .metric-card.neutral {
+        background: linear-gradient(135deg, rgba(99, 131, 166, 0.12), rgba(202, 218, 235, 0.16));
+      }
+
+      .chart-card canvas {
+        position: relative;
+        z-index: 1;
+        width: 100% !important;
+        height: 260px !important;
+      }
+
+      .narrative {
+        position: relative;
+        z-index: 1;
+        color: #31506f;
+        line-height: 1.9;
+        font-size: 14px;
+      }
+
+      .narrative strong {
+        color: var(--text);
+      }
+
+      .table-shell {
+        position: relative;
+        z-index: 1;
+        max-height: 420px;
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(124, 159, 200, 0.16);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 12px 14px;
+        background: #edf5ff;
+        color: #385a7d;
+        font-size: 12px;
+        text-align: left;
+        letter-spacing: 0.04em;
+      }
+
+      tbody td {
+        padding: 12px 14px;
+        border-top: 1px solid rgba(124, 159, 200, 0.12);
+        font-size: 13px;
+        color: #274765;
+      }
+
+      tbody tr:nth-child(odd) {
+        background: rgba(245, 250, 255, 0.72);
+      }
+
+      .group-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .group-chip.group-a {
+        color: #0a58b1;
+        background: rgba(0, 113, 227, 0.04);
+      }
+
+      .group-chip.group-b {
+        color: #0d8f74;
+        background: rgba(25, 180, 107, 0.14);
+      }
+
+      .placeholder-panel {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+      }
+
+      .placeholder-core {
+        width: min(620px, 100%);
+        padding: 32px;
+        border: 1px dashed rgba(88, 128, 178, 0.28);
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.12));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+        text-align: center;
+      }
+
+      .placeholder-core strong {
+        display: block;
+        margin-bottom: 12px;
+        font-size: 26px;
+      }
+
+      .placeholder-core p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.8;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1380px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .simulate-form {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .topbar {
+          flex-wrap: wrap;
+          height: auto;
+          padding: 20px 24px;
+        }
+
+        .brand,
+        .status-chip {
+          min-width: auto;
+        }
+
+        .top-nav {
+          order: 3;
+          width: 100%;
+          justify-content: flex-start;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .workspace,
+        .info-grid,
+        .result-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .sidebar::after {
+          display: none;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .shell {
+          padding: 12px;
+        }
+
+        .app {
+          min-height: calc(100vh - 24px);
+          border-radius: 22px;
+        }
+
+        .topbar,
+        .content,
+        .sidebar {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .top-nav button {
+          padding: 12px 16px;
+          font-size: 14px;
+        }
+
+        .content-shell {
+          min-height: 420px;
+        }
+
+        .content-main {
+          padding: 18px;
+        }
+
+        .stats-grid,
+        .simulate-form {
+          grid-template-columns: 1fr;
+        }
+
+        .content-bar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="app">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div class="brand-copy">
+              <strong>宣海科技医学统计平台</strong>
+              <span>Xuanhai MedStat Console</span>
+            </div>
+          </div>
+
+          <nav class="top-nav" id="topNav">
+            <button class="active" data-menu="random">随机分组</button>
+            <button data-menu="sample">样本量计算</button>
+            <button data-menu="statistics">医学统计</button>
+            <button data-menu="ai">医学统计AI</button>
+            <button data-menu="data">我的数据</button>
+          </nav>
+
+          <div class="status-chip">系统在线</div>
+        </header>
+
+        <section class="workspace">
+          <aside class="sidebar" id="sidebar">
+            <div class="sidebar-head">
+              <div class="eyebrow">Randomization</div>
+              <h2>随机分组</h2>
+              <p>当前先实现简单随机模块，支持算法说明、参数理解、模拟随机与结果图表展示。</p>
+            </div>
+
+            <div class="menu-list">
+              <button class="menu-card active" type="button" data-method="simple">
+                <span class="menu-index">01</span>
+                <span class="menu-meta">
+                  <strong>简单随机</strong>
+                  <span>Simple Randomization</span>
+                </span>
+              </button>
+
+              <button class="menu-card" type="button" data-method="block">
+                <span class="menu-index">02</span>
+                <span class="menu-meta">
+                  <strong>区组随机</strong>
+                  <span>Block Randomization</span>
+                </span>
+              </button>
+
+              <button class="menu-card" type="button" data-method="stratified">
+                <span class="menu-index">03</span>
+                <span class="menu-meta">
+                  <strong>分层区组随机</strong>
+                  <span>Stratified Block</span>
+                </span>
+              </button>
+
+              <button class="menu-card" type="button" data-method="minimization">
+                <span class="menu-index">04</span>
+                <span class="menu-meta">
+                  <strong>最小化随机</strong>
+                  <span>Minimization</span>
+                </span>
+              </button>
+
+              <button class="menu-card" type="button" data-method="selection">
+                <span class="menu-index">05</span>
+                <span class="menu-meta">
+                  <strong>随机选择</strong>
+                  <span>Random Selection</span>
+                </span>
+              </button>
+            </div>
+          </aside>
+
+          <main class="content">
+            <div class="content-shell">
+              <div class="content-bar">
+                <div class="content-title">
+                  <strong id="panelTitle">简单随机</strong>
+                  <span id="panelSubTitle">支持算法介绍、参数说明、模拟随机与结果可视化展示。</span>
+                </div>
+                <div class="outline-tag" id="panelBadge">SIMPLE RANDOM</div>
+              </div>
+
+              <div class="content-main" id="simpleRandomPanel">
+                <section class="info-grid">
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>算法介绍</strong>
+                      <span>Markdown 渲染展示</span>
+                    </div>
+                    <div class="markdown-body" id="algorithmMarkdown"></div>
+                  </article>
+
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>参数介绍</strong>
+                      <span>帮助用户理解模拟输入</span>
+                    </div>
+                    <div class="param-list">
+                      <div class="param-item">
+                        <strong>模拟受试者总数</strong>
+                        <p>设置本次模拟纳入的受试者数量，例如 60、120、200。数值越大，越能观察简单随机下整体分配比例趋近 1:1 的过程。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>A组分配概率</strong>
+                        <p>定义每位受试者进入 A 组的理论概率，默认 50%。当设为 50% 时，表示 A/B 两组等概率随机分配。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>随机种子</strong>
+                        <p>用于复现实验结果。相同参数与相同种子会得到一致的模拟结果，便于演示、复核与讨论。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>随机号前缀</strong>
+                        <p>用于生成模拟随机码，例如 <code>RAND</code>、<code>SIM</code>。最终会与序号和随机片段组合成受试者随机号。</p>
+                      </div>
+                    </div>
+                  </article>
+                </section>
+
+                <section class="card">
+                  <div class="card-header">
+                    <strong>模拟随机</strong>
+                    <span>输入参数后生成 A/B 组入组结果</span>
+                  </div>
+                  <form class="simulate-form" id="simulationForm">
+                    <label class="field">
+                      <span>模拟受试者总数</span>
+                      <input id="subjectCount" type="number" min="10" max="500" step="1" value="120" />
+                      <small>建议 10-500 例，便于图表和列表展示。</small>
+                    </label>
+
+                    <label class="field">
+                      <span>A组分配概率（%）</span>
+                      <input id="probabilityA" type="number" min="1" max="99" step="1" value="50" />
+                      <small>50 表示 A/B 两组等概率分配。</small>
+                    </label>
+
+                    <label class="field">
+                      <span>随机种子</span>
+                      <input id="seedInput" type="text" value="XH-20260329" />
+                      <small>相同种子可复现同样的随机结果。</small>
+                    </label>
+
+                    <label class="field">
+                      <span>随机号前缀</span>
+                      <input id="codePrefix" type="text" value="RAND" maxlength="10" />
+                      <small>例如 RAND、XH、TRIAL。</small>
+                    </label>
+
+                    <button class="primary-btn" type="submit">开始模拟</button>
+                  </form>
+                  <div class="form-footnote">
+                    简单随机的核心思想是：每一位受试者在入组时独立、等机会地分配至某一组。本示例使用可复现的伪随机数进行前端模拟，便于演示算法效果。
+                  </div>
+                </section>
+
+                <section class="stats-grid">
+                  <article class="metric-card accent">
+                    <span>A组人数</span>
+                    <strong id="metricA">0</strong>
+                    <p id="metricAPercent">占比 0%</p>
+                  </article>
+                  <article class="metric-card success">
+                    <span>B组人数</span>
+                    <strong id="metricB">0</strong>
+                    <p id="metricBPercent">占比 0%</p>
+                  </article>
+                  <article class="metric-card warning">
+                    <span>组间差值</span>
+                    <strong id="metricGap">0</strong>
+                    <p id="metricGapHint">A/B 组人数差</p>
+                  </article>
+                  <article class="metric-card neutral">
+                    <span>总受试者数</span>
+                    <strong id="metricTotal">0</strong>
+                    <p id="metricBalance">当前分配待生成</p>
+                  </article>
+                </section>
+
+                <section class="charts-grid">
+                  <article class="card chart-card">
+                    <div class="card-header">
+                      <strong>随机结果占比</strong>
+                      <span>饼图</span>
+                    </div>
+                    <canvas id="pieChart"></canvas>
+                  </article>
+
+                  <article class="card chart-card">
+                    <div class="card-header">
+                      <strong>AB组人数对比</strong>
+                      <span>柱状图</span>
+                    </div>
+                    <canvas id="barChart"></canvas>
+                  </article>
+
+                  <article class="card chart-card">
+                    <div class="card-header">
+                      <strong>AB组入组趋势</strong>
+                      <span>曲线图</span>
+                    </div>
+                    <canvas id="lineChart"></canvas>
+                  </article>
+                </section>
+
+                <section class="result-grid">
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>结果说明</strong>
+                      <span>文字叙述</span>
+                    </div>
+                    <div class="narrative" id="resultNarrative"></div>
+                  </article>
+
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>受试者入组列表</strong>
+                      <span>编号 / 随机号 / 入组情况</span>
+                    </div>
+                    <div class="table-shell">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>受试者编号</th>
+                            <th>随机号</th>
+                            <th>随机值</th>
+                            <th>入组情况</th>
+                          </tr>
+                        </thead>
+                        <tbody id="resultTableBody"></tbody>
+                      </table>
+                    </div>
+                  </article>
+                </section>
+              </div>
+
+              <div class="placeholder-panel hidden" id="placeholderPanel">
+                <div class="placeholder-core">
+                  <strong id="placeholderTitle">模块预留中</strong>
+                  <p id="placeholderText">当前区域作为后续模块的展示占位，先保留整体后台结构与导航层级。</p>
+                </div>
+              </div>
+            </div>
+          </main>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const topNav = document.getElementById("topNav");
+      const sidebar = document.getElementById("sidebar");
+      const panelTitle = document.getElementById("panelTitle");
+      const panelSubTitle = document.getElementById("panelSubTitle");
+      const panelBadge = document.getElementById("panelBadge");
+      const simpleRandomPanel = document.getElementById("simpleRandomPanel");
+      const placeholderPanel = document.getElementById("placeholderPanel");
+      const placeholderTitle = document.getElementById("placeholderTitle");
+      const placeholderText = document.getElementById("placeholderText");
+      const resultTableBody = document.getElementById("resultTableBody");
+      const resultNarrative = document.getElementById("resultNarrative");
+      const simulationForm = document.getElementById("simulationForm");
+      const algorithmMarkdown = document.getElementById("algorithmMarkdown");
+      const metricA = document.getElementById("metricA");
+      const metricB = document.getElementById("metricB");
+      const metricGap = document.getElementById("metricGap");
+      const metricTotal = document.getElementById("metricTotal");
+      const metricAPercent = document.getElementById("metricAPercent");
+      const metricBPercent = document.getElementById("metricBPercent");
+      const metricGapHint = document.getElementById("metricGapHint");
+      const metricBalance = document.getElementById("metricBalance");
+
+      const simpleRandomMarkdown = `# 简单随机算法
+
+## 算法定义
+简单随机是最基础的随机分组方法。每一位受试者在入组时，均以**独立且固定的概率**被分配至 A 组或 B 组，前一位受试者的分组结果不会影响下一位受试者。
+
+## 适用场景
+- 样本量相对充足，希望总体分配比例自然接近 1:1 的研究。
+- 基线特征差异对研究结果影响较小的探索性研究。
+- 需要快速完成随机分配逻辑原型、教学演示或统计方法说明的场景。
+
+## 方法特点
+- **优点**：实现简单、解释直接、操作成本低。
+- **风险**：当样本量较小时，可能出现阶段性 A/B 组人数不均衡。
+- **实现要点**：通常为每位受试者生成一个随机数，再按预设阈值判定进入 A 组或 B 组。
+
+## 在本平台中的展示方式
+后台可直接以 Markdown 文本下发算法说明，前端负责渲染格式化内容，并结合模拟结果、图表和列表进行完整展示。`;
+
+      const topMenuMap = {
+        random: {
+          visible: true,
+          title: "随机分组",
+          subtitle: "当前已实现简单随机模块，其他随机方式先保留占位。",
+        },
+        sample: {
+          visible: false,
+          title: "样本量计算",
+          subtitle: "当前仅完成一级菜单展示，后续再补充功能内容。",
+        },
+        statistics: {
+          visible: false,
+          title: "医学统计",
+          subtitle: "当前仅完成一级菜单展示，后续再补充功能内容。",
+        },
+        ai: {
+          visible: false,
+          title: "医学统计AI",
+          subtitle: "当前仅完成一级菜单展示，后续再补充功能内容。",
+        },
+        data: {
+          visible: false,
+          title: "我的数据",
+          subtitle: "当前仅完成一级菜单展示，后续再补充功能内容。",
+        },
+      };
+
+      const methodMap = {
+        simple: {
+          implemented: true,
+          title: "简单随机",
+          subtitle: "支持算法介绍、参数说明、模拟随机与结果可视化展示。",
+          badge: "SIMPLE RANDOM",
+        },
+        block: {
+          implemented: false,
+          title: "区组随机",
+          subtitle: "该随机方式暂未实现，先保留展示占位。",
+          badge: "BLOCK RANDOM",
+        },
+        stratified: {
+          implemented: false,
+          title: "分层区组随机",
+          subtitle: "该随机方式暂未实现，先保留展示占位。",
+          badge: "STRATIFIED BLOCK",
+        },
+        minimization: {
+          implemented: false,
+          title: "最小化随机",
+          subtitle: "该随机方式暂未实现，先保留展示占位。",
+          badge: "MINIMIZATION",
+        },
+        selection: {
+          implemented: false,
+          title: "随机选择",
+          subtitle: "该随机方式暂未实现，先保留展示占位。",
+          badge: "RANDOM SELECTION",
+        },
+      };
+
+      let currentTopMenu = "random";
+      let currentMethod = "simple";
+      let pieChartInstance = null;
+      let barChartInstance = null;
+      let lineChartInstance = null;
+
+      marked.setOptions({ breaks: true });
+      algorithmMarkdown.innerHTML = marked.parse(simpleRandomMarkdown);
+
+      function stringToSeed(text) {
+        let seed = 0;
+        const normalized = String(text || "DEFAULT-SEED");
+        for (let index = 0; index < normalized.length; index += 1) {
+          seed = (seed * 31 + normalized.charCodeAt(index)) >>> 0;
+        }
+        return seed || 123456789;
+      }
+
+      function createSeededRandom(seedText) {
+        let state = stringToSeed(seedText);
+        return function seededRandom() {
+          state = (state * 1664525 + 1013904223) >>> 0;
+          return state / 4294967296;
+        };
+      }
+
+      function padNumber(value, length = 3) {
+        return String(value).padStart(length, "0");
+      }
+
+      function simulateSimpleRandom({ subjectCount, probabilityA, seed, codePrefix }) {
+        const random = createSeededRandom(seed);
+        const rows = [];
+        const trendA = [];
+        const trendB = [];
+        const trendLabels = [];
+        let countA = 0;
+        let countB = 0;
+
+        for (let index = 1; index <= subjectCount; index += 1) {
+          const randomValue = random();
+          const assignedGroup = randomValue < probabilityA ? "A组" : "B组";
+
+          if (assignedGroup === "A组") {
+            countA += 1;
+          } else {
+            countB += 1;
+          }
+
+          const codeEntropy = Math.floor(random() * 1000000)
+            .toString()
+            .padStart(6, "0");
+
+          rows.push({
+            subjectId: `S${padNumber(index)}`,
+            randomCode: `${codePrefix.toUpperCase()}-${padNumber(index)}-${codeEntropy}`,
+            randomValue: randomValue.toFixed(4),
+            group: assignedGroup,
+          });
+
+          trendLabels.push(`第${index}例`);
+          trendA.push(countA);
+          trendB.push(countB);
+        }
+
+        const percentA = (countA / subjectCount) * 100;
+        const percentB = (countB / subjectCount) * 100;
+        const gap = Math.abs(countA - countB);
+
+        return {
+          rows,
+          trendA,
+          trendB,
+          trendLabels,
+          countA,
+          countB,
+          percentA,
+          percentB,
+          gap,
+          subjectCount,
+          probabilityA,
+        };
+      }
+
+      function destroyCharts() {
+        [pieChartInstance, barChartInstance, lineChartInstance].forEach((chart) => {
+          if (chart) chart.destroy();
+        });
+      }
+
+      function renderCharts(result) {
+        destroyCharts();
+
+        pieChartInstance = new Chart(document.getElementById("pieChart"), {
+          type: "pie",
+          data: {
+            labels: ["A组", "B组"],
+            datasets: [
+              {
+                data: [result.countA, result.countB],
+                backgroundColor: ["#0d84ff", "#19b46b"],
+                borderColor: ["#ffffff", "#ffffff"],
+                borderWidth: 3,
+              },
+            ],
+          },
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#31506f",
+                  usePointStyle: true,
+                  padding: 18,
+                },
+              },
+            },
+          },
+        });
+
+        barChartInstance = new Chart(document.getElementById("barChart"), {
+          type: "bar",
+          data: {
+            labels: ["A组", "B组"],
+            datasets: [
+              {
+                label: "人数",
+                data: [result.countA, result.countB],
+                backgroundColor: ["rgba(13, 132, 255, 0.72)", "rgba(25, 180, 107, 0.72)"],
+                borderRadius: 14,
+                borderSkipped: false,
+              },
+            ],
+          },
+          options: {
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                ticks: { color: "#4b6787" },
+                grid: { display: false },
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#4b6787", precision: 0 },
+                grid: { color: "rgba(124, 159, 200, 0.16)" },
+              },
+            },
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
+
+        lineChartInstance = new Chart(document.getElementById("lineChart"), {
+          type: "line",
+          data: {
+            labels: result.trendLabels,
+            datasets: [
+              {
+                label: "A组累计入组",
+                data: result.trendA,
+                borderColor: "#0d84ff",
+                backgroundColor: "rgba(0, 113, 227, 0.04)",
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                borderWidth: 3,
+                fill: false,
+                tension: 0.28,
+              },
+              {
+                label: "B组累计入组",
+                data: result.trendB,
+                borderColor: "#19b46b",
+                backgroundColor: "rgba(25, 180, 107, 0.12)",
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                borderWidth: 3,
+                fill: false,
+                tension: 0.28,
+              },
+            ],
+          },
+          options: {
+            maintainAspectRatio: false,
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: "#4b6787",
+                  maxTicksLimit: 8,
+                },
+                grid: { display: false },
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#4b6787", precision: 0 },
+                grid: { color: "rgba(124, 159, 200, 0.16)" },
+              },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: "#31506f",
+                  usePointStyle: true,
+                  padding: 18,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderTable(rows) {
+        resultTableBody.innerHTML = rows
+          .map(
+            (row) => `
+              <tr>
+                <td>${row.subjectId}</td>
+                <td>${row.randomCode}</td>
+                <td>${row.randomValue}</td>
+                <td>
+                  <span class="group-chip ${row.group === "A组" ? "group-a" : "group-b"}">${row.group}</span>
+                </td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderNarrative(result) {
+        const dominantGroup = result.countA === result.countB ? "两组完全均衡" : result.countA > result.countB ? "A组略多" : "B组略多";
+        resultNarrative.innerHTML = `
+          本次简单随机共模拟 <strong>${result.subjectCount}</strong> 例受试者入组，其中 <strong>A组 ${result.countA} 例</strong>，占比 <strong>${result.percentA.toFixed(1)}%</strong>；
+          <strong>B组 ${result.countB} 例</strong>，占比 <strong>${result.percentB.toFixed(1)}%</strong>。<br /><br />
+          从整体结果看，当前分配状态为 <strong>${dominantGroup}</strong>，组间人数差为 <strong>${result.gap}</strong> 例。
+          在简单随机方法下，这种轻度波动属于正常现象；随着样本量增加，A/B 两组比例通常会逐步接近理论设定值 <strong>${(result.probabilityA * 100).toFixed(0)}% / ${(100 - result.probabilityA * 100).toFixed(0)}%</strong>。
+          曲线图展示了两组在整个随机过程中的累计入组趋势，列表则模拟了每位受试者的随机号与最终入组结果，可用于原型演示与业务确认。
+        `;
+      }
+
+      function renderMetrics(result) {
+        metricA.textContent = result.countA;
+        metricB.textContent = result.countB;
+        metricGap.textContent = result.gap;
+        metricTotal.textContent = result.subjectCount;
+        metricAPercent.textContent = `占比 ${result.percentA.toFixed(1)}%`;
+        metricBPercent.textContent = `占比 ${result.percentB.toFixed(1)}%`;
+        metricGapHint.textContent = result.gap === 0 ? "当前完全均衡" : "A/B 组人数差";
+        metricBalance.textContent = result.countA === result.countB ? "当前分配完全均衡" : `当前 ${result.countA > result.countB ? "A组" : "B组"}更多`;
+      }
+
+      function runSimulation() {
+        const subjectCountValue = Number(document.getElementById("subjectCount").value);
+        const probabilityAValue = Number(document.getElementById("probabilityA").value);
+        const seedValue = document.getElementById("seedInput").value.trim() || "XH-DEFAULT";
+        const codePrefixValue = (document.getElementById("codePrefix").value.trim() || "RAND").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10) || "RAND";
+
+        const subjectCount = Math.min(500, Math.max(10, Math.round(subjectCountValue || 120)));
+        const probabilityA = Math.min(0.99, Math.max(0.01, (probabilityAValue || 50) / 100));
+
+        document.getElementById("subjectCount").value = subjectCount;
+        document.getElementById("probabilityA").value = Math.round(probabilityA * 100);
+        document.getElementById("codePrefix").value = codePrefixValue.toUpperCase();
+
+        const result = simulateSimpleRandom({
+          subjectCount,
+          probabilityA,
+          seed: seedValue,
+          codePrefix: codePrefixValue,
+        });
+
+        renderMetrics(result);
+        renderCharts(result);
+        renderTable(result.rows);
+        renderNarrative(result);
+      }
+
+      function renderCurrentView() {
+        const topConfig = topMenuMap[currentTopMenu];
+        sidebar.classList.toggle("hidden", !topConfig.visible);
+
+        if (currentTopMenu !== "random") {
+          panelTitle.textContent = topConfig.title;
+          panelSubTitle.textContent = topConfig.subtitle;
+          panelBadge.textContent = "MODULE RESERVED";
+          simpleRandomPanel.classList.add("hidden");
+          placeholderPanel.classList.remove("hidden");
+          placeholderTitle.textContent = topConfig.title;
+          placeholderText.textContent = "当前先保留一级菜单和后台布局结构，后续可继续补充该模块的左侧菜单、表单与统计图表内容。";
+          return;
+        }
+
+        const methodConfig = methodMap[currentMethod];
+        panelTitle.textContent = methodConfig.title;
+        panelSubTitle.textContent = methodConfig.subtitle;
+        panelBadge.textContent = methodConfig.badge;
+
+        if (methodConfig.implemented) {
+          simpleRandomPanel.classList.remove("hidden");
+          placeholderPanel.classList.add("hidden");
+        } else {
+          simpleRandomPanel.classList.add("hidden");
+          placeholderPanel.classList.remove("hidden");
+          placeholderTitle.textContent = methodConfig.title;
+          placeholderText.textContent = "该随机方式的主体内容暂未实现，目前保留页面占位。确认样式方向后，可继续扩展算法介绍、参数输入、模拟结果与图表展示。";
+        }
+      }
+
+      topNav.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-menu]");
+        if (!button) return;
+
+        topNav.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        currentTopMenu = button.dataset.menu;
+        renderCurrentView();
+      });
+
+      document.querySelectorAll(".menu-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          if (card.dataset.method === "selection") {
+            window.location.href = "./selectR.html";
+            return;
+          }
+
+          document.querySelectorAll(".menu-card").forEach((item) => item.classList.remove("active"));
+          card.classList.add("active");
+          currentMethod = card.dataset.method;
+          renderCurrentView();
+        });
+      });
+
+      simulationForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        runSimulation();
+      });
+
+      renderCurrentView();
+      runSimulation();
+    </script>
+  </body>
+</html>

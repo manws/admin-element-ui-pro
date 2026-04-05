@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>宣海科技医学统计平台 - 最小化随机</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f0f4fa;
+        --panel: rgba(255, 255, 255, 0.65);
+        --panel-strong: rgba(255, 255, 255, 0.82);
+        --line: rgba(0, 0, 0, 0.06);
+        --line-strong: rgba(0, 0, 0, 0.1);
+        --text: #1a2744;
+        --text-soft: #5b6b88;
+        --accent: #0071e3;
+        --accent-2: #00a4b4;
+        --accent-deep: #0058b0;
+        --success: #30d158;
+        --warning: #ff9f0a;
+        --sidebar-width: 276px;
+        --topbar-height: 88px;
+        --shadow: 0 8px 40px rgba(0, 60, 120, 0.06), 0 1.5px 4px rgba(0, 60, 120, 0.04);
+        --shadow-soft: 0 4px 20px rgba(0, 60, 120, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background:
+          linear-gradient(135deg, #e8eef6 0%, #f0f4fa 40%, #eaf0f8 100%);
+        color: var(--text);
+        font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 80, 160, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 80, 160, 0.035) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 95%);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        min-height: 100vh;
+        padding: 22px;
+      }
+
+      .app {
+        position: relative;
+        min-height: calc(100vh - 44px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        backdrop-filter: blur(18px);
+      }
+
+      .app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 12% 14%, rgba(0, 164, 180, 0.04), transparent 22%),
+          radial-gradient(circle at 82% 8%, rgba(0, 113, 227, 0.04), transparent 24%);
+        pointer-events: none;
+      }
+
+      .topbar {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        height: var(--topbar-height);
+        padding: 0 34px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 280px;
+      }
+
+      .brand-mark {
+        position: relative;
+        width: 46px;
+        height: 46px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 16px 28px rgba(0, 113, 227, 0.15);
+      }
+
+      .brand-mark::before,
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .brand-mark::before {
+        width: 22px;
+        height: 4px;
+        left: 12px;
+        top: 21px;
+      }
+
+      .brand-mark::after {
+        width: 4px;
+        height: 22px;
+        left: 21px;
+        top: 12px;
+      }
+
+      .brand-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .brand-copy strong {
+        font-family: "Noto Serif SC", serif;
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .brand-copy span {
+        color: var(--text-soft);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .top-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .top-nav button {
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 20px;
+        background: transparent;
+        color: #4c6888;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: 0.28s ease;
+      }
+
+      .top-nav button:hover {
+        color: var(--accent-deep);
+        background: rgba(13, 132, 255, 0.08);
+      }
+
+      .top-nav button.active {
+        color: var(--text);
+        background: linear-gradient(135deg, #0f83ff, #1ec6c8);
+        box-shadow: 0 18px 34px rgba(16, 120, 226, 0.24);
+      }
+
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 132px;
+        justify-content: flex-end;
+        color: var(--text-soft);
+        font-size: 13px;
+      }
+
+      .status-chip::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2ad67e, #7ee7ba);
+        box-shadow: 0 0 0 6px rgba(42, 214, 126, 0.12);
+      }
+
+      .workspace {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        min-height: calc(100vh - 44px - var(--topbar-height));
+      }
+
+      .sidebar {
+        position: relative;
+        padding: 28px 22px 24px;
+        border-right: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
+      }
+
+      .sidebar::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        top: 28px;
+        bottom: 28px;
+        width: 1px;
+        background: linear-gradient(180deg, transparent, rgba(32, 197, 201, 0.22), transparent);
+      }
+
+      .sidebar-head {
+        padding: 0 4px 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+      }
+
+      .sidebar-head h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .sidebar-head p {
+        margin: 10px 0 0;
+        color: var(--text-soft);
+        font-size: 13px;
+        line-height: 1.7;
+      }
+
+      .menu-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .menu-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid transparent;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.6);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        color: inherit;
+        text-decoration: none;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+      }
+
+      .menu-card:hover {
+        transform: translateX(4px);
+        border-color: var(--text-soft);
+        box-shadow: 0 14px 26px rgba(56, 102, 157, 0.1);
+      }
+
+      .menu-card.active {
+        border-color: rgba(13, 132, 255, 0.18);
+        background: linear-gradient(135deg, rgba(13, 132, 255, 0.14), rgba(32, 197, 201, 0.14));
+        box-shadow: 0 18px 30px rgba(0, 113, 227, 0.04);
+      }
+
+      .menu-card.disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .menu-card.disabled:hover {
+        transform: none;
+      }
+
+      .menu-index {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 13px;
+        background: rgba(13, 132, 255, 0.1);
+        color: var(--accent-deep);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .menu-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .menu-meta strong {
+        font-size: 15px;
+      }
+
+      .menu-meta span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .content {
+        padding: 28px;
+      }
+
+      .content-shell {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 520px;
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(243, 249, 255, 0.9)),
+          linear-gradient(180deg, rgba(13, 132, 255, 0.04), rgba(32, 197, 201, 0.05));
+        overflow: hidden;
+      }
+
+      .content-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 10% 12%, rgba(0, 164, 180, 0.04), transparent 18%),
+          radial-gradient(circle at 84% 18%, rgba(13, 132, 255, 0.1), transparent 20%),
+          linear-gradient(rgba(127, 162, 200, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(127, 162, 200, 0.08) 1px, transparent 1px);
+        background-size: auto, auto, 42px 42px, 42px 42px;
+        pointer-events: none;
+      }
+
+      .content-bar {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 22px 26px;
+        border-bottom: 1px solid rgba(120, 157, 199, 0.12);
+        background: rgba(255, 255, 255, 0.42);
+      }
+
+      .content-title {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .content-title strong {
+        font-size: 22px;
+      }
+
+      .content-title span {
+        color: var(--text-soft);
+        font-size: 13px;
+      }
+
+      .outline-tag {
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 999px;
+        color: var(--accent-deep);
+        background: rgba(13, 132, 255, 0.06);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .content-main {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 18px;
+        padding: 24px;
+        overflow: auto;
+      }
+
+      .info-grid,
+      .result-grid {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 18px;
+      }
+
+      .result-grid {
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+        align-items: start;
+      }
+
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .strata-grid,
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        position: relative;
+        padding: 20px;
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 40%);
+        pointer-events: none;
+      }
+
+      .card-header {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .card-header strong {
+        font-size: 18px;
+      }
+
+      .card-header span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .markdown-body {
+        position: relative;
+        z-index: 1;
+        color: #2a4768;
+        line-height: 1.85;
+        font-size: 14px;
+      }
+
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3 {
+        color: var(--text);
+        margin-top: 0;
+      }
+
+      .markdown-body h1 {
+        font-size: 24px;
+        margin-bottom: 14px;
+      }
+
+      .markdown-body h2 {
+        margin-top: 18px;
+        font-size: 18px;
+      }
+
+      .markdown-body p,
+      .markdown-body ul {
+        margin: 10px 0;
+      }
+
+      .markdown-body ul {
+        padding-left: 20px;
+      }
+
+      .param-list {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 14px;
+      }
+
+      .param-item {
+        padding: 14px 16px;
+        border: 1px solid rgba(0, 113, 227, 0.04);
+        border-radius: 18px;
+        background: rgba(245, 250, 255, 0.86);
+      }
+
+      .param-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 15px;
+      }
+
+      .param-item p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.7;
+        font-size: 13px;
+      }
+
+      .simulate-form {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+        gap: 14px;
+        align-items: end;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field span {
+        font-size: 13px;
+        font-weight: 600;
+        color: #33557a;
+      }
+
+      .field small {
+        color: var(--text-soft);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .field input:focus,
+      .field select:focus {
+        border-color: rgba(13, 132, 255, 0.34);
+        box-shadow: 0 0 0 4px rgba(13, 132, 255, 0.08);
+      }
+
+      .primary-btn {
+        height: 48px;
+        padding: 0 22px;
+        border: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 18px 32px rgba(13, 132, 255, 0.22);
+      }
+
+      .form-footnote {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+        color: var(--text-soft);
+        font-size: 12px;
+        line-height: 1.75;
+      }
+
+      .factor-config {
+        position: relative;
+        z-index: 1;
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px solid rgba(0, 113, 227, 0.04);
+        border-radius: 22px;
+        background: rgba(244, 249, 255, 0.86);
+      }
+
+      .factor-config-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .factor-config-head strong {
+        font-size: 16px;
+      }
+
+      .factor-config-head span {
+        color: var(--text-soft);
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .factor-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .factor-row {
+        display: grid;
+        grid-template-columns: 88px repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        align-items: end;
+        padding: 14px;
+        border: 1px solid rgba(13, 132, 255, 0.08);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.86);
+      }
+
+      .factor-row.hidden {
+        display: none;
+      }
+
+      .factor-row-title {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 12px;
+        border-radius: 14px;
+        background: rgba(13, 132, 255, 0.08);
+        color: var(--accent-deep);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .field.compact span {
+        font-size: 12px;
+      }
+
+      .field.compact input {
+        padding: 11px 12px;
+      }
+
+
+      .metric-card {
+        position: relative;
+        padding: 18px;
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.84);
+        border: 1px solid rgba(124, 159, 200, 0.14);
+        box-shadow: var(--shadow-soft);
+      }
+
+      .metric-card span {
+        display: block;
+        color: var(--text-soft);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .metric-card strong {
+        display: block;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .metric-card p {
+        margin: 10px 0 0;
+        color: #5b7a9d;
+        font-size: 12px;
+      }
+
+      .summary-table-shell {
+        position: relative;
+        z-index: 1;
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(124, 159, 200, 0.16);
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .summary-table {
+        width: 100%;
+        min-width: 980px;
+      }
+
+      .summary-table th,
+      .summary-table td {
+        white-space: nowrap;
+      }
+
+      .summary-table td:nth-child(2) {
+        white-space: normal;
+        min-width: 260px;
+        line-height: 1.7;
+      }
+
+      .summary-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(13, 132, 255, 0.08);
+        color: var(--accent-deep);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+
+      .metric-card.accent {
+        background: linear-gradient(135deg, rgba(0, 113, 227, 0.04), rgba(0, 164, 180, 0.04));
+      }
+
+      .metric-card.success {
+        background: linear-gradient(135deg, rgba(25, 180, 107, 0.12), rgba(126, 231, 186, 0.12));
+      }
+
+      .metric-card.warning {
+        background: linear-gradient(135deg, rgba(255, 182, 72, 0.14), rgba(255, 224, 164, 0.14));
+      }
+
+      .metric-card.neutral {
+        background: linear-gradient(135deg, rgba(99, 131, 166, 0.12), rgba(202, 218, 235, 0.16));
+      }
+
+      .stratum-card strong {
+        display: block;
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .stratum-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .stratum-meta b {
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .mini-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(13, 132, 255, 0.08);
+        color: var(--accent-deep);
+      }
+
+      .chart-card canvas {
+        position: relative;
+        z-index: 1;
+        width: 100% !important;
+        height: 260px !important;
+      }
+
+      .narrative {
+        position: relative;
+        z-index: 1;
+        color: #31506f;
+        line-height: 1.9;
+        font-size: 14px;
+      }
+
+      .narrative strong {
+        color: var(--text);
+      }
+
+      .table-shell {
+        position: relative;
+        z-index: 1;
+        max-height: 460px;
+        overflow: auto;
+        border-radius: 18px;
+        border: 1px solid rgba(124, 159, 200, 0.16);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 12px 14px;
+        background: #edf5ff;
+        color: #385a7d;
+        font-size: 12px;
+        text-align: left;
+      }
+
+      tbody td {
+        padding: 12px 14px;
+        border-top: 1px solid rgba(124, 159, 200, 0.12);
+        font-size: 13px;
+        color: #274765;
+      }
+
+      tbody tr:nth-child(odd) {
+        background: rgba(245, 250, 255, 0.72);
+      }
+
+      .group-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .group-chip.group-a {
+        color: #0a58b1;
+        background: rgba(0, 113, 227, 0.04);
+      }
+
+      .group-chip.group-b {
+        color: #0d8f74;
+        background: rgba(25, 180, 107, 0.14);
+      }
+
+      .decision-form {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        align-items: end;
+      }
+
+      .decision-form .field.wide {
+        grid-column: span 2;
+      }
+
+      .decision-blocks {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .decision-block,
+      .summary-section,
+      .summary-hero {
+        padding: 16px;
+        border: 1px solid rgba(0, 113, 227, 0.04);
+        border-radius: 18px;
+        background: rgba(245, 250, 255, 0.86);
+      }
+
+      .decision-block h4,
+      .summary-section h4 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        color: var(--text);
+      }
+
+      .compact-list,
+      .summary-section ul {
+        margin: 0;
+        padding-left: 18px;
+        color: #31506f;
+        line-height: 1.8;
+        font-size: 13px;
+      }
+
+      .summary-panel {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 14px;
+      }
+
+      .summary-hero {
+        display: grid;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(13, 132, 255, 0.1), rgba(0, 164, 180, 0.04));
+      }
+
+      .summary-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .summary-title strong {
+        font-size: 20px;
+      }
+
+      .summary-hero strong.recommend-stars {
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      .summary-hero p {
+        margin: 0;
+        color: #42617f;
+        line-height: 1.8;
+        font-size: 13px;
+      }
+
+      .recommendation-badge,
+      .score-pill,
+      .recommendation-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .recommendation-badge {
+        color: var(--accent-deep);
+        background: rgba(13, 132, 255, 0.1);
+      }
+
+      .score-pill {
+        min-width: 58px;
+        color: #0d5dbd;
+        background: rgba(0, 113, 227, 0.04);
+      }
+
+      .recommendation-pill.winner {
+        color: #0d8f74;
+        background: rgba(25, 180, 107, 0.14);
+      }
+
+      .recommendation-pill.caution {
+        color: #8b5b08;
+        background: rgba(255, 182, 72, 0.18);
+      }
+
+      .recommendation-pill.blocked {
+        color: #8b3b4b;
+        background: rgba(226, 103, 124, 0.18);
+      }
+
+      .recommended-row {
+        background: rgba(229, 244, 255, 0.92) !important;
+      }
+
+      .questionnaire-form {
+        position: relative;
+        z-index: 1;
+      }
+
+      .questionnaire-shell {
+        display: grid;
+        gap: 18px;
+      }
+
+      .questionnaire-progress,
+      .questionnaire-body,
+      .answer-overview {
+        padding: 18px;
+        border: 1px solid rgba(0, 113, 227, 0.04);
+        border-radius: 22px;
+        background: rgba(245, 250, 255, 0.88);
+      }
+
+      .questionnaire-progress-head,
+      .answer-overview-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .questionnaire-progress-head strong,
+      .answer-overview-head strong {
+        font-size: 15px;
+        color: var(--text);
+      }
+
+      .questionnaire-progress-head span,
+      .answer-overview-head span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .progress-track {
+        margin-top: 14px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(13, 132, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        transition: width 0.28s ease;
+      }
+
+      .questionnaire-body {
+        display: grid;
+        gap: 18px;
+      }
+
+      .questionnaire-step h3 {
+        margin: 12px 0 8px;
+        font-size: 24px;
+        color: var(--text);
+      }
+
+      .questionnaire-step p {
+        margin: 0;
+        color: var(--text-soft);
+        line-height: 1.8;
+        font-size: 13px;
+      }
+
+      .step-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 78px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(13, 132, 255, 0.08);
+        color: var(--accent-deep);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .option-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+      }
+
+      .option-card {
+        display: grid;
+        gap: 8px;
+        min-height: 124px;
+        padding: 18px;
+        border: 1px solid rgba(124, 159, 200, 0.18);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.94);
+        text-align: left;
+        cursor: pointer;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      }
+
+      .option-card:hover,
+      .option-card:focus-visible {
+        transform: translateY(-2px);
+        border-color: rgba(13, 132, 255, 0.28);
+        box-shadow: 0 18px 30px rgba(13, 132, 255, 0.1);
+        outline: none;
+      }
+
+      .option-card.active {
+        border-color: rgba(13, 132, 255, 0.42);
+        background: linear-gradient(135deg, rgba(0, 113, 227, 0.04), rgba(0, 164, 180, 0.04));
+        box-shadow: 0 20px 34px rgba(0, 113, 227, 0.04);
+      }
+
+      .option-card .option-label {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .option-card small {
+        color: #58789a;
+        font-size: 12px;
+        line-height: 1.75;
+      }
+
+      .questionnaire-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .questionnaire-action-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .ghost-btn {
+        height: 48px;
+        padding: 0 22px;
+        border: 1px solid rgba(13, 132, 255, 0.18);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--accent-deep);
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .primary-btn:disabled,
+      .ghost-btn:disabled {
+        opacity: 0.52;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .answer-overview {
+        display: grid;
+        gap: 14px;
+      }
+
+      .answer-chip-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+
+      .answer-chip {
+        display: grid;
+        gap: 6px;
+        min-height: 96px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(124, 159, 200, 0.16);
+        background: rgba(255, 255, 255, 0.85);
+      }
+
+      .answer-chip.pending {
+        background: rgba(247, 250, 253, 0.92);
+        opacity: 0.78;
+      }
+
+      .answer-chip strong {
+        font-size: 12px;
+        color: var(--accent-deep);
+      }
+
+      .answer-chip span {
+        color: var(--text-soft);
+        font-size: 12px;
+      }
+
+      .answer-chip b {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text);
+      }
+
+      @media (max-width: 1480px) {
+
+        .simulate-form,
+        .decision-form {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .strata-grid,
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .simulate-form {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .strata-grid,
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .topbar {
+          flex-wrap: wrap;
+          height: auto;
+          padding: 20px 24px;
+        }
+
+        .top-nav {
+          order: 3;
+          width: 100%;
+          justify-content: flex-start;
+          overflow-x: auto;
+          padding-bottom: 4px;
+        }
+
+        .workspace,
+        .info-grid,
+        .result-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .sidebar::after {
+          display: none;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .stats-grid,
+        .simulate-form,
+        .factor-row,
+        .decision-form {
+          grid-template-columns: 1fr;
+        }
+
+        .decision-form .field.wide {
+          grid-column: span 1;
+        }
+
+        .factor-config-head {
+          flex-direction: column;
+        }
+      }
+
+
+      @media (max-width: 720px) {
+        .shell {
+          padding: 12px;
+        }
+
+        .app {
+          min-height: calc(100vh - 24px);
+          border-radius: 22px;
+        }
+
+        .topbar,
+        .content,
+        .sidebar {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        .content-main {
+          padding: 18px;
+        }
+
+        .content-bar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="app">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div class="brand-copy">
+              <strong>宣海科技医学统计平台</strong>
+              <span>Xuanhai MedStat Console</span>
+            </div>
+          </div>
+
+          <nav class="top-nav" id="topNav">
+            <button class="active" data-menu="random">随机分组</button>
+            <button data-menu="sample">样本量计算</button>
+            <button data-menu="statistics">医学统计</button>
+            <button data-menu="ai">医学统计AI</button>
+            <button data-menu="data">我的数据</button>
+          </nav>
+
+          <div class="status-chip">系统在线</div>
+        </header>
+
+        <section class="workspace">
+          <aside class="sidebar">
+            <div class="sidebar-head">
+              <div class="eyebrow">Randomization</div>
+              <h2>随机分组</h2>
+              <p>当前页面用于比较不同随机化策略的特性、适用场景与实施门槛，并根据临床试验条件给出推荐方案。</p>
+            </div>
+
+            <div class="menu-list">
+              <a class="menu-card" href="./sample.html">
+                <span class="menu-index">01</span>
+                <span class="menu-meta">
+                  <strong>简单随机</strong>
+                  <span>Simple Randomization</span>
+                </span>
+              </a>
+
+              <a class="menu-card" href="./block.html">
+                <span class="menu-index">02</span>
+                <span class="menu-meta">
+                  <strong>区组随机</strong>
+                  <span>Block Randomization</span>
+                </span>
+              </a>
+
+              <a class="menu-card" href="./sblock.html">
+                <span class="menu-index">03</span>
+                <span class="menu-meta">
+                  <strong>分层区组随机</strong>
+                  <span>Stratified Block</span>
+                </span>
+              </a>
+
+              <a class="menu-card" href="./min.html">
+                <span class="menu-index">04</span>
+                <span class="menu-meta">
+                  <strong>最小化随机</strong>
+                  <span>Minimization</span>
+                </span>
+              </a>
+
+              <a class="menu-card active" href="./selectR.html">
+                <span class="menu-index">05</span>
+                <span class="menu-meta">
+                  <strong>随机选择</strong>
+                  <span>Random Selection</span>
+                </span>
+              </a>
+            </div>
+          </aside>
+
+          <main class="content">
+            <div class="content-shell">
+              <div class="content-bar">
+                <div class="content-title">
+                  <strong>随机选择</strong>
+                  <span>先比较简单随机、分层随机、分层区组随机与最小化随机，再基于临床试验条件进行筛查、评分与推荐。</span>
+                </div>
+                <div class="outline-tag">RANDOM SELECTOR</div>
+              </div>
+
+              <div class="content-main">
+                <section class="info-grid">
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>选择流程</strong>
+                      <span>先比较，再决策</span>
+                    </div>
+                    <div class="param-list">
+                      <div class="param-item">
+                        <strong>第一步：特性与场景对比</strong>
+                        <p>先比较简单随机、分层随机、分层区组随机、最小化随机在协变量平衡、人数平衡、实施复杂度和系统依赖上的差异。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>第二步：伦理与目标筛查</strong>
+                        <p>判断本研究更偏向“保留充分随机性”还是“优先追求过程平衡”，并明确是否重点控制协变量与人数偏差。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>第三步：环境硬约束与复杂度评分</strong>
+                        <p>结合 IWRS/EDC 支持、执行团队成熟度、多中心规模与区组可预测性风险，对候选方法做可实施性筛查。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>第四步：样本量与大数定律评估</strong>
+                        <p>样本量越大，简单随机越能依靠大数定律自然收敛；样本量越小、因素越多，越需要分层或最小化类方法辅助。</p>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>输出内容</strong>
+                      <span>面向方案评审</span>
+                    </div>
+                    <div class="param-list">
+                      <div class="param-item">
+                        <strong>方法比较矩阵</strong>
+                        <p>用表格整理各随机化方法的核心机制、均衡能力、实施难度与典型适用场景，便于会议讨论。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>决策结果</strong>
+                        <p>给出推荐指数、硬约束提示、复杂度量化评分以及次优备选方案，帮助快速做技术路线选择。</p>
+                      </div>
+                      <div class="param-item">
+                        <strong>随机化方案摘要</strong>
+                        <p>自动输出参数建议、预期平衡度、操作难度评分与执行提示，可直接作为随机化方案讨论稿。</p>
+                      </div>
+                    </div>
+                  </article>
+                </section>
+
+                <section class="card">
+                  <div class="card-header">
+                    <strong>随机化方法对比</strong>
+                    <span>特性与应用场景表格整理</span>
+                  </div>
+                  <div class="summary-table-shell">
+                    <table class="summary-table">
+                      <thead>
+                        <tr>
+                          <th>方法</th>
+                          <th>核心机制</th>
+                          <th>协变量平衡</th>
+                          <th>人数平衡</th>
+                          <th>操作难度</th>
+                          <th>系统依赖</th>
+                          <th>典型应用场景</th>
+                        </tr>
+                      </thead>
+                      <tbody id="comparisonTableBody"></tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section class="card">
+                  <div class="card-header">
+                    <strong>临床试验随机化问答决策器</strong>
+                    <span>逐题选择 / 每题单选 / 完成后生成结果</span>
+                  </div>
+                  <form class="questionnaire-form" id="decisionForm">
+                    <div class="questionnaire-shell">
+                      <div class="questionnaire-progress">
+                        <div class="questionnaire-progress-head">
+                          <strong id="questionProgressLabel">已完成 0 / 10 题</strong>
+                          <span id="questionStepTag">第 1 题 / 共 10 题</span>
+                        </div>
+                        <div class="progress-track">
+                          <div class="progress-fill" id="questionProgressFill"></div>
+                        </div>
+                      </div>
+
+                      <div class="questionnaire-body">
+                        <div class="questionnaire-step">
+                          <span class="step-tag">问答模式</span>
+                          <h3 id="questionTitle">-</h3>
+                          <p id="questionDescription">-</p>
+                        </div>
+                        <div class="option-grid" id="questionOptions"></div>
+                      </div>
+
+                      <div class="questionnaire-actions">
+                        <button class="ghost-btn" id="prevQuestionBtn" type="button">上一题</button>
+                        <div class="questionnaire-action-right">
+                          <button class="ghost-btn" id="restartQuestionBtn" type="button">重新答题</button>
+                          <button class="primary-btn" id="nextQuestionBtn" type="button">下一题</button>
+                        </div>
+                      </div>
+
+                      <div class="answer-overview">
+                        <div class="answer-overview-head">
+                          <strong>当前回答概览</strong>
+                          <span>每题单选，可随时返回修改</span>
+                        </div>
+                        <div class="answer-chip-list" id="answerOverview"></div>
+                      </div>
+                    </div>
+                  </form>
+
+                  <div class="form-footnote" id="formFootnote">
+                    系统将按照问答顺序依次收集样本量、中心规模、平衡目标与系统约束，最后自动生成随机化方案建议。
+                  </div>
+                </section>
+
+
+                <section class="stats-grid">
+                  <article class="metric-card accent">
+                    <span>推荐方法</span>
+                    <strong id="metricMethod">-</strong>
+                    <p id="metricMethodHint">等待决策</p>
+                  </article>
+                  <article class="metric-card success">
+                    <span>推荐指数</span>
+                    <strong id="metricStars">-</strong>
+                    <p id="metricStarsHint">等待评分</p>
+                  </article>
+                  <article class="metric-card warning">
+                    <span>大数定律评估</span>
+                    <strong id="metricLLN">-</strong>
+                    <p id="metricLLNHint">等待判断</p>
+                  </article>
+                  <article class="metric-card neutral">
+                    <span>硬约束数</span>
+                    <strong id="metricConstraint">0</strong>
+                    <p id="metricConstraintHint">当前未识别</p>
+                  </article>
+                </section>
+
+                <section class="result-grid">
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>决策说明</strong>
+                      <span>筛查 / 约束 / 大数定律 / 结论</span>
+                    </div>
+                    <div class="narrative" id="decisionNarrative"></div>
+                    <div class="decision-blocks">
+                      <div class="decision-block">
+                        <h4>伦理与目标筛查</h4>
+                        <ul class="compact-list" id="screeningList"></ul>
+                      </div>
+                      <div class="decision-block">
+                        <h4>环境硬约束</h4>
+                        <ul class="compact-list" id="constraintList"></ul>
+                      </div>
+                    </div>
+                  </article>
+
+                  <article class="card">
+                    <div class="card-header">
+                      <strong>随机化方案摘要</strong>
+                      <span>可直接用于方案讨论</span>
+                    </div>
+                    <div class="summary-panel" id="planSummary"></div>
+                  </article>
+                </section>
+
+                <section class="card">
+                  <div class="card-header">
+                    <strong>评分明细</strong>
+                    <span>复杂度量化与备选方案排序</span>
+                  </div>
+                  <div class="summary-table-shell">
+                    <table class="summary-table">
+                      <thead>
+                        <tr>
+                          <th>方法</th>
+                          <th>总分</th>
+                          <th>结论</th>
+                          <th>协变量平衡</th>
+                          <th>人数平衡</th>
+                          <th>操作难度</th>
+                          <th>说明</th>
+                        </tr>
+                      </thead>
+                      <tbody id="scoreTableBody"></tbody>
+                    </table>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </main>
+        </section>
+
+      </div>
+    </div>
+
+    <script>
+      const formFootnote = document.getElementById("formFootnote");
+      const comparisonTableBody = document.getElementById("comparisonTableBody");
+      const scoreTableBody = document.getElementById("scoreTableBody");
+      const decisionNarrative = document.getElementById("decisionNarrative");
+      const screeningList = document.getElementById("screeningList");
+      const constraintList = document.getElementById("constraintList");
+      const planSummary = document.getElementById("planSummary");
+      const metricMethod = document.getElementById("metricMethod");
+      const metricMethodHint = document.getElementById("metricMethodHint");
+      const metricStars = document.getElementById("metricStars");
+      const metricStarsHint = document.getElementById("metricStarsHint");
+      const metricLLN = document.getElementById("metricLLN");
+      const metricLLNHint = document.getElementById("metricLLNHint");
+      const metricConstraint = document.getElementById("metricConstraint");
+      const metricConstraintHint = document.getElementById("metricConstraintHint");
+      const questionProgressLabel = document.getElementById("questionProgressLabel");
+      const questionStepTag = document.getElementById("questionStepTag");
+      const questionProgressFill = document.getElementById("questionProgressFill");
+      const questionTitle = document.getElementById("questionTitle");
+      const questionDescription = document.getElementById("questionDescription");
+      const questionOptions = document.getElementById("questionOptions");
+      const answerOverview = document.getElementById("answerOverview");
+      const prevQuestionBtn = document.getElementById("prevQuestionBtn");
+      const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+      const restartQuestionBtn = document.getElementById("restartQuestionBtn");
+
+
+      const methodCatalog = {
+        simple: {
+          title: "简单随机",
+          badge: "SIMPLE RANDOM",
+          mechanism: "完全依赖随机数，不预先控制协变量或区组结构。",
+          covariate: "中到高（依赖样本量自然收敛）",
+          count: "中",
+          difficultyStars: "⭐",
+          difficultyLabel: "极易",
+          systemNeed: "低",
+          scene: "样本量较大、关键协变量较少、强调随机性与执行简洁。",
+        },
+        stratified: {
+          title: "分层随机",
+          badge: "STRATIFIED RANDOM",
+          mechanism: "先按关键因素分层，再在各层内独立做随机分配。",
+          covariate: "中到低",
+          count: "中",
+          difficultyStars: "⭐⭐",
+          difficultyLabel: "较易",
+          systemNeed: "中",
+          scene: "关键协变量有限且明确，希望兼顾随机性与主要分层因素平衡。",
+        },
+        stratifiedBlock: {
+          title: "分层区组随机",
+          badge: "STRATIFIED BLOCK",
+          mechanism: "先分层，再在各层内用区组随机控制分配比例和人数偏差。",
+          covariate: "低",
+          count: "低 / 接近 0",
+          difficultyStars: "⭐⭐⭐",
+          difficultyLabel: "中等，需制表",
+          systemNeed: "中",
+          scene: "中小样本、多中心、既要控协变量又要控人数偏差。",
+        },
+        minimization: {
+          title: "最小化随机",
+          badge: "MINIMIZATION",
+          mechanism: "逐例比较进入各组后的失衡分，以高概率分配到更平衡的一组。",
+          covariate: "低",
+          count: "低（但非严格 0）",
+          difficultyStars: "⭐⭐⭐⭐⭐",
+          difficultyLabel: "难，必须依赖系统",
+          systemNeed: "高",
+          scene: "样本量有限、关键因素较多、要求全过程持续控制协变量失衡。",
+        },
+      };
+
+      const questionFlow = [
+        {
+          id: "sampleSizeBucket",
+          order: "第 1 题",
+          summaryLabel: "样本量",
+          title: "计划样本量大概是多少？",
+          description: "样本量越大，简单随机越可能依赖大数定律自然平衡；样本量越小，越需要主动控制过程偏差。",
+          options: [
+            { value: "small", label: "120 例以下", description: "偏小样本，建议优先考虑受控随机方式。" },
+            { value: "medium", label: "120-299 例", description: "中等样本，需要在随机性和平衡性之间折中。" },
+            { value: "large", label: "300 例及以上", description: "较大样本，可更多利用大数定律自然收敛。" },
+          ],
+        },
+        {
+          id: "centerScale",
+          order: "第 2 题",
+          summaryLabel: "中心规模",
+          title: "研究中心规模属于哪一种？",
+          description: "中心越多，越需要关注中心间的协变量差异与入组节奏偏差。",
+          options: [
+            { value: "single", label: "单中心", description: "执行链条更短，简单方案更容易稳定落地。" },
+            { value: "limited", label: "2-5 个中心", description: "需要兼顾中心差异，但复杂度仍可控。" },
+            { value: "multi", label: "6 个及以上中心", description: "多中心通常需要把中心作为重点控制因素。" },
+          ],
+        },
+        {
+          id: "factorScope",
+          order: "第 3 题",
+          summaryLabel: "关键因素",
+          title: "真正需要重点控制的关键因素大概有多少？",
+          description: "关键因素越多，纯分层越容易层数膨胀，最小化随机的优势会更明显。",
+          options: [
+            { value: "limited", label: "1-2 个核心因素", description: "例如性别、年龄分层等少量关键基线因素。" },
+            { value: "standard", label: "3-4 个核心因素", description: "适合常见的分层或分层区组决策场景。" },
+            { value: "complex", label: "5 个及以上因素", description: "多因素同时平衡时，动态方法通常更有优势。" },
+          ],
+        },
+        {
+          id: "allocationRatio",
+          order: "第 4 题",
+          summaryLabel: "分配比例",
+          title: "试验分配比例更接近哪一种？",
+          description: "非 1:1 分配时，需要更关注阶段性人数偏差与比例控制。",
+          options: [
+            { value: "1:1", label: "1 : 1", description: "最常见、过程控制压力相对最低。" },
+            { value: "2:1", label: "2 : 1", description: "常见于探索性或伦理倾向性设计。" },
+            { value: "3:1", label: "3 : 1", description: "不等比分配更需要严控阶段性偏差。" },
+            { value: "3:2", label: "3 : 2", description: "中等不等比分配，仍需关注人数平衡。" },
+          ],
+        },
+        {
+          id: "covariatePriority",
+          order: "第 5 题",
+          summaryLabel: "协变量目标",
+          title: "你对协变量平衡的要求有多高？",
+          description: "协变量平衡目标越高，越需要分层、分层区组或最小化类方法。",
+          options: [
+            { value: "low", label: "一般", description: "只要总体随机即可，不追求强控制。" },
+            { value: "medium", label: "较高", description: "希望关键协变量尽量保持平衡。" },
+            { value: "high", label: "很高", description: "协变量平衡是核心目标，需要强过程控制。" },
+          ],
+        },
+        {
+          id: "countPriority",
+          order: "第 6 题",
+          summaryLabel: "人数目标",
+          title: "你对各组人数过程平衡的要求有多高？",
+          description: "人数平衡目标越高，越偏向区组或分层区组等能够限制阶段性偏差的方法。",
+          options: [
+            { value: "low", label: "一般", description: "接受一定阶段性波动。" },
+            { value: "medium", label: "较高", description: "希望尽量减少过程中的人数偏差。" },
+            { value: "high", label: "很高", description: "需要严格控制分配比例和人数偏差。" },
+          ],
+        },
+        {
+          id: "ethicsPriority",
+          order: "第 7 题",
+          summaryLabel: "伦理侧重",
+          title: "本研究的伦理与目标侧重更接近哪一种？",
+          description: "这是在“保留随机性”与“主动追求平衡”之间做取舍的关键问题。",
+          options: [
+            { value: "randomness", label: "随机性优先", description: "更重视随机感与不可预测性。" },
+            { value: "hybrid", label: "随机性与平衡并重", description: "既要保留随机成分，也要兼顾过程平衡。" },
+            { value: "balanced", label: "平衡性优先", description: "更强调持续控制失衡与偏差。" },
+          ],
+        },
+        {
+          id: "systemSupport",
+          order: "第 8 题",
+          summaryLabel: "系统支持",
+          title: "当前系统支持条件最接近哪一种？",
+          description: "最小化随机通常依赖实时系统、审计日志和权限控制；系统条件是典型硬约束。",
+          options: [
+            { value: "none", label: "无集中系统", description: "主要依赖纸质或离线工具，不适合复杂动态随机。" },
+            { value: "local", label: "有基础电子系统", description: "可支持常规操作，但审计和实时性有限。" },
+            { value: "iwrs", label: "具备 IWRS/EDC 实时支持", description: "能够承接更复杂的动态随机与留痕。" },
+          ],
+        },
+        {
+          id: "opsLevel",
+          order: "第 9 题",
+          summaryLabel: "团队成熟度",
+          title: "执行团队成熟度更接近哪一种？",
+          description: "团队成熟度决定能否稳定执行分层表、变区组管理及最小化随机的核查流程。",
+          options: [
+            { value: "basic", label: "基础", description: "更适合流程简单、维护成本低的方案。" },
+            { value: "medium", label: "中等", description: "可以承担常规分层或分层区组执行。" },
+            { value: "advanced", label: "成熟", description: "具备执行复杂随机化和审计闭环的能力。" },
+          ],
+        },
+        {
+          id: "predictabilityRisk",
+          order: "第 10 题",
+          summaryLabel: "可预测性风险",
+          title: "你对区组可预测性的顾虑有多强？",
+          description: "如果研究者可能预判后续分组，就需要降低区组固定模式带来的暴露风险。",
+          options: [
+            { value: "low", label: "顾虑较低", description: "区组类方法可以正常比较。" },
+            { value: "high", label: "顾虑较高", description: "需要更重视变区组、盲法或更低可预测性的方法。" },
+          ],
+        },
+      ];
+
+      const questionnaireState = {
+        currentIndex: 0,
+        answers: {},
+        generated: false,
+      };
+
+      function escapeHtml(value) {
+
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function clampNumber(value, min, max, fallback) {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) return fallback;
+        return Math.min(max, Math.max(min, numeric));
+      }
+
+      function pushUnique(list, text) {
+        if (text && !list.includes(text)) list.push(text);
+      }
+
+      function addScore(scores, notes, key, delta, reason) {
+        scores[key] += delta;
+        if (reason) pushUnique(notes[key], reason);
+      }
+
+      function normalizeFactors(text, factorCount) {
+        const defaults = ["中心", "性别", "年龄分层", "基线风险", "病情严重度", "BMI", "治疗线数", "地区"];
+        const cleaned = String(text || "")
+          .split(/[，,、;；/]+/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+
+        defaults.forEach((item) => {
+          if (cleaned.length < factorCount && !cleaned.includes(item)) cleaned.push(item);
+        });
+
+        return cleaned.slice(0, factorCount);
+      }
+
+      function assessLLN(data) {
+        if (data.sampleSize >= 300 && data.factorCount <= 2 && data.covariatePriority === "low") {
+          return {
+            label: "可较多依赖",
+            detail: "样本量较大且协变量控制诉求不高，简单随机可更多依赖大数定律自然收敛。",
+          };
+        }
+
+        if (data.sampleSize >= 150) {
+          return {
+            label: "部分可依赖",
+            detail: "样本量中等，大数定律能改善总体偏差，但未必足以覆盖关键协变量与多中心差异。",
+          };
+        }
+
+        return {
+          label: "依赖不足",
+          detail: "样本量偏小，单靠大数定律难以保证过程平衡，更适合受控随机方法。",
+        };
+      }
+
+      function getBlockSizeSuggestion(ratio) {
+        const ratioMap = {
+          "1:1": [4, 6],
+          "2:1": [6, 9],
+          "3:1": [8, 12],
+          "3:2": [10, 15],
+        };
+        const candidates = ratioMap[ratio] || [4, 6];
+        return `${candidates[0]} 或 ${candidates[1]}`;
+      }
+
+      function computeStars(winner, runnerUp, constraintCount) {
+        let stars = winner.score >= 88 ? 5 : winner.score >= 76 ? 4 : winner.score >= 64 ? 3 : 2;
+        if (runnerUp && winner.score - runnerUp.score < 5 && stars > 3) stars -= 1;
+        if (constraintCount >= 3 && stars > 3) stars -= 1;
+        return Math.max(2, Math.min(5, stars));
+      }
+
+      function getBalanceProfile(methodKey, data) {
+        if (methodKey === "simple") {
+          return {
+            covariateRisk: data.sampleSize >= 300 ? "中" : "高",
+            covariateReason: "主要依赖随机性与大数定律，样本量不足时关键协变量波动会更明显。",
+            countDeviation: data.sampleSize >= 300 ? "中" : "中到高",
+            countReason: "不额外约束人数偏差，过程偏差只能靠样本量逐步收敛。",
+          };
+        }
+
+        if (methodKey === "stratified") {
+          return {
+            covariateRisk: data.factorCount <= 3 ? "低到中" : "中",
+            covariateReason: "能控制有限的关键分层因素，但层数过多时执行收益会下降。",
+            countDeviation: "中",
+            countReason: "重点在分层平衡，并不天然保证全过程人数偏差接近 0。",
+          };
+        }
+
+        if (methodKey === "stratifiedBlock") {
+          return {
+            covariateRisk: "低",
+            covariateReason: "分层控制协变量，区组进一步限制分层内比例波动。",
+            countDeviation: "0 或极低",
+            countReason: "因为使用区组，且建议随机变换区组大小，人数偏差通常最可控。",
+          };
+        }
+
+        return {
+          covariateRisk: "低",
+          covariateReason: "逐例比较失衡分，对多因素协变量平衡最敏感。",
+          countDeviation: data.countPriority === "high" ? "低" : "低到中",
+          countReason: "能改善总体比例，但不像区组那样对人数偏差给出严格上界。",
+        };
+      }
+
+      function buildRecommendations(methodKey, data) {
+        const factors = data.factorList.join("、");
+        if (methodKey === "simple") {
+          return [
+            "建议保持中心随机隐藏与留痕，不要因可见偏差而人工干预随机结果。",
+            `若采用 ${data.allocationRatio} 分配且样本量继续扩大，可保留简单随机作为基线方案。`,
+            "建议保留随机种子、分配日志和盲法核查记录。",
+          ];
+        }
+
+        if (methodKey === "stratified") {
+          return [
+            `建议分层因素列表：${factors}。`,
+            "建议把分层因素控制在 2-4 个核心变量内，避免层数膨胀后出现稀疏分层。",
+            "层内仍需严格维持随机隐藏，避免研究者根据层别预判分组。",
+          ];
+        }
+
+        if (methodKey === "stratifiedBlock") {
+          return [
+            `建议区组大小 m = ${getBlockSizeSuggestion(data.allocationRatio)}（不要固定，建议随机变换）。`,
+            `建议分层因素列表：${factors}。`,
+            "若担心可预测性，请使用变区组并对区组长度保密。",
+          ];
+        }
+
+        return [
+          "建议随机成分 P = 0.8。",
+          `建议纳入最小化因素：${factors}。`,
+          "必须保留系统日志、时间戳与回溯记录，避免手工逐例判断。",
+        ];
+      }
+
+      function renderWaitingState() {
+        metricMethod.textContent = "-";
+        metricMethodHint.textContent = "完成问答后自动生成推荐";
+        metricStars.textContent = "-";
+        metricStarsHint.textContent = "等待评分";
+        metricLLN.textContent = "-";
+        metricLLNHint.textContent = "等待样本量判断";
+        metricConstraint.textContent = "0";
+        metricConstraintHint.textContent = "等待识别";
+        decisionNarrative.innerHTML = "请按上方问答顺序逐题选择，系统会在最后一题完成后生成随机化推荐结果。";
+        screeningList.innerHTML = "<li>完成问答后，这里会自动汇总伦理与目标筛查信息。</li>";
+        constraintList.innerHTML = "<li>完成问答后，这里会自动识别系统支持、执行复杂度与可预测性约束。</li>";
+        planSummary.innerHTML = `
+          <div class="summary-hero">
+            <div class="summary-title">
+              <strong>等待生成结果</strong>
+              <span class="recommendation-badge">QUESTIONNAIRE</span>
+            </div>
+            <span>推荐指数</span>
+            <strong class="recommend-stars">-</strong>
+            <p>请先完成全部问答，系统再输出核心参数建议、预期平衡度与操作难度评分。</p>
+          </div>
+        `;
+        scoreTableBody.innerHTML = '<tr><td colspan="7">完成全部问题后显示评分明细。</td></tr>';
+      }
+
+      function getOptionConfig(questionId, value) {
+        const question = questionFlow.find((item) => item.id === questionId);
+        return question ? question.options.find((option) => option.value === value) || null : null;
+      }
+
+      function getOptionLabel(questionId, value) {
+        const option = getOptionConfig(questionId, value);
+        return option ? option.label : "未选择";
+      }
+
+      function buildFactorPreset(scope, centerCount) {
+        if (scope === "limited") {
+          return centerCount >= 2 ? ["中心", "性别"] : ["性别", "年龄分层"];
+        }
+
+        if (scope === "complex") {
+          return centerCount >= 2 ? ["中心", "性别", "年龄分层", "基线风险", "病情严重度"] : ["性别", "年龄分层", "基线风险", "病情严重度", "BMI"];
+        }
+
+        return centerCount >= 2 ? ["中心", "性别", "年龄分层"] : ["性别", "年龄分层", "基线风险"];
+      }
+
+      function buildScenarioFromAnswers(answers) {
+        const sampleSizeMap = {
+          small: 80,
+          medium: 180,
+          large: 360,
+        };
+        const centerCountMap = {
+          single: 1,
+          limited: 3,
+          multi: 8,
+        };
+        const factorCountMap = {
+          limited: 2,
+          standard: 3,
+          complex: 5,
+        };
+
+        const sampleSizeBucket = answers.sampleSizeBucket || "medium";
+        const centerScale = answers.centerScale || "limited";
+        const factorScope = answers.factorScope || "standard";
+        const allocationRatio = answers.allocationRatio || "1:1";
+        const covariatePriority = answers.covariatePriority || "medium";
+        const countPriority = answers.countPriority || "medium";
+        const ethicsPriority = answers.ethicsPriority || "hybrid";
+        const systemSupport = answers.systemSupport || "local";
+        const opsLevel = answers.opsLevel || "medium";
+        const predictabilityRisk = answers.predictabilityRisk || "high";
+        const centerCount = centerCountMap[centerScale] || 3;
+        const factorCount = factorCountMap[factorScope] || 3;
+        const factorList = buildFactorPreset(factorScope, centerCount).slice(0, factorCount);
+
+        return {
+          sampleSize: sampleSizeMap[sampleSizeBucket] || 180,
+          centerCount,
+          factorCount,
+          factorList,
+          allocationRatio,
+          covariatePriority,
+          covariatePriorityLabel: getOptionLabel("covariatePriority", covariatePriority),
+          countPriority,
+          countPriorityLabel: getOptionLabel("countPriority", countPriority),
+          ethicsPriority,
+          ethicsPriorityLabel: getOptionLabel("ethicsPriority", ethicsPriority),
+          systemSupport,
+          opsLevel,
+          predictabilityRisk,
+        };
+      }
+
+      function renderAnswerOverview() {
+        answerOverview.innerHTML = questionFlow
+          .map((question, index) => {
+            const answerValue = questionnaireState.answers[question.id];
+            const answerLabel = answerValue ? getOptionLabel(question.id, answerValue) : "待回答";
+            return `
+              <div class="answer-chip ${answerValue ? "is-answered" : "pending"}">
+                <strong>Q${index + 1}</strong>
+                <span>${escapeHtml(question.summaryLabel)}</span>
+                <b>${escapeHtml(answerLabel)}</b>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderQuestionnaire() {
+        const currentQuestion = questionFlow[questionnaireState.currentIndex];
+        const answeredCount = questionFlow.filter((item) => questionnaireState.answers[item.id]).length;
+        const progressRatio = answeredCount / questionFlow.length;
+        const selectedValue = questionnaireState.answers[currentQuestion.id];
+
+        questionProgressLabel.textContent = `已完成 ${answeredCount} / ${questionFlow.length} 题`;
+        questionStepTag.textContent = `${currentQuestion.order} / 共 ${questionFlow.length} 题`;
+        questionProgressFill.style.width = `${answeredCount === 0 ? 0 : progressRatio * 100}%`;
+
+        questionTitle.textContent = currentQuestion.title;
+        questionDescription.textContent = currentQuestion.description;
+        questionOptions.innerHTML = currentQuestion.options
+          .map((option) => {
+            const active = option.value === selectedValue;
+            return `
+              <button class="option-card${active ? " active" : ""}" type="button" data-question-id="${currentQuestion.id}" data-option-value="${option.value}" aria-pressed="${active ? "true" : "false"}">
+                <span class="option-label">${escapeHtml(option.label)}</span>
+                <small>${escapeHtml(option.description)}</small>
+              </button>
+            `;
+          })
+          .join("");
+
+        prevQuestionBtn.disabled = questionnaireState.currentIndex === 0;
+        nextQuestionBtn.disabled = !selectedValue;
+        nextQuestionBtn.textContent = questionnaireState.currentIndex === questionFlow.length - 1 ? "生成结果" : "下一题";
+        formFootnote.textContent = questionnaireState.generated
+          ? "如需调整推荐，可返回上一题修改答案，并在最后一题重新生成结果。"
+          : `当前正在回答${currentQuestion.order}。系统将在完成全部 ${questionFlow.length} 题后，自动生成随机化方案建议。`;
+
+        renderAnswerOverview();
+      }
+
+      function evaluateScenario(data) {
+
+        const scores = {
+          simple: 60,
+          stratified: 58,
+          stratifiedBlock: 62,
+          minimization: 60,
+        };
+        const notes = {
+          simple: [],
+          stratified: [],
+          stratifiedBlock: [],
+          minimization: [],
+        };
+        const available = {
+          simple: true,
+          stratified: true,
+          stratifiedBlock: true,
+          minimization: true,
+        };
+        const screening = [];
+        const constraints = [];
+        const lln = assessLLN(data);
+
+        pushUnique(screening, `当前样本量为 ${data.sampleSize} 例，${lln.detail}`);
+        pushUnique(screening, `关键因素数为 ${data.factorCount} 个，分层因素包括：${data.factorList.join("、")}。`);
+        pushUnique(screening, `研究目标对协变量平衡要求为“${data.covariatePriorityLabel}”，对人数平衡要求为“${data.countPriorityLabel}”。`);
+        pushUnique(screening, `伦理与目标侧重为“${data.ethicsPriorityLabel}”，当前分配比例为 ${data.allocationRatio}。`);
+
+        if (data.sampleSize >= 300) {
+          addScore(scores, notes, "simple", 14, "样本量较大，可更多依赖大数定律。");
+          addScore(scores, notes, "stratified", 2, "样本量充足，分层收益相对温和。");
+          addScore(scores, notes, "stratifiedBlock", 4, "大样本下仍可稳定控制过程偏差。");
+          addScore(scores, notes, "minimization", -2, "样本量较大时，最小化的边际收益下降。");
+        } else if (data.sampleSize >= 120) {
+          addScore(scores, notes, "simple", 2, "中等样本量，简单随机仍可作为备选。");
+          addScore(scores, notes, "stratified", 8, "中等样本量更适合分层控制关键因素。");
+          addScore(scores, notes, "stratifiedBlock", 10, "中等样本量下区组有助于维持过程平衡。");
+          addScore(scores, notes, "minimization", 8, "中等样本量下最小化仍有明显价值。");
+        } else {
+          addScore(scores, notes, "simple", -12, "样本量偏小，完全随机波动更明显。");
+          addScore(scores, notes, "stratified", 10, "小样本更需要主动控制关键分层因素。");
+          addScore(scores, notes, "stratifiedBlock", 14, "小样本下区组可明显压低人数偏差。");
+          addScore(scores, notes, "minimization", 18, "小样本且重视平衡时，最小化优势最明显。");
+        }
+
+        if (data.factorCount >= 5) {
+          addScore(scores, notes, "simple", -14, "关键因素过多时，简单随机难以稳住协变量。");
+          addScore(scores, notes, "stratified", 6, "分层随机可以覆盖部分关键因素，但层数膨胀风险上升。");
+          addScore(scores, notes, "stratifiedBlock", 4, "分层区组仍可用，但层数增加会提升执行复杂度。");
+          addScore(scores, notes, "minimization", 18, "关键因素较多时，最小化对多因素平衡更有优势。");
+          if (data.sampleSize < 120) {
+            addScore(scores, notes, "stratified", -8, "样本量偏小且因素较多，纯分层容易出现稀疏层。");
+            pushUnique(constraints, "关键因素较多且样本量偏小，纯分层法存在层数膨胀风险。");
+          }
+        } else if (data.factorCount >= 3) {
+          addScore(scores, notes, "simple", -8, "关键因素不止 1-2 个，简单随机控制力不足。");
+          addScore(scores, notes, "stratified", 10, "关键因素数量适中，分层随机有现实价值。");
+          addScore(scores, notes, "stratifiedBlock", 10, "分层区组能同时兼顾因素与人数控制。");
+          addScore(scores, notes, "minimization", 12, "多因素场景下最小化更能持续压低失衡。");
+        } else {
+          addScore(scores, notes, "simple", 4, "关键因素较少，简单随机更容易实施。");
+          addScore(scores, notes, "stratified", 2, "可以分层，但复杂度收益比需评估。");
+          addScore(scores, notes, "stratifiedBlock", 4, "少量关键因素时仍可通过区组增强平衡。");
+        }
+
+        if (data.centerCount >= 6) {
+          addScore(scores, notes, "simple", -4, "多中心下简单随机更容易出现中心间不均衡。");
+          addScore(scores, notes, "stratified", 10, "多中心研究常把中心作为首要分层因素。");
+          addScore(scores, notes, "stratifiedBlock", 10, "多中心 + 区组有利于控制中心内外偏差。");
+          addScore(scores, notes, "minimization", 6, "最小化可把中心纳入动态平衡因子。");
+        } else if (data.centerCount >= 2) {
+          addScore(scores, notes, "simple", -2, "多中心下仍需关注中心差异。");
+          addScore(scores, notes, "stratified", 6, "可把中心纳入有限分层因子。");
+          addScore(scores, notes, "stratifiedBlock", 8, "分层区组能进一步控制中心层面的波动。");
+          addScore(scores, notes, "minimization", 4, "最小化法可动态兼顾中心效应。");
+        } else {
+          addScore(scores, notes, "simple", 4, "单中心执行环境下简单随机更易落地。");
+        }
+
+        if (data.covariatePriority === "medium") {
+          addScore(scores, notes, "simple", -4, "当前研究对协变量平衡有较高要求。");
+          addScore(scores, notes, "stratified", 6, "分层随机能改善主要协变量平衡。");
+          addScore(scores, notes, "stratifiedBlock", 8, "分层区组能兼顾协变量与过程比例。");
+          addScore(scores, notes, "minimization", 10, "最小化对协变量平衡最敏感。");
+        }
+
+        if (data.covariatePriority === "high") {
+          addScore(scores, notes, "simple", -12, "高协变量平衡诉求下，不宜单靠简单随机。");
+          addScore(scores, notes, "stratified", 12, "高平衡诉求明显推高分层法适配度。");
+          addScore(scores, notes, "stratifiedBlock", 14, "高平衡诉求下分层区组很有竞争力。");
+          addScore(scores, notes, "minimization", 18, "当协变量平衡是核心目标时，最小化通常最强。");
+        }
+
+        if (data.countPriority === "medium") {
+          addScore(scores, notes, "simple", -2, "当前研究对人数过程平衡有一定要求。");
+          addScore(scores, notes, "stratified", 2, "分层随机可改善，但不专门锁定人数偏差。");
+          addScore(scores, notes, "stratifiedBlock", 10, "区组是控制人数偏差最直接的方法。");
+          addScore(scores, notes, "minimization", 4, "最小化能改善比例，但不等同于区组约束。");
+        }
+
+        if (data.countPriority === "high") {
+          addScore(scores, notes, "simple", -8, "人数平衡要求高时，不建议只用简单随机。");
+          addScore(scores, notes, "stratified", 4, "纯分层仍不如区组类方法控制人数偏差。");
+          addScore(scores, notes, "stratifiedBlock", 16, "高人数平衡诉求显著偏向分层区组。");
+          addScore(scores, notes, "minimization", 8, "最小化可改善比例，但人数严格平衡仍弱于区组。");
+        }
+
+        if (data.allocationRatio !== "1:1") {
+          addScore(scores, notes, "simple", -4, "非 1:1 分配时，完全随机更易出现阶段性偏差。");
+          addScore(scores, notes, "stratified", -2, "非等比分配下，纯分层对人数过程控制有限。");
+          addScore(scores, notes, "stratifiedBlock", 6, "区组对非等比分配的过程控制更稳。");
+          addScore(scores, notes, "minimization", 6, "最小化可把目标比例纳入候选失衡分。");
+        }
+
+        if (data.ethicsPriority === "randomness") {
+          addScore(scores, notes, "simple", 12, "伦理侧重保留随机性，简单随机最自然。");
+          addScore(scores, notes, "stratified", 6, "分层随机比区组和最小化更能保留随机感。");
+          addScore(scores, notes, "stratifiedBlock", -4, "若过于强调随机性，区组的过程控制会被打折。");
+          addScore(scores, notes, "minimization", -10, "最小化过程控制更强，伦理上需额外解释随机成分。");
+        } else if (data.ethicsPriority === "hybrid") {
+          addScore(scores, notes, "stratified", 4, "当前目标是随机性与平衡并重。");
+          addScore(scores, notes, "stratifiedBlock", 6, "分层区组兼顾随机性和过程控制。");
+          addScore(scores, notes, "minimization", 4, "最小化可通过随机成分保留一定随机性。");
+        } else {
+          addScore(scores, notes, "simple", -10, "目标明确偏向平衡性，简单随机适配度下降。");
+          addScore(scores, notes, "stratified", 8, "平衡优先会明显抬高分层类方法得分。");
+          addScore(scores, notes, "stratifiedBlock", 12, "平衡优先常推高分层区组作为主力方案。");
+          addScore(scores, notes, "minimization", 16, "若平衡性优先，最小化通常最有竞争力。");
+        }
+
+        if (data.systemSupport === "none") {
+          available.minimization = false;
+          pushUnique(notes.minimization, "未配置实时系统，最小化法不作为首选。");
+          pushUnique(constraints, "未配置 IWRS/EDC 实时支持，最小化随机不作为首选。");
+        } else if (data.systemSupport === "local") {
+          addScore(scores, notes, "minimization", -6, "只有基础电子系统时，最小化仍需额外审计与回溯设计。");
+          pushUnique(constraints, "当前只有基础电子系统，若采用最小化法需补充审计日志和权限控制。");
+        } else {
+          addScore(scores, notes, "minimization", 10, "具备 IWRS/EDC 实时支持，最小化可稳定落地。");
+        }
+
+        if (data.opsLevel === "basic") {
+          addScore(scores, notes, "simple", 8, "执行团队基础时，简单随机最易稳定执行。");
+          addScore(scores, notes, "stratified", 2, "基础团队勉强可执行有限分层。");
+          addScore(scores, notes, "stratifiedBlock", -6, "基础团队执行分层区组的表单与核查压力更大。");
+          addScore(scores, notes, "minimization", -18, "基础团队不适合直接承担最小化随机的系统化执行。");
+          pushUnique(constraints, "执行团队成熟度偏基础，复杂随机化应先补齐 SOP 与稽核流程。");
+        } else if (data.opsLevel === "medium") {
+          addScore(scores, notes, "stratified", 4, "中等成熟度团队能承担常规分层执行。");
+          addScore(scores, notes, "stratifiedBlock", 4, "中等成熟度团队可以承担分层区组的制表与核查。");
+        } else {
+          addScore(scores, notes, "stratified", 4, "成熟团队可稳定执行分层方案。");
+          addScore(scores, notes, "stratifiedBlock", 8, "成熟团队可以更好地管理变区组与分层表。");
+          addScore(scores, notes, "minimization", 12, "成熟团队 + 系统支持是最小化法的理想执行环境。");
+        }
+
+        if (data.predictabilityRisk === "high") {
+          addScore(scores, notes, "simple", 4, "若担心可预测性，简单随机天然更不易被预判。");
+          addScore(scores, notes, "stratified", 2, "纯分层随机的可预测性风险通常低于区组类方法。");
+          addScore(scores, notes, "stratifiedBlock", -8, "高可预测性敏感会削弱区组类方法优势。");
+          addScore(scores, notes, "minimization", 4, "最小化可通过随机成分降低可预测性。");
+          pushUnique(constraints, "存在区组可预测性顾虑，如采用区组需使用随机变区组并加强盲法。");
+        }
+
+        const rankedMethods = Object.keys(methodCatalog)
+          .map((key) => ({
+            key,
+            ...methodCatalog[key],
+            available: available[key],
+            score: available[key] ? scores[key] : -999,
+            noteText: notes[key].slice(0, 4).join("；") || "无额外说明。",
+          }))
+          .sort((a, b) => b.score - a.score);
+
+        const winner = rankedMethods.find((item) => item.available);
+        const runnerUp = rankedMethods.filter((item) => item.available)[1] || null;
+        const stars = computeStars(winner, runnerUp, constraints.length);
+
+        return {
+          data,
+          lln,
+          screening,
+          constraints,
+          rankedMethods,
+          winner,
+          runnerUp,
+          stars,
+        };
+      }
+
+      function renderComparisonTable() {
+        comparisonTableBody.innerHTML = Object.values(methodCatalog)
+          .map(
+            (item) => `
+              <tr>
+                <td><strong>${item.title}</strong><br /><span>${item.badge}</span></td>
+                <td>${item.mechanism}</td>
+                <td>${item.covariate}</td>
+                <td>${item.count}</td>
+                <td>${item.difficultyStars}（${item.difficultyLabel}）</td>
+                <td>${item.systemNeed}</td>
+                <td>${item.scene}</td>
+              </tr>
+            `
+          )
+          .join("");
+      }
+
+      function renderMetrics(result) {
+        metricMethod.textContent = result.winner.title;
+        metricMethodHint.textContent = result.runnerUp ? `次优方案：${result.runnerUp.title}` : "暂无次优方案";
+        metricStars.textContent = "⭐".repeat(result.stars);
+        metricStarsHint.textContent = `${result.stars}星推荐 · 综合得分 ${result.winner.score}`;
+        metricLLN.textContent = result.lln.label;
+        metricLLNHint.textContent = result.lln.detail;
+        metricConstraint.textContent = result.constraints.length;
+        metricConstraintHint.textContent = result.constraints[0] || "当前未识别阻断性硬约束";
+      }
+
+      function renderScoreTable(result) {
+        scoreTableBody.innerHTML = result.rankedMethods
+          .map((item, index) => {
+            const recommendationClass = !item.available ? "blocked" : index === 0 ? "winner" : "caution";
+            const recommendationText = !item.available ? "受硬约束限制" : index === 0 ? "推荐" : "备选";
+            return `
+              <tr class="${index === 0 ? "recommended-row" : ""}">
+                <td><strong>${item.title}</strong><br /><span>${item.badge}</span></td>
+                <td><span class="score-pill">${item.available ? item.score : "--"}</span></td>
+                <td><span class="recommendation-pill ${recommendationClass}">${recommendationText}</span></td>
+                <td>${item.covariate}</td>
+                <td>${item.count}</td>
+                <td>${item.difficultyStars}（${item.difficultyLabel}）</td>
+                <td>${escapeHtml(item.noteText)}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderDecision(result) {
+        const balanceProfile = getBalanceProfile(result.winner.key, result.data);
+        const runnerUpText = result.runnerUp ? `次优方案为 ${result.runnerUp.title}（${result.runnerUp.score} 分）` : "当前无明确次优方案";
+
+        decisionNarrative.innerHTML = `
+          当前场景为 <strong>${result.data.sampleSize}</strong> 例、<strong>${result.data.centerCount}</strong> 中心、<strong>${result.data.factorCount}</strong> 个关键因素，分配比例为 <strong>${result.data.allocationRatio}</strong>。<br /><br />
+          综合伦理与目标筛查、环境硬约束、复杂度量化评分以及样本量 / 大数定律评估后，系统建议优先采用 <strong>${result.winner.title}</strong>。其综合得分为 <strong>${result.winner.score}</strong> 分，${runnerUpText}。<br /><br />
+          在当前条件下，预期协变量不平衡风险为 <strong>${balanceProfile.covariateRisk}</strong>，预计人数偏差为 <strong>${balanceProfile.countDeviation}</strong>。主要原因是：${balanceProfile.covariateReason}${balanceProfile.countReason}
+        `;
+
+        screeningList.innerHTML = result.screening.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+        constraintList.innerHTML = (result.constraints.length ? result.constraints : ["当前无明显硬约束，可按综合得分择优。"])
+          .map((item) => `<li>${escapeHtml(item)}</li>`)
+          .join("");
+      }
+
+      function renderSummary(result) {
+        const balanceProfile = getBalanceProfile(result.winner.key, result.data);
+        const parameterItems = buildRecommendations(result.winner.key, result.data);
+        const difficultyItems = Object.values(methodCatalog)
+          .map((item) => `<li>${item.title}：<strong>${item.difficultyStars}</strong>（${item.difficultyLabel}）</li>`)
+          .join("");
+
+        planSummary.innerHTML = `
+          <div class="summary-hero">
+            <div class="summary-title">
+              <strong>${result.winner.title}</strong>
+              <span class="recommendation-badge">${result.winner.badge}</span>
+            </div>
+            <span>推荐指数</span>
+            <strong class="recommend-stars">${"⭐".repeat(result.stars)} (${result.stars}星推荐)</strong>
+            <p>该建议综合考虑了伦理与目标侧重、系统支持、执行复杂度、多中心结构以及大数定律对自然平衡的帮助程度。</p>
+          </div>
+
+          <div class="summary-section">
+            <h4>核心参数建议</h4>
+            <ul>${parameterItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+          </div>
+
+          <div class="summary-section">
+            <h4>预期平衡度</h4>
+            <ul>
+              <li>预计协变量不平衡风险：<strong>${balanceProfile.covariateRisk}</strong>（${escapeHtml(balanceProfile.covariateReason)}）</li>
+              <li>预计人数偏差：<strong>${balanceProfile.countDeviation}</strong>（${escapeHtml(balanceProfile.countReason)}）</li>
+            </ul>
+          </div>
+
+          <div class="summary-section">
+            <h4>操作难度评分</h4>
+            <ul>${difficultyItems}</ul>
+          </div>
+        `;
+      }
+
+      function runDecision() {
+        const missingIndex = questionFlow.findIndex((item) => !questionnaireState.answers[item.id]);
+        if (missingIndex !== -1) {
+          questionnaireState.currentIndex = missingIndex;
+          questionnaireState.generated = false;
+          renderQuestionnaire();
+          return;
+        }
+
+        const scenario = buildScenarioFromAnswers(questionnaireState.answers);
+        const result = evaluateScenario(scenario);
+
+        questionnaireState.generated = true;
+        formFootnote.textContent = `已根据问答结果完成评估：${scenario.sampleSize} 例、${scenario.centerCount} 中心、${scenario.factorCount} 个关键因素、比例 ${scenario.allocationRatio}。如需调整，可返回修改答案后重新生成结果。`;
+
+        renderMetrics(result);
+        renderScoreTable(result);
+        renderDecision(result);
+        renderSummary(result);
+      }
+
+      questionOptions.addEventListener("click", (event) => {
+        const optionButton = event.target.closest("[data-option-value]");
+        if (!optionButton) return;
+
+        const { questionId, optionValue } = optionButton.dataset;
+        const previousValue = questionnaireState.answers[questionId];
+        questionnaireState.answers[questionId] = optionValue;
+
+        if (questionnaireState.generated && previousValue !== optionValue) {
+          questionnaireState.generated = false;
+          renderWaitingState();
+        }
+
+        renderQuestionnaire();
+      });
+
+      prevQuestionBtn.addEventListener("click", () => {
+        if (questionnaireState.currentIndex === 0) return;
+        questionnaireState.currentIndex -= 1;
+        renderQuestionnaire();
+      });
+
+      nextQuestionBtn.addEventListener("click", () => {
+        const currentQuestion = questionFlow[questionnaireState.currentIndex];
+        if (!questionnaireState.answers[currentQuestion.id]) return;
+
+        if (questionnaireState.currentIndex < questionFlow.length - 1) {
+          questionnaireState.currentIndex += 1;
+          renderQuestionnaire();
+          return;
+        }
+
+        runDecision();
+      });
+
+      restartQuestionBtn.addEventListener("click", () => {
+        questionnaireState.currentIndex = 0;
+        questionnaireState.answers = {};
+        questionnaireState.generated = false;
+        renderWaitingState();
+        renderQuestionnaire();
+      });
+
+      document.querySelectorAll(".top-nav button").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".top-nav button").forEach((item) => item.classList.remove("active"));
+          button.classList.add("active");
+        });
+      });
+
+      renderComparisonTable();
+      renderWaitingState();
+      renderQuestionnaire();
+
+    </script>
+  </body>
+</html>
