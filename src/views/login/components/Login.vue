@@ -49,7 +49,9 @@ import type { FormInstance } from "element-plus";
 import type { LoginRequest } from "@/types/api/auth";
 import router from "@/router";
 import { useUserStore } from "@/store";
-import md5 from "js-md5";
+import md5Module from "js-md5";
+
+const md5 = (md5Module as any).default || md5Module;
 
 const { t } = useI18n();
 const userStore = useUserStore();

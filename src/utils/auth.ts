@@ -19,10 +19,11 @@ export const AuthStorage = {
 };
 
 /**
- * 权限判断
+ * 权限判断（当前 userInfo 暂无 roles/perms 字段，临时跳过类型检查）
  */
 export function hasPerm(value: string | string[], type: "button" | "role" = "button"): boolean {
-  const { roles, perms } = useUserStoreHook().userInfo;
+  const userInfo = useUserStoreHook().userInfo as any;
+  const { roles, perms } = userInfo;
 
   if (!roles || !perms) {
     return false;
@@ -36,7 +37,7 @@ export function hasPerm(value: string | string[], type: "button" | "role" = "but
   const auths = type === "button" ? perms : roles;
   return typeof value === "string"
     ? auths.includes(value)
-    : value.some((perm) => auths.includes(perm));
+    : value.some((perm: string) => auths.includes(perm));
 }
 
 /**

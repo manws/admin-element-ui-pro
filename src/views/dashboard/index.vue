@@ -27,7 +27,7 @@ const userStore = useUserStore();
 
 const greetings = computed(() => {
   const hours = new Date().getHours();
-  const nickname = userStore.userInfo.nickname || "";
+  const nickname = userStore.userInfo.userName || "";
   if (hours >= 6 && hours < 12) {
     return `上午好，${nickname}！`;
   } else if (hours >= 12 && hours < 18) {

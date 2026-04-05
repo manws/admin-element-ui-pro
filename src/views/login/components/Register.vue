@@ -102,8 +102,6 @@
 import type { FormInstance } from "element-plus";
 import { Lock } from "@element-plus/icons-vue";
 import { useI18n } from "vue-i18n";
-import AuthAPI from "@/api/auth";
-import type { LoginRequest } from "@/types/api";
 
 const { t } = useI18n();
 
@@ -113,22 +111,25 @@ const toLogin = () => emit("update:modelValue", "login");
 onMounted(() => getCaptcha());
 
 const formRef = ref<FormInstance>();
-const loading = ref(false); // 按钮 loading 状态
-const isCapsLock = ref(false); // 是否大写锁定
-const captchaBase64 = ref(); // 验证码图片Base64字符串
+const loading = ref(false);
+const isCapsLock = ref(false);
+const captchaBase64 = ref();
 const isRead = ref(false);
 
-interface Model extends LoginRequest {
+interface RegisterModel {
+  username: string;
+  password: string;
   confirmPassword: string;
+  captchaId: string;
+  captchaCode: string;
 }
 
-const model = ref<Model>({
+const model = ref<RegisterModel>({
   username: "admin",
   password: "123456",
   confirmPassword: "",
   captchaId: "",
   captchaCode: "",
-  rememberMe: false,
 });
 
 const rules = computed(() => {
@@ -184,13 +185,9 @@ const rules = computed(() => {
 // 获取验证码
 const codeLoading = ref(false);
 function getCaptcha() {
-  codeLoading.value = true;
-  AuthAPI.getCaptcha()
-    .then((data) => {
-      model.value.captchaId = data.captchaId;
-      captchaBase64.value = data.captchaBase64;
-    })
-    .finally(() => (codeLoading.value = false));
+  // TODO: 待后端提供验证码接口后启用
+  // codeLoading.value = true;
+  // AuthAPI.getCaptcha().then((data) => { ... }).finally(() => (codeLoading.value = false));
 }
 
 // 检查输入大小写
