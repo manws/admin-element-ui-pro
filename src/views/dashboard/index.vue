@@ -7,7 +7,7 @@
             {{ greetings }}
           </p>
           <p class="text-sm text-[--el-text-color-secondary] mt-2">
-            欢迎使用管理系统
+            欢迎使用宣海科技医学统计平台
           </p>
         </div>
       </div>
