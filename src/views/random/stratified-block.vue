@@ -1,22 +1,37 @@
 <template>
   <div class="app-container random-sblock">
-    <!-- 算法介绍 -->
-    <el-card shadow="never" class="mb-4">
-      <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">算法介绍</span><el-tag size="small" effect="plain">STRATIFIED BLOCK</el-tag></div></template>
-      <div class="algo-body">
-        <h3>分层区组随机算法</h3>
-        <el-row :gutter="24">
-          <el-col :lg="8" :xs="24"><h4>算法定义</h4><p>先根据多个关键基线因素把受试者划分到不同<strong>分层组合</strong>中，再在每个分层组合内部独立执行<strong>区组随机</strong>。</p></el-col>
-          <el-col :lg="8" :xs="24"><h4>适用场景</h4><ul><li>样本量有限，但关注多个关键二分类协变量。</li><li>需要同时控制性别、年龄段、中心等因素的平衡。</li></ul></el-col>
-          <el-col :lg="8" :xs="24"><h4>方法特点</h4><ul><li><strong>优点</strong>：多维度提升组间均衡性。</li><li><strong>风险</strong>：因素增多时组合数快速增加。</li></ul></el-col>
-        </el-row>
-      </div>
-    </el-card>
-
-    <!-- 参数提示 -->
-    <el-row :gutter="12" class="mb-4">
-      <el-col v-for="p in paramIntros" :key="p.title" :lg="6" :md="6" :xs="12">
-        <div class="param-tip"><div class="param-tip-title">{{ p.title }}</div><div class="param-tip-desc">{{ p.desc }}</div></div>
+    <!-- 算法介绍 + 参数介绍 -->
+    <el-row :gutter="16" class="mb-4">
+      <el-col :lg="16" :xs="24">
+        <el-card shadow="never" class="h-full">
+          <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">算法介绍</span><el-tag size="small" effect="plain">STRATIFIED BLOCK</el-tag></div></template>
+          <div class="algo-body">
+            <h3>分层区组随机算法</h3>
+            <h4>算法定义</h4>
+            <p>分层区组随机是在正式随机前，先根据多个关键基线因素把受试者划分到不同<strong>分层组合</strong>中，再在每个分层组合内部独立执行<strong>区组随机</strong>。</p>
+            <h4>适用场景</h4>
+            <ul>
+              <li>样本量有限，但研究特别关注多个关键二分类协变量对结果的影响。</li>
+              <li>需要在整个入组过程中同时控制性别、年龄段、高低风险、中心等基线因素的平衡。</li>
+            </ul>
+            <h4>方法特点</h4>
+            <ul>
+              <li><strong>优点</strong>：相比普通区组随机，能够在多个关键因素维度上进一步提升组间均衡性。</li>
+              <li><strong>风险</strong>：当分层因素增多时，理论分层组合数会快速增加，部分组合样本量可能较少。</li>
+            </ul>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :lg="8" :xs="24">
+        <div class="param-sidebar">
+          <div class="param-sidebar-header"><div class="param-sidebar-icon"><div class="i-svg:el-icon-InfoFilled" style="width:14px;height:14px;color:var(--el-color-primary)" /></div><span>参数介绍</span></div>
+          <div class="param-sidebar-list">
+            <div v-for="(p, i) in paramIntros" :key="p.title" class="param-sidebar-item">
+              <div class="param-sidebar-num">{{ String(i + 1).padStart(2, '0') }}</div>
+              <div><div class="param-sidebar-name">{{ p.title }}</div><div class="param-sidebar-desc">{{ p.desc }}</div></div>
+            </div>
+          </div>
+        </div>
       </el-col>
     </el-row>
 
@@ -205,12 +220,19 @@ onMounted(simulate);
 
 <style scoped>
 .algo-body h3 { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
-.algo-body h4 { font-size: 14px; font-weight: 600; margin: 0 0 6px; color: var(--el-text-color-primary); }
-.algo-body p, .algo-body ul { font-size: 13px; color: var(--el-text-color-secondary); line-height: 1.8; margin: 0 0 8px; }
+.algo-body h4 { font-size: 14px; font-weight: 600; margin: 16px 0 6px; color: var(--el-text-color-primary); }
+.algo-body h4:first-of-type { margin-top: 0; }
+.algo-body p, .algo-body ul { font-size: 13px; color: var(--el-text-color-secondary); line-height: 1.85; margin: 0 0 4px; }
 .algo-body ul { padding-left: 16px; }
-.param-tip { padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,0.3); border: 1px solid var(--el-border-color-lighter); height: 100%; }
-.param-tip-title { font-size: 12px; font-weight: 700; color: var(--el-color-primary); margin-bottom: 4px; }
-.param-tip-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.6; }
+.param-sidebar { height: 100%; padding: 18px; border-radius: var(--el-card-border-radius, 12px); background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.03); border: 1px solid var(--el-border-color-lighter); }
+.param-sidebar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; }
+.param-sidebar-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.08); flex-shrink: 0; }
+.param-sidebar-list { display: flex; flex-direction: column; gap: 14px; }
+.param-sidebar-item { display: flex; gap: 10px; align-items: flex-start; }
+.param-sidebar-num { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.07); color: var(--el-color-primary); font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.param-sidebar-name { font-size: 13px; font-weight: 600; color: var(--el-text-color-primary); margin-bottom: 3px; }
+.param-sidebar-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.65; }
+.h-full { height: 100%; }
 .metric-card { text-align: center; }
 .metric-card.accent { border-top: 3px solid #409EFF; }
 .metric-card.success { border-top: 3px solid #67C23A; }

@@ -2,26 +2,31 @@
   <div class="app-container random-select">
     <!-- 选择流程 + 输出内容 -->
     <el-row :gutter="16" class="mb-4">
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
+      <el-col :lg="16" :xs="24">
+        <el-card shadow="never" class="h-full">
           <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">选择流程</span><el-tag size="small" effect="plain">RANDOM SELECTOR</el-tag></div></template>
-          <div class="param-list">
-            <div class="param-item"><div class="font-bold mb-1">第一步：特性与场景对比</div><div class="text-xs text-gray leading-relaxed">先比较简单随机、分层随机、分层区组随机、最小化随机在协变量平衡、人数平衡、实施复杂度和系统依赖上的差异。</div></div>
-            <div class="param-item"><div class="font-bold mb-1">第二步：伦理与目标筛查</div><div class="text-xs text-gray leading-relaxed">判断本研究更偏向"保留充分随机性"还是"优先追求过程平衡"。</div></div>
-            <div class="param-item"><div class="font-bold mb-1">第三步：环境硬约束与复杂度评分</div><div class="text-xs text-gray leading-relaxed">结合 IWRS/EDC 支持、执行团队成熟度、多中心规模与区组可预测性风险做可实施性筛查。</div></div>
-            <div class="param-item"><div class="font-bold mb-1">第四步：样本量与大数定律评估</div><div class="text-xs text-gray leading-relaxed">样本量越大，简单随机越能依靠大数定律自然收敛；样本量越小，越需要分层或最小化类方法。</div></div>
+          <div class="algo-body">
+            <h3>随机化方法选择</h3>
+            <h4>第一步：特性与场景对比</h4>
+            <p>先比较简单随机、分层随机、分层区组随机、最小化随机在协变量平衡、人数平衡、实施复杂度和系统依赖上的差异。</p>
+            <h4>第二步：伦理与目标筛查</h4>
+            <p>判断本研究更偏向"保留充分随机性"还是"优先追求过程平衡"，并明确是否重点控制协变量与人数偏差。</p>
+            <h4>第三步：环境硬约束与复杂度评分</h4>
+            <p>结合 IWRS/EDC 支持、执行团队成熟度、多中心规模与区组可预测性风险，对候选方法做可实施性筛查。</p>
+            <h4>第四步：样本量与大数定律评估</h4>
+            <p>样本量越大，简单随机越能依靠大数定律自然收敛；样本量越小、因素越多，越需要分层或最小化类方法辅助。</p>
           </div>
         </el-card>
       </el-col>
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
-          <template #header><span class="font-bold text-lg">输出内容</span></template>
-          <div class="param-list">
-            <div class="param-item"><div class="font-bold mb-1">方法比较矩阵</div><div class="text-xs text-gray leading-relaxed">用表格整理各随机化方法的核心机制、均衡能力、实施难度与典型适用场景。</div></div>
-            <div class="param-item"><div class="font-bold mb-1">决策结果</div><div class="text-xs text-gray leading-relaxed">给出推荐指数、硬约束提示、复杂度量化评分以及次优备选方案。</div></div>
-            <div class="param-item"><div class="font-bold mb-1">随机化方案摘要</div><div class="text-xs text-gray leading-relaxed">自动输出参数建议、预期平衡度、操作难度评分与执行提示。</div></div>
+      <el-col :lg="8" :xs="24">
+        <div class="param-sidebar">
+          <div class="param-sidebar-header"><div class="param-sidebar-icon"><div class="i-svg:el-icon-InfoFilled" style="width:14px;height:14px;color:var(--el-color-primary)" /></div><span>输出内容</span></div>
+          <div class="param-sidebar-list">
+            <div class="param-sidebar-item"><div class="param-sidebar-num">01</div><div><div class="param-sidebar-name">方法比较矩阵</div><div class="param-sidebar-desc">用表格整理各随机化方法的核心机制、均衡能力、实施难度与典型适用场景，便于会议讨论。</div></div></div>
+            <div class="param-sidebar-item"><div class="param-sidebar-num">02</div><div><div class="param-sidebar-name">决策结果</div><div class="param-sidebar-desc">给出推荐指数、硬约束提示、复杂度量化评分以及次优备选方案，帮助快速做技术路线选择。</div></div></div>
+            <div class="param-sidebar-item"><div class="param-sidebar-num">03</div><div><div class="param-sidebar-name">随机化方案摘要</div><div class="param-sidebar-desc">自动输出参数建议、预期平衡度、操作难度评分与执行提示，可直接作为随机化方案讨论稿。</div></div></div>
           </div>
-        </el-card>
+        </div>
       </el-col>
     </el-row>
 
@@ -296,8 +301,23 @@ onMounted(evaluate);
 </script>
 
 <style scoped>
+.algo-body h3 { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
+.algo-body h4 { font-size: 14px; font-weight: 600; margin: 16px 0 6px; color: var(--el-text-color-primary); }
+.algo-body h4:first-of-type { margin-top: 0; }
+.algo-body p { font-size: 13px; color: var(--el-text-color-secondary); line-height: 1.85; margin: 0 0 4px; }
+
+.param-sidebar { height: 100%; padding: 18px; border-radius: var(--el-card-border-radius, 12px); background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.03); border: 1px solid var(--el-border-color-lighter); }
+.param-sidebar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; }
+.param-sidebar-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.08); flex-shrink: 0; }
+.param-sidebar-list { display: flex; flex-direction: column; gap: 14px; }
+.param-sidebar-item { display: flex; gap: 10px; align-items: flex-start; }
+.param-sidebar-num { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.07); color: var(--el-color-primary); font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.param-sidebar-name { font-size: 13px; font-weight: 600; color: var(--el-text-color-primary); margin-bottom: 3px; }
+.param-sidebar-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.65; }
+
+.h-full { height: 100%; }
 .param-list { display: grid; gap: 12px; }
-.param-item { padding: 12px 14px; border-radius: 12px; background: var(--el-fill-color-lighter); }
+.param-item { padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.3); border: 1px solid var(--el-border-color-lighter); }
 .metric-card { text-align: center; }
 .metric-card.accent { border-top: 3px solid #409EFF; }
 .metric-card.success { border-top: 3px solid #67C23A; }
