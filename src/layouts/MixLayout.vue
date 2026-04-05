@@ -1,5 +1,13 @@
 <template>
   <BaseLayout>
+    <!-- 动态渐变背景 -->
+    <div class="mix-bg-canvas">
+      <div class="mix-blob mix-blob--1" />
+      <div class="mix-blob mix-blob--2" />
+      <div class="mix-blob mix-blob--3" />
+      <div class="mix-blob mix-blob--4" />
+    </div>
+
     <!-- 顶部菜单栏 -->
     <div class="layout__header">
       <div class="layout__header-content">
@@ -38,6 +46,16 @@
     <div class="layout__container">
       <!-- 左侧菜单栏 -->
       <div class="layout__sidebar--left" :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }">
+        <!-- 侧边栏模块头部 -->
+        <div v-if="isSidebarOpen && activeTopMenuItem" class="layout__sidebar-head">
+          <div class="layout__sidebar-head-tag">Module</div>
+          <div class="layout__sidebar-head-title">
+            <div class="layout__sidebar-head-icon">
+              <MenuIcon :icon="activeTopMenuItem.meta?.icon" />
+            </div>
+            {{ translateRouteTitle(activeTopMenuItem.meta?.title || '') }}
+          </div>
+        </div>
         <el-scrollbar>
           <el-menu
             :default-active="activeSideMenuPath"
@@ -123,6 +141,11 @@ const { showTagsView, showLogo, isSidebarOpen, toggleSidebar, sideMenuRoutes, ac
   useLayout();
 
 const isLogoCollapsed = computed(() => width.value < 768);
+
+// 当前激活的顶部菜单项（用于侧边栏模块头部显示）
+const activeTopMenuItem = computed(() => {
+  return topMenuItems.value.find((item) => item.path === activeTopMenuPath.value);
+});
 
 // 是否使用深色菜单配色（暗色主题或经典蓝侧边栏）
 const useMenuColors = computed(
@@ -224,6 +247,76 @@ watch(
 </script>
 
 <style lang="scss" scoped>
+// ===== 动态渐变背景 =====
+.mix-bg-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--mix-bg-color);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mix-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.6;
+  animation: mixBlobMove 18s ease-in-out infinite alternate;
+
+  &--1 {
+    width: 600px;
+    height: 600px;
+    background: var(--mix-blob-1);
+    top: -10%;
+    left: -5%;
+    animation-delay: 0s;
+  }
+
+  &--2 {
+    width: 500px;
+    height: 500px;
+    background: var(--mix-blob-2);
+    top: 50%;
+    right: -8%;
+    animation-delay: -6s;
+  }
+
+  &--3 {
+    width: 450px;
+    height: 450px;
+    background: var(--mix-blob-3);
+    bottom: -10%;
+    left: 30%;
+    animation-delay: -12s;
+  }
+
+  &--4 {
+    width: 350px;
+    height: 350px;
+    background: var(--mix-blob-4);
+    top: 20%;
+    left: 50%;
+    animation-delay: -4s;
+  }
+}
+
+@keyframes mixBlobMove {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(40px, -30px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 40px) scale(0.95);
+  }
+  100% {
+    transform: translate(30px, 10px) scale(1.03);
+  }
+}
+
+// ===== 布局主体 =====
 .layout {
   &__header {
     position: sticky;
@@ -231,8 +324,23 @@ watch(
     z-index: 999;
     width: 100%;
     height: $navbar-height;
-    background-color: var(--menu-background);
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    // 毛玻璃效果
+    background: var(--mix-glass-strong);
+    backdrop-filter: var(--mix-glass-blur);
+    -webkit-backdrop-filter: var(--mix-glass-blur);
+    border-bottom: 1px solid var(--mix-glass-border);
+    box-shadow: var(--mix-header-shadow);
+
+    // 底部渐变装饰线
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--mix-header-line);
+    }
 
     &-content {
       display: flex;
@@ -267,15 +375,44 @@ watch(
         display: flex;
         align-items: center;
         height: 100%;
+        gap: 4px;
 
+        // 顶部导航 - 胶囊样式
         .el-menu-item {
-          height: 100%;
-          line-height: $navbar-height;
-          border-bottom: none;
+          height: 36px;
+          padding: 0 18px;
+          margin: 0 1px;
+          line-height: 36px;
+          font-size: 13.5px;
+          font-weight: 500;
+          border-radius: 100px;
+          border-bottom: none !important;
+          border: 1.5px solid transparent;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          position: relative;
+
+          &:hover:not(.is-active) {
+            background-color: var(--mix-pill-hover-bg) !important;
+          }
 
           &.is-active {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-bottom: 2px solid var(--el-color-primary);
+            background-color: var(--mix-pill-active-bg) !important;
+            border-color: var(--mix-pill-active-border);
+            font-weight: 600;
+            box-shadow: var(--mix-pill-active-shadow);
+
+            // 底部渐变短条
+            &::after {
+              content: "";
+              position: absolute;
+              bottom: -2px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 16px;
+              height: 3px;
+              border-radius: 3px;
+              background: var(--mix-grad);
+            }
           }
         }
       }
@@ -294,38 +431,130 @@ watch(
     display: flex;
     height: calc(100vh - $navbar-height);
     padding-top: 0;
+    position: relative;
+    z-index: 1;
 
     .layout__sidebar--left {
       position: relative;
       width: $sidebar-width;
       height: 100%;
-      background-color: var(--menu-background);
+      // 毛玻璃效果
+      background: var(--mix-glass);
+      backdrop-filter: var(--mix-glass-blur);
+      -webkit-backdrop-filter: var(--mix-glass-blur);
+      border-right: 1px solid var(--mix-glass-border);
+      box-shadow: var(--mix-sidebar-shadow);
       transition: width 0.28s;
+      display: flex;
+      flex-direction: column;
 
       &.layout__sidebar--collapsed {
         width: $sidebar-width-collapsed !important;
+
+        .layout__sidebar-head {
+          display: none;
+        }
       }
 
       :deep(.el-scrollbar) {
-        height: calc(100vh - $navbar-height - 50px);
+        flex: 1;
+        min-height: 0;
       }
 
       :deep(.el-menu) {
         height: 100%;
         border: none;
+        padding: 6px 8px;
+        background-color: transparent !important;
+
+        // 左侧菜单项统一圆角
+        .el-menu-item,
+        .el-sub-menu__title {
+          margin: 2px 0;
+          border-radius: 10px;
+          position: relative;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        // hover 态
+        .el-menu-item:hover,
+        .el-sub-menu__title:hover {
+          background-color: var(--mix-sidebar-hover-bg) !important;
+        }
+
+        // 选中态 - 左侧渐变指示条
+        .el-menu-item.is-active {
+          font-weight: 600;
+          background-color: var(--mix-sidebar-active-bg) !important;
+
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 22%;
+            bottom: 22%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--mix-grad);
+            box-shadow: 0 0 8px var(--mix-grad-glow);
+          }
+        }
+      }
+
+      // 侧边栏模块头部
+      .layout__sidebar-head {
+        padding: 16px 18px 12px;
+        border-bottom: 1px solid var(--mix-glass-border);
+        flex-shrink: 0;
+
+        &-tag {
+          font-family: "IBM Plex Mono", "Consolas", monospace;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+          color: var(--el-text-color-placeholder);
+        }
+
+        &-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--el-text-color-primary);
+          margin-top: 6px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        &-icon {
+          width: 26px;
+          height: 26px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--mix-sidebar-active-bg);
+          flex-shrink: 0;
+
+          :deep([class^="i-svg:"]) {
+            width: 14px;
+            height: 14px;
+            color: var(--el-color-primary);
+          }
+        }
       }
 
       .layout__sidebar-toggle {
-        position: absolute;
-        bottom: 0;
+        position: relative;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
         height: 50px;
         line-height: 50px;
-        background-color: var(--menu-background);
-        box-shadow: 0 0 6px -2px var(--el-color-primary);
+        background-color: transparent;
+        border-top: 1px solid var(--mix-glass-border);
       }
     }
 
