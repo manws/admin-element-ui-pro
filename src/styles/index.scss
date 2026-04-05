@@ -73,3 +73,16 @@ svg {
   // 故需设置一个往下的偏移比例，来纠正视觉上的未对齐效果
   vertical-align: -0.15em;
 }
+
+// ============================================
+// 3. 消除浏览器自动填充背景
+// ============================================
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
