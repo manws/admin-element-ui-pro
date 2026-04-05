@@ -1,20 +1,22 @@
 <template>
   <div class="logo">
-    <transition enter-active-class="animate__animated animate__fadeInLeft">
-      <router-link :key="+collapse" class="wh-full flex-center" to="/">
-        <img :src="logo" class="w20px h20px" />
-        <span v-if="!collapse" class="title">
-          {{ appConfig.title }}
-        </span>
-      </router-link>
-    </transition>
+    <router-link :key="+collapse" class="logo-link" to="/">
+      <!-- 图标 -->
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h4l3-9 4 18 3-9h4" />
+        </svg>
+      </div>
+      <!-- 文字 -->
+      <div v-if="!collapse" class="logo-text">
+        <div class="logo-name">宣海科技</div>
+        <div class="logo-sub">Medical Statistics Platform</div>
+      </div>
+    </router-link>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { appConfig } from "@/settings";
-import logo from "@/assets/images/logo.png";
-
 defineProps({
   collapse: {
     type: Boolean,
@@ -29,12 +31,55 @@ defineProps({
   height: $navbar-height;
   background-color: $sidebar-logo-background;
 
-  .title {
+  .logo-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0 12px;
+    text-decoration: none;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.08), rgba(8, 145, 178, 0.06));
+    border: 1px solid rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.12);
     flex-shrink: 0;
-    margin-left: 10px;
-    font-size: 14px;
-    font-weight: bold;
+
+    svg {
+      width: 18px;
+      height: 18px;
+      color: var(--el-color-primary);
+    }
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
+  .logo-name {
+    font-size: 15px;
+    font-weight: 700;
     color: $sidebar-logo-text-color;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--el-text-color-placeholder);
+    letter-spacing: 0.03em;
+    line-height: 1.2;
   }
 }
 </style>
@@ -46,8 +91,8 @@ defineProps({
   .logo {
     background-color: transparent !important;
 
-    .title {
-      color: var(--menu-text);
+    .logo-name {
+      color: var(--el-text-color-primary);
     }
   }
 }
@@ -56,7 +101,7 @@ defineProps({
 .openSidebar {
   &.layout-top .layout__header-left .logo,
   &.layout-mix .layout__header-logo .logo {
-    width: $sidebar-width; // 210px，显示logo+文字
+    width: $sidebar-width;
   }
 }
 
@@ -64,11 +109,10 @@ defineProps({
 .hideSidebar {
   &.layout-top .layout__header-left .logo,
   &.layout-mix .layout__header-logo .logo {
-    width: $sidebar-width-collapsed; // 54px，只显示logo
+    width: $sidebar-width-collapsed;
   }
 
-  // 隐藏文字，只显示图标
-  .logo .title {
+  .logo .logo-text {
     display: none;
   }
 }

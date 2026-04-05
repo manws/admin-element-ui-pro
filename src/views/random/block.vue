@@ -77,10 +77,8 @@
               <el-input v-model="form.codePrefix" placeholder="BLK" maxlength="10" />
             </el-form-item>
           </el-col>
-          <el-col :lg="4" :md="6" :xs="12">
-            <el-form-item label=" ">
-              <el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button>
-            </el-form-item>
+          <el-col :lg="4" :md="6" :xs="12" class="btn-col">
+            <el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button>
           </el-col>
         </el-row>
       </el-form>
@@ -132,14 +130,8 @@
       </el-col>
     </el-row>
 
-    <!-- 结果说明 + 入组列表 -->
+    <!-- 入组列表 + 结果说明 -->
     <el-row :gutter="16" class="mb-4">
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
-          <template #header><span class="font-bold">结果说明</span></template>
-          <div class="text-sm leading-relaxed" v-html="narrativeHtml" />
-        </el-card>
-      </el-col>
       <el-col :lg="12" :xs="24">
         <el-card shadow="never">
           <template #header><span class="font-bold">受试者入组列表</span></template>
@@ -154,6 +146,12 @@
               </template>
             </el-table-column>
           </el-table>
+        </el-card>
+      </el-col>
+      <el-col :lg="12" :xs="24">
+        <el-card shadow="never">
+          <template #header><span class="font-bold">结果说明</span></template>
+          <div class="text-sm leading-relaxed" v-html="narrativeHtml" />
         </el-card>
       </el-col>
     </el-row>
@@ -249,6 +247,7 @@ onMounted(simulate);
 .param-sidebar-name { font-size: 13px; font-weight: 600; color: var(--el-text-color-primary); margin-bottom: 3px; }
 .param-sidebar-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.65; }
 .h-full { height: 100%; }
+.btn-col { display: flex; align-items: flex-end; padding-bottom: 18px; }
 .metric-card { text-align: center; }
 .metric-card.accent { border-top: 3px solid #409EFF; }
 .metric-card.success { border-top: 3px solid #67C23A; }

@@ -46,7 +46,7 @@
           <el-col :lg="3" :md="6" :xs="12"><el-form-item label="分配比例 A:B"><el-select v-model="form.ratio" style="width:100%"><el-option value="1:1" label="1 : 1" /><el-option value="2:1" label="2 : 1" /><el-option value="3:1" label="3 : 1" /><el-option value="3:2" label="3 : 2" /></el-select></el-form-item></el-col>
           <el-col :lg="3" :md="6" :xs="12"><el-form-item label="随机种子"><el-input v-model="form.seed" /></el-form-item></el-col>
           <el-col :lg="3" :md="6" :xs="12"><el-form-item label="随机号前缀"><el-input v-model="form.codePrefix" maxlength="10" /></el-form-item></el-col>
-          <el-col :lg="3" :md="6" :xs="12"><el-form-item label=" "><el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button></el-form-item></el-col>
+          <el-col :lg="3" :md="6" :xs="12" class="btn-col"><el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button></el-col>
         </el-row>
       </el-form>
 
@@ -233,6 +233,7 @@ onMounted(simulate);
 .param-sidebar-name { font-size: 13px; font-weight: 600; color: var(--el-text-color-primary); margin-bottom: 3px; }
 .param-sidebar-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.65; }
 .h-full { height: 100%; }
+.btn-col { display: flex; align-items: flex-end; padding-bottom: 18px; }
 .metric-card { text-align: center; }
 .metric-card.accent { border-top: 3px solid #409EFF; }
 .metric-card.success { border-top: 3px solid #67C23A; }
