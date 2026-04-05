@@ -23,22 +23,18 @@ export const constantRoutes: RouteRecordRaw[] = [
     meta: { hidden: true },
   },
 
+  // 隐藏的辅助路由（Dashboard / 错误页）
   {
     path: "/",
-    name: "/",
     component: Layout,
-    redirect: "/dashboard",
+    redirect: "/random",
+    meta: { hidden: true },
     children: [
       {
         path: "dashboard",
         component: () => import("@/views/dashboard/index.vue"),
         name: "Dashboard",
-        meta: {
-          title: "dashboard",
-          icon: "homepage",
-          affix: true,
-          keepAlive: true,
-        },
+        meta: { title: "dashboard", icon: "homepage", hidden: true },
       },
       {
         path: "401",
@@ -54,8 +50,51 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   // ============================================
-  // 业务路由（isRemoteRoute=false 时随 constantRoutes 一起加载）
+  // 业务路由
   // ============================================
+
+  // 随机分组（原首页位置，作为第一个可见菜单）
+  {
+    path: "/random",
+    component: Layout,
+    redirect: "/random/simple",
+    name: "Random",
+    meta: { title: "随机分组", icon: "el-icon-Switch", alwaysShow: true },
+    children: [
+      {
+        path: "simple",
+        component: () => import("@/views/random/simple.vue"),
+        name: "RandomSimple",
+        meta: { title: "简单随机", keepAlive: true },
+      },
+      {
+        path: "block",
+        component: () => import("@/views/random/block.vue"),
+        name: "RandomBlock",
+        meta: { title: "区组随机", keepAlive: true },
+      },
+      {
+        path: "stratified-block",
+        component: () => import("@/views/random/stratified-block.vue"),
+        name: "RandomStratifiedBlock",
+        meta: { title: "分层区组随机", keepAlive: true },
+      },
+      {
+        path: "minimization",
+        component: () => import("@/views/random/minimization.vue"),
+        name: "RandomMinimization",
+        meta: { title: "最小化随机", keepAlive: true },
+      },
+      {
+        path: "select",
+        component: () => import("@/views/random/select.vue"),
+        name: "RandomSelect",
+        meta: { title: "随机选择", keepAlive: true },
+      },
+    ],
+  },
+
+  // 样本量计算
   {
     path: "/sample-calc",
     component: Layout,
@@ -98,6 +137,57 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import("@/views/sample-calc/paired.vue"),
         name: "Paired",
         meta: { title: "配对设计均数/率", keepAlive: true },
+      },
+    ],
+  },
+
+  // 医学统计
+  {
+    path: "/medical-stats",
+    component: Layout,
+    redirect: "/medical-stats/index",
+    name: "MedicalStats",
+    meta: { title: "医学统计", icon: "el-icon-PieChart" },
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/medical-stats/index.vue"),
+        name: "MedicalStatsIndex",
+        meta: { title: "医学统计", keepAlive: true },
+      },
+    ],
+  },
+
+  // 医学统计AI
+  {
+    path: "/medical-stats-ai",
+    component: Layout,
+    redirect: "/medical-stats-ai/index",
+    name: "MedicalStatsAI",
+    meta: { title: "医学统计AI", icon: "el-icon-MagicStick" },
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/medical-stats-ai/index.vue"),
+        name: "MedicalStatsAIIndex",
+        meta: { title: "医学统计AI", keepAlive: true },
+      },
+    ],
+  },
+
+  // 我的数据
+  {
+    path: "/my-data",
+    component: Layout,
+    redirect: "/my-data/index",
+    name: "MyData",
+    meta: { title: "我的数据", icon: "el-icon-FolderOpened" },
+    children: [
+      {
+        path: "index",
+        component: () => import("@/views/my-data/index.vue"),
+        name: "MyDataIndex",
+        meta: { title: "我的数据", keepAlive: true },
       },
     ],
   },
