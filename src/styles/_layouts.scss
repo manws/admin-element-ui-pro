@@ -52,6 +52,16 @@
 // ============================================
 
 .layout-mix .layout__sidebar--left .el-menu {
+  // 菜单文字溢出省略
+  .el-menu-item,
+  .el-sub-menu__title {
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   .el-menu-item {
     &:hover {
       background-color: var(--mix-sidebar-hover-bg) !important;
