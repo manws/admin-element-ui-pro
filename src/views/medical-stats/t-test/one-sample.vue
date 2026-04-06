@@ -147,8 +147,6 @@ function calculate() {
   const lo = -4.5, hi = 4.5;
   for (let x = lo; x <= hi; x += 0.05) {
     xs.push(+x.toFixed(3));
-    // t 分布 PDF 近似
-    const pdf = Math.exp(S.fmt ? 0 : 0); // 用正态近似 PDF（df 较大时接近）
     const tPdf = (1 + x * x / df) ** (-(df + 1) / 2) / (Math.sqrt(df) * betaFn(0.5, df / 2));
     ys.push(+tPdf.toFixed(6));
   }
