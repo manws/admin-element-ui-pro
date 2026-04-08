@@ -1,25 +1,41 @@
-import { SidebarColor, ThemeMode } from "@/enums";
-import type { LayoutMode } from "@/enums";
-import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
+import { SidebarColor, ThemeMode, LayoutMode } from "@/enums";
+import {
+  applyTheme,
+  generateThemeColors,
+  toggleDarkMode,
+  toggleSidebarColor,
+} from "@/utils/theme";
 import { STORAGE_KEYS } from "@/constants";
 import { defaults } from "@/settings";
 
 export const useSettingsStore = defineStore("setting", () => {
   // 界面显示
   const settingsVisible = ref(false);
-  const showTagsView = useStorage(STORAGE_KEYS.SHOW_TAGS_VIEW, defaults.showTagsView);
-  const showAppLogo = useStorage(STORAGE_KEYS.SHOW_APP_LOGO, defaults.showAppLogo);
-  const showWatermark = useStorage(STORAGE_KEYS.SHOW_WATERMARK, defaults.showWatermark);
+  const showTagsView = useStorage(
+    STORAGE_KEYS.SHOW_TAGS_VIEW,
+    defaults.showTagsView,
+  );
+  const showAppLogo = useStorage(
+    STORAGE_KEYS.SHOW_APP_LOGO,
+    defaults.showAppLogo,
+  );
+  const showWatermark = useStorage(
+    STORAGE_KEYS.SHOW_WATERMARK,
+    defaults.showWatermark,
+  );
   const pageSwitchingAnimation = useStorage(
     STORAGE_KEYS.PAGE_SWITCHING_ANIMATION,
-    defaults.pageSwitchingAnimation
+    defaults.pageSwitchingAnimation,
   );
 
   // 布局
-  const layout = useStorage<LayoutMode>(STORAGE_KEYS.LAYOUT, defaults.layout as LayoutMode);
+  const layout = useStorage<LayoutMode>(
+    STORAGE_KEYS.LAYOUT,
+    defaults.layout as LayoutMode,
+  );
   const sidebarColorScheme = useStorage(
     STORAGE_KEYS.SIDEBAR_COLOR_SCHEME,
-    defaults.sidebarColorScheme
+    defaults.sidebarColorScheme,
   );
 
   // 主题
@@ -37,12 +53,30 @@ export const useSettingsStore = defineStore("setting", () => {
       toggleDarkMode(t === ThemeMode.DARK);
       applyTheme(generateThemeColors(c, t));
     },
-    { immediate: true }
+    { immediate: true },
   );
 
-  watch(sidebarColorScheme, (v) => toggleSidebarColor(v === SidebarColor.CLASSIC_BLUE), {
-    immediate: true,
-  });
+  watch(
+    sidebarColorScheme,
+    (v) => toggleSidebarColor(v === SidebarColor.CLASSIC_BLUE),
+    {
+      immediate: true,
+    },
+  );
+
+  // MIX 布局下强制使用极简白侧边栏
+  watch(
+    layout,
+    (v) => {
+      if (
+        v === LayoutMode.MIX &&
+        sidebarColorScheme.value !== SidebarColor.MINIMAL_WHITE
+      ) {
+        sidebarColorScheme.value = SidebarColor.MINIMAL_WHITE;
+      }
+    },
+    { immediate: true },
+  );
 
   // 灰色模式监听
   watch(
@@ -50,7 +84,7 @@ export const useSettingsStore = defineStore("setting", () => {
     (v) => {
       document.documentElement.style.filter = v ? "grayscale(100%)" : "";
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   // 色弱模式监听
@@ -59,7 +93,7 @@ export const useSettingsStore = defineStore("setting", () => {
     (v) => {
       document.documentElement.classList.toggle("color-weak", v);
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   function resetSettings() {
