@@ -6,6 +6,9 @@
       <div class="mix-blob mix-blob--2" />
       <div class="mix-blob mix-blob--3" />
       <div class="mix-blob mix-blob--4" />
+      <div class="mix-blob mix-blob--5" />
+      <!-- 噪点纹理层 -->
+      <div class="mix-noise" />
     </div>
 
     <!-- 顶部菜单栏 -->
@@ -257,62 +260,93 @@ watch(
   pointer-events: none;
 }
 
+// 噪点纹理 - 增强玻璃质感
+.mix-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
 .mix-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.6;
-  animation: mixBlobMove 18s ease-in-out infinite alternate;
+  filter: blur(80px);
+  opacity: 0.8;
+  will-change: transform;
+  animation: mixBlobMove 20s ease-in-out infinite alternate;
 
   &--1 {
-    width: 600px;
-    height: 600px;
+    width: 700px;
+    height: 700px;
     background: var(--mix-blob-1);
-    top: -10%;
-    left: -5%;
+    top: -15%;
+    left: -8%;
     animation-delay: 0s;
+    animation-duration: 22s;
   }
 
   &--2 {
-    width: 500px;
-    height: 500px;
+    width: 550px;
+    height: 550px;
     background: var(--mix-blob-2);
-    top: 50%;
-    right: -8%;
-    animation-delay: -6s;
+    top: 55%;
+    right: -10%;
+    animation-delay: -5s;
+    animation-duration: 18s;
   }
 
   &--3 {
-    width: 450px;
-    height: 450px;
+    width: 500px;
+    height: 500px;
     background: var(--mix-blob-3);
-    bottom: -10%;
-    left: 30%;
-    animation-delay: -12s;
+    bottom: -12%;
+    left: 25%;
+    animation-delay: -10s;
+    animation-duration: 24s;
   }
 
   &--4 {
-    width: 350px;
-    height: 350px;
+    width: 400px;
+    height: 400px;
     background: var(--mix-blob-4);
-    top: 20%;
-    left: 50%;
-    animation-delay: -4s;
+    top: 15%;
+    left: 55%;
+    animation-delay: -3s;
+    animation-duration: 20s;
+  }
+
+  &--5 {
+    width: 450px;
+    height: 450px;
+    background: var(--mix-blob-3);
+    top: 35%;
+    left: 10%;
+    opacity: 0.5;
+    filter: blur(120px);
+    animation-delay: -8s;
+    animation-duration: 26s;
   }
 }
 
 @keyframes mixBlobMove {
   0% {
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1) rotate(0deg);
   }
-  33% {
-    transform: translate(40px, -30px) scale(1.08);
+  25% {
+    transform: translate(50px, -40px) scale(1.1) rotate(2deg);
   }
-  66% {
-    transform: translate(-20px, 40px) scale(0.95);
+  50% {
+    transform: translate(-30px, 50px) scale(0.92) rotate(-1deg);
+  }
+  75% {
+    transform: translate(40px, 20px) scale(1.06) rotate(1.5deg);
   }
   100% {
-    transform: translate(30px, 10px) scale(1.03);
+    transform: translate(-20px, -30px) scale(1.02) rotate(-0.5deg);
   }
 }
 
@@ -331,6 +365,24 @@ watch(
     border-bottom: 1px solid var(--mix-glass-border);
     box-shadow: var(--mix-header-shadow);
 
+    // 顶部高光线 - 模拟玻璃反光
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8) 30%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(255, 255, 255, 0.8) 70%,
+        transparent
+      );
+    }
+
     // 底部渐变装饰线
     &::after {
       content: "";
@@ -338,7 +390,7 @@ watch(
       bottom: -1px;
       left: 0;
       right: 0;
-      height: 1px;
+      height: 2px;
       background: var(--mix-header-line);
     }
 
@@ -388,11 +440,12 @@ watch(
           border-radius: 100px;
           border-bottom: none !important;
           border: 1.5px solid transparent;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
 
           &:hover:not(.is-active) {
             background-color: var(--mix-pill-hover-bg) !important;
+            transform: translateY(-1px);
           }
 
           &.is-active {
@@ -405,13 +458,14 @@ watch(
             &::after {
               content: "";
               position: absolute;
-              bottom: -2px;
+              bottom: -3px;
               left: 50%;
               transform: translateX(-50%);
-              width: 16px;
+              width: 20px;
               height: 3px;
               border-radius: 3px;
               background: var(--mix-grad);
+              box-shadow: 0 0 8px var(--mix-grad-glow);
             }
           }
         }
@@ -448,6 +502,25 @@ watch(
       display: flex;
       flex-direction: column;
 
+      // 右侧高光线 - 模拟玻璃边缘
+      &::after {
+        content: "";
+        position: absolute;
+        top: 5%;
+        bottom: 5%;
+        right: 0;
+        width: 1px;
+        background: linear-gradient(
+          180deg,
+          transparent,
+          rgba(255, 255, 255, 0.4) 20%,
+          rgba(255, 255, 255, 0.6) 50%,
+          rgba(255, 255, 255, 0.4) 80%,
+          transparent
+        );
+        pointer-events: none;
+      }
+
       &.layout__sidebar--collapsed {
         width: $sidebar-width-collapsed !important;
 
@@ -473,16 +546,17 @@ watch(
           margin: 2px 0;
           border-radius: 10px;
           position: relative;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         // hover 态
         .el-menu-item:hover,
         .el-sub-menu__title:hover {
           background-color: var(--mix-sidebar-hover-bg) !important;
+          transform: translateX(2px);
         }
 
-        // 选中态 - 左侧渐变指示条
+        // 选中态 - 左侧渐变指示条 + 微光背景
         .el-menu-item.is-active {
           font-weight: 600;
           background-color: var(--mix-sidebar-active-bg) !important;
@@ -491,12 +565,12 @@ watch(
             content: "";
             position: absolute;
             left: 0;
-            top: 22%;
-            bottom: 22%;
-            width: 3px;
-            border-radius: 0 3px 3px 0;
+            top: 18%;
+            bottom: 18%;
+            width: 3.5px;
+            border-radius: 0 4px 4px 0;
             background: var(--mix-grad);
-            box-shadow: 0 0 8px var(--mix-grad-glow);
+            box-shadow: 0 0 12px var(--mix-grad-glow), 0 0 4px var(--mix-grad-glow);
           }
         }
       }
@@ -527,13 +601,15 @@ watch(
         }
 
         &-icon {
-          width: 26px;
-          height: 26px;
+          width: 28px;
+          height: 28px;
           border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
           background: var(--mix-sidebar-active-bg);
+          border: 1px solid rgba(37, 99, 235, 0.12);
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
           flex-shrink: 0;
 
           :deep([class^="i-svg:"]) {
@@ -564,6 +640,10 @@ watch(
       height: 100%;
       margin-left: 0;
       overflow-y: auto;
+
+      :deep(.app-main) {
+        background-color: transparent;
+      }
     }
   }
 }

@@ -32,27 +32,42 @@ $tags-view-height: 34px;
   --sidebar-logo-text-color: #303133;
 
   // ===== MIX 布局 - 毛玻璃风格变量 =====
-  --mix-glass: rgba(255, 255, 255, 0.55);
-  --mix-glass-strong: rgba(255, 255, 255, 0.72);
-  --mix-glass-border: rgba(255, 255, 255, 0.65);
-  --mix-glass-blur: blur(28px) saturate(180%);
-  --mix-header-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset, 0 4px 20px rgba(12, 18, 34, 0.04);
-  --mix-header-line: linear-gradient(90deg, transparent 5%, rgba(37, 99, 235, 0.25) 35%, rgba(8, 145, 178, 0.2) 65%, transparent 95%);
-  --mix-sidebar-shadow: 1px 0 0 rgba(255, 255, 255, 0.4) inset, 4px 0 20px rgba(12, 18, 34, 0.03);
-  --mix-pill-active-bg: rgba(255, 255, 255, 0.55);
-  --mix-pill-active-border: rgba(255, 255, 255, 0.65);
-  --mix-pill-active-shadow: 0 2px 12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
-  --mix-pill-hover-bg: rgba(37, 99, 235, 0.05);
-  --mix-sidebar-active-bg: rgba(37, 99, 235, 0.07);
-  --mix-sidebar-hover-bg: rgba(37, 99, 235, 0.05);
-  --mix-grad: linear-gradient(135deg, #2563eb 0%, #0891b2 100%);
-  --mix-grad-glow: rgba(37, 99, 235, 0.3);
+  --mix-glass: rgba(255, 255, 255, 0.42);
+  --mix-glass-strong: rgba(255, 255, 255, 0.58);
+  --mix-glass-border: rgba(255, 255, 255, 0.5);
+  --mix-glass-blur: blur(24px) saturate(200%);
+  --mix-header-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 1px 3px rgba(12, 18, 34, 0.06),
+    0 8px 32px rgba(12, 18, 34, 0.08);
+  --mix-header-line: linear-gradient(
+    90deg,
+    transparent 2%,
+    rgba(37, 99, 235, 0.35) 30%,
+    rgba(124, 58, 237, 0.2) 50%,
+    rgba(8, 145, 178, 0.3) 70%,
+    transparent 98%
+  );
+  --mix-sidebar-shadow:
+    1px 0 0 rgba(255, 255, 255, 0.5) inset,
+    6px 0 24px rgba(12, 18, 34, 0.06);
+  --mix-pill-active-bg: rgba(255, 255, 255, 0.65);
+  --mix-pill-active-border: rgba(255, 255, 255, 0.75);
+  --mix-pill-active-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 16px rgba(37, 99, 235, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+  --mix-pill-hover-bg: rgba(37, 99, 235, 0.08);
+  --mix-sidebar-active-bg: rgba(37, 99, 235, 0.1);
+  --mix-sidebar-hover-bg: rgba(37, 99, 235, 0.06);
+  --mix-grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #0891b2 100%);
+  --mix-grad-glow: rgba(37, 99, 235, 0.4);
   // 全局渐变背景
-  --mix-bg-color: #e4eaf2;
-  --mix-blob-1: rgba(37, 99, 235, 0.18);
-  --mix-blob-2: rgba(8, 145, 178, 0.14);
-  --mix-blob-3: rgba(124, 58, 237, 0.1);
-  --mix-blob-4: rgba(5, 150, 105, 0.08);
+  --mix-bg-color: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 30%, #ede9fe 60%, #d5f5f6 100%);
+  --mix-blob-1: rgba(37, 99, 235, 0.3);
+  --mix-blob-2: rgba(8, 145, 178, 0.25);
+  --mix-blob-3: rgba(124, 58, 237, 0.2);
+  --mix-blob-4: rgba(5, 150, 105, 0.15);
 }
 
 // SCSS 变量映射（供组件使用）
@@ -87,27 +102,42 @@ html.dark {
   --sidebar-logo-text-color: #fff;
 
   // ===== MIX 布局 - 暗黑主题毛玻璃变量 =====
-  --mix-glass: rgba(30, 30, 40, 0.6);
-  --mix-glass-strong: rgba(24, 24, 34, 0.78);
-  --mix-glass-border: rgba(255, 255, 255, 0.08);
-  --mix-glass-blur: blur(28px) saturate(180%);
-  --mix-header-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 4px 20px rgba(0, 0, 0, 0.2);
-  --mix-header-line: linear-gradient(90deg, transparent 5%, rgba(64, 158, 255, 0.2) 35%, rgba(8, 145, 178, 0.15) 65%, transparent 95%);
-  --mix-sidebar-shadow: 1px 0 0 rgba(255, 255, 255, 0.04) inset, 4px 0 20px rgba(0, 0, 0, 0.15);
-  --mix-pill-active-bg: rgba(255, 255, 255, 0.08);
-  --mix-pill-active-border: rgba(255, 255, 255, 0.12);
-  --mix-pill-active-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-  --mix-pill-hover-bg: rgba(255, 255, 255, 0.05);
-  --mix-sidebar-active-bg: rgba(64, 158, 255, 0.12);
-  --mix-sidebar-hover-bg: rgba(255, 255, 255, 0.05);
-  --mix-grad: linear-gradient(135deg, #4080ff 0%, #0ea5e9 100%);
-  --mix-grad-glow: rgba(64, 158, 255, 0.4);
+  --mix-glass: rgba(20, 20, 32, 0.55);
+  --mix-glass-strong: rgba(16, 16, 28, 0.72);
+  --mix-glass-border: rgba(255, 255, 255, 0.1);
+  --mix-glass-blur: blur(24px) saturate(200%);
+  --mix-header-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 1px 3px rgba(0, 0, 0, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.25);
+  --mix-header-line: linear-gradient(
+    90deg,
+    transparent 2%,
+    rgba(64, 158, 255, 0.3) 30%,
+    rgba(124, 58, 237, 0.2) 50%,
+    rgba(8, 145, 178, 0.25) 70%,
+    transparent 98%
+  );
+  --mix-sidebar-shadow:
+    1px 0 0 rgba(255, 255, 255, 0.06) inset,
+    6px 0 24px rgba(0, 0, 0, 0.2);
+  --mix-pill-active-bg: rgba(255, 255, 255, 0.1);
+  --mix-pill-active-border: rgba(255, 255, 255, 0.15);
+  --mix-pill-active-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(64, 158, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  --mix-pill-hover-bg: rgba(255, 255, 255, 0.07);
+  --mix-sidebar-active-bg: rgba(64, 158, 255, 0.15);
+  --mix-sidebar-hover-bg: rgba(255, 255, 255, 0.07);
+  --mix-grad: linear-gradient(135deg, #4080ff 0%, #a855f7 50%, #0ea5e9 100%);
+  --mix-grad-glow: rgba(64, 158, 255, 0.5);
   // 全局渐变背景 - 深色
-  --mix-bg-color: #0f1420;
-  --mix-blob-1: rgba(64, 128, 255, 0.12);
-  --mix-blob-2: rgba(8, 145, 178, 0.1);
-  --mix-blob-3: rgba(124, 58, 237, 0.08);
-  --mix-blob-4: rgba(5, 150, 105, 0.06);
+  --mix-bg-color: linear-gradient(135deg, #0a0e1a 0%, #0f1529 30%, #130f23 60%, #0a1520 100%);
+  --mix-blob-1: rgba(64, 128, 255, 0.18);
+  --mix-blob-2: rgba(8, 145, 178, 0.15);
+  --mix-blob-3: rgba(124, 58, 237, 0.14);
+  --mix-blob-4: rgba(5, 150, 105, 0.1);
 
   // Element Plus 表格选中行背景色
   .el-table {
