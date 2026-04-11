@@ -5,7 +5,9 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">四格表卡方检验</h1>
-          <p class="hero-desc">比较两组样本率（构成比）有无差异，适用于两独立样本的四格表资料</p>
+          <p class="hero-desc">
+            比较两组样本率（构成比）有无差异，适用于两独立样本的四格表资料
+          </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · FOURFOLD</el-tag>
       </div>
