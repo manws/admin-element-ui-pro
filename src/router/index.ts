@@ -154,7 +154,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "basic",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "BasicStats",
-        meta: { title: "基本统计", alwaysShow: true },
+        meta: { title: "基本统计", icon: "el-icon-Histogram", alwaysShow: true },
         children: [
           {
             path: "descriptive",
@@ -193,7 +193,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "chi-square",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "ChiSquare",
-        meta: { title: "卡方检验", alwaysShow: true },
+        meta: { title: "卡方检验", icon: "el-icon-Grid", alwaysShow: true },
         children: [
           {
             path: "fourfold",
@@ -238,7 +238,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "t-test",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "TTest",
-        meta: { title: "t检验", alwaysShow: true },
+        meta: { title: "t检验", icon: "el-icon-DataLine", alwaysShow: true },
         children: [
           { path: "one-sample", component: () => import("@/views/medical-stats/t-test/one-sample.vue"), name: "TOneSample", meta: { title: "单样本t检验", keepAlive: true } },
           { path: "one-sample-raw", component: () => import("@/views/medical-stats/t-test/one-sample-raw.vue"), name: "TOneSampleRaw", meta: { title: "单样本t检验(原始资料)", keepAlive: true } },
@@ -252,7 +252,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "z-test",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "ZTest",
-        meta: { title: "Z检验", alwaysShow: true },
+        meta: { title: "Z检验", icon: "el-icon-TrendCharts", alwaysShow: true },
         children: [
           { path: "one-sample", component: () => import("@/views/medical-stats/z-test/one-sample.vue"), name: "ZOneSample", meta: { title: "单样本Z检验", keepAlive: true } },
           { path: "one-sample-raw", component: () => import("@/views/medical-stats/z-test/one-sample-raw.vue"), name: "ZOneSampleRaw", meta: { title: "单样本Z检验(原始资料)", keepAlive: true } },
@@ -265,7 +265,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "rank-sum",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "RankSum",
-        meta: { title: "秩和检验", alwaysShow: true },
+        meta: { title: "秩和检验", icon: "el-icon-Sort", alwaysShow: true },
         children: [
           { path: "paired", component: () => import("@/views/medical-stats/rank-sum/paired.vue"), name: "RSPaired", meta: { title: "配对样本", keepAlive: true } },
           { path: "one-sample", component: () => import("@/views/medical-stats/rank-sum/one-sample.vue"), name: "RSOneSample", meta: { title: "单样本", keepAlive: true } },
@@ -280,14 +280,14 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "cochran-q",
         component: () => import("@/views/medical-stats/cochran-q/index.vue"),
         name: "CochranQ",
-        meta: { title: "CochranQ检验", keepAlive: true },
+        meta: { title: "CochranQ检验", icon: "el-icon-Connection", keepAlive: true },
       },
       // 游程检验
       {
         path: "runs-test",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "RunsTest",
-        meta: { title: "游程检验", alwaysShow: true },
+        meta: { title: "游程检验", icon: "el-icon-Finished", alwaysShow: true },
         children: [
           { path: "binary", component: () => import("@/views/medical-stats/runs-test/binary.vue"), name: "RunsBinary", meta: { title: "二分类变量", keepAlive: true } },
           { path: "numeric", component: () => import("@/views/medical-stats/runs-test/numeric.vue"), name: "RunsNumeric", meta: { title: "数值型变量", keepAlive: true } },
@@ -298,7 +298,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "variance-homo",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "VarianceHomo",
-        meta: { title: "方差齐性检验", alwaysShow: true },
+        meta: { title: "方差齐性检验", icon: "el-icon-Operation", alwaysShow: true },
         children: [
           { path: "f-test", component: () => import("@/views/medical-stats/variance-homo/f-test.vue"), name: "VHFTest", meta: { title: "F检验", keepAlive: true } },
           { path: "bartlett", component: () => import("@/views/medical-stats/variance-homo/bartlett.vue"), name: "VHBartlett", meta: { title: "Bartlett检验", keepAlive: true } },
@@ -310,7 +310,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "anova",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "ANOVA",
-        meta: { title: "方差分析", alwaysShow: true },
+        meta: { title: "方差分析", icon: "el-icon-DataBoard", alwaysShow: true },
         children: [
           { path: "one-way", component: () => import("@/views/medical-stats/anova/one-way.vue"), name: "ANOVAOneWay", meta: { title: "完全随机设计", keepAlive: true } },
           { path: "randomized-block", component: () => import("@/views/medical-stats/anova/randomized-block.vue"), name: "ANOVABlock", meta: { title: "随机区组设计", keepAlive: true } },
@@ -321,7 +321,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "regression",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "Regression",
-        meta: { title: "回归分析", alwaysShow: true },
+        meta: { title: "回归分析", icon: "el-icon-SetUp", alwaysShow: true },
         children: [
           { path: "simple", component: () => import("@/views/medical-stats/regression/simple.vue"), name: "RegSimple", meta: { title: "一元线性回归", keepAlive: true } },
           { path: "multiple", component: () => import("@/views/medical-stats/regression/multiple.vue"), name: "RegMultiple", meta: { title: "多元线性回归", keepAlive: true } },
@@ -332,7 +332,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "correlation",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "Correlation",
-        meta: { title: "相关分析", alwaysShow: true },
+        meta: { title: "相关分析", icon: "el-icon-Share", alwaysShow: true },
         children: [
           { path: "pearson", component: () => import("@/views/medical-stats/correlation/pearson.vue"), name: "CorPearson", meta: { title: "Pearson直线相关", keepAlive: true } },
           { path: "spearman", component: () => import("@/views/medical-stats/correlation/spearman.vue"), name: "CorSpearman", meta: { title: "Spearman秩相关", keepAlive: true } },
@@ -344,7 +344,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "survival",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "Survival",
-        meta: { title: "生存分析", alwaysShow: true },
+        meta: { title: "生存分析", icon: "el-icon-Timer", alwaysShow: true },
         children: [
           { path: "kaplan-meier", component: () => import("@/views/medical-stats/survival/kaplan-meier.vue"), name: "KaplanMeier", meta: { title: "Kaplan-Meier", keepAlive: true } },
           { path: "life-table", component: () => import("@/views/medical-stats/survival/life-table.vue"), name: "LifeTable", meta: { title: "寿命表法", keepAlive: true } },
@@ -356,7 +356,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "cluster",
         component: () => import("@/views/medical-stats/layout.vue"),
         name: "Cluster",
-        meta: { title: "聚类分析", alwaysShow: true },
+        meta: { title: "聚类分析", icon: "el-icon-Help", alwaysShow: true },
         children: [
           { path: "sample", component: () => import("@/views/medical-stats/cluster/sample.vue"), name: "ClusterSample", meta: { title: "样品聚类", keepAlive: true } },
           { path: "variable", component: () => import("@/views/medical-stats/cluster/variable.vue"), name: "ClusterVariable", meta: { title: "变量聚类", keepAlive: true } },
