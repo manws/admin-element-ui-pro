@@ -46,7 +46,7 @@ export const appConfig = {
 // ============================================
 export const defaults = {
   theme: prefersDark ? ThemeMode.DARK : ThemeMode.LIGHT,
-  themeColor: "#4080FF",
+  themeColor: "#4558d0",
   sidebarColorScheme: SidebarColor.CLASSIC_BLUE,
   layout: LayoutMode.MIX,
   size: ComponentSize.DEFAULT,
@@ -63,7 +63,7 @@ export const defaults = {
 // 主题色预设
 // ============================================
 export const themeColorPresets = [
-  "#4080FF",
+  "#4558d0",
   "#1890FF",
   "#409EFF",
   "#FA8C16",

@@ -225,14 +225,35 @@ watch(
 
 <style lang="scss" scoped>
 .layout {
+  // ===== 顶部导航栏 =====
   &__header {
     position: sticky;
     top: 0;
     z-index: 999;
     width: 100%;
     height: $navbar-height;
-    background-color: var(--menu-background);
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    background: var(--menu-background-gradient, var(--menu-background));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 4px 20px rgba(0, 0, 0, 0.06);
+
+    // 底部渐变彩线（001.html 标志性设计）
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(
+        90deg,
+        transparent 5%,
+        rgba(69, 88, 208, 0.4) 30%,
+        rgba(51, 69, 184, 0.3) 70%,
+        transparent 95%
+      );
+      pointer-events: none;
+    }
 
     &-content {
       display: flex;
@@ -267,15 +288,42 @@ watch(
         display: flex;
         align-items: center;
         height: 100%;
+        gap: 2px;
 
         .el-menu-item {
-          height: 100%;
-          line-height: $navbar-height;
+          height: calc(100% - 12px);
+          margin: 6px 0;
+          padding: 0 18px;
+          line-height: calc($navbar-height - 12px);
           border-bottom: none;
+          border-radius: 8px;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+          }
+
+          // 选中态 — 半透明白底胶囊 + 底部小指示条
           &.is-active {
-            background-color: rgba(255, 255, 255, 0.12);
-            border-bottom: 2px solid var(--el-color-primary);
+            position: relative;
+            font-weight: 600;
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            box-shadow:
+              inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+              0 2px 8px rgba(0, 0, 0, 0.06);
+
+            &::after {
+              content: "";
+              position: absolute;
+              bottom: -6px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 16px;
+              height: 3px;
+              border-radius: 3px;
+              background: linear-gradient(90deg, #a5b4fc, #c4b5fd);
+              box-shadow: 0 0 6px rgba(165, 180, 252, 0.4);
+            }
           }
         }
       }
@@ -290,16 +338,21 @@ watch(
     }
   }
 
+  // ===== 内容容器 =====
   &__container {
     display: flex;
     height: calc(100vh - $navbar-height);
     padding-top: 0;
 
+    // ===== 左侧菜单栏 =====
     .layout__sidebar--left {
       position: relative;
       width: $sidebar-width;
       height: 100%;
-      background-color: var(--menu-background);
+      background: var(--menu-background-gradient, var(--menu-background));
+      box-shadow:
+        inset -1px 0 0 rgba(255, 255, 255, 0.08),
+        4px 0 16px rgba(0, 0, 0, 0.04);
       transition: width 0.28s;
 
       &.layout__sidebar--collapsed {
@@ -313,8 +366,52 @@ watch(
       :deep(.el-menu) {
         height: 100%;
         border: none;
+        padding: 8px 6px;
+
+        // 菜单项圆角 + hover/active 优化
+        .el-menu-item,
+        .el-sub-menu__title {
+          margin: 1px 0;
+          border-radius: 8px;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+          }
+        }
+
+        // 选中态 — 左侧 3px 渐变色条 + 半透明白底
+        .el-menu-item.is-active {
+          position: relative;
+          font-weight: 600;
+          background-color: rgba(255, 255, 255, 0.12) !important;
+
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: linear-gradient(180deg, #a5b4fc, #818cf8);
+            box-shadow: 0 0 8px rgba(165, 180, 252, 0.4);
+          }
+        }
+
+        // 展开的子菜单父级 — 也加半透明底色
+        .el-sub-menu.is-opened > .el-sub-menu__title {
+          background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        // 有激活子项的父菜单
+        .el-sub-menu.has-active-child > .el-sub-menu__title {
+          color: #fff !important;
+          font-weight: 600;
+        }
       }
 
+      // 底部折叠按钮
       .layout__sidebar-toggle {
         position: absolute;
         bottom: 0;
@@ -324,11 +421,12 @@ watch(
         width: 100%;
         height: 50px;
         line-height: 50px;
-        background-color: var(--menu-background);
-        box-shadow: 0 0 6px -2px var(--el-color-primary);
+        background-color: transparent;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
       }
     }
 
+    // ===== 主内容区 =====
     .layout__main {
       flex: 1;
       min-width: 0;
@@ -339,6 +437,7 @@ watch(
   }
 }
 
+// ===== 移动端 =====
 :deep(.mobile) {
   .layout__container {
     .layout__sidebar--left {

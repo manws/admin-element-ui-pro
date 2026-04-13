@@ -49,7 +49,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
     left: 0;
     z-index: 999;
     width: $sidebar-width;
-    background-color: $menu-background;
+    background: var(--menu-background-gradient, var(--menu-background));
     transition: width 0.28s;
 
     &--collapsed {
@@ -59,7 +59,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
     .layout-sidebar {
       position: relative;
       height: 100%;
-      background-color: var(--menu-background);
+      background: transparent;
       transition: width 0.28s;
 
       &.has-logo {
