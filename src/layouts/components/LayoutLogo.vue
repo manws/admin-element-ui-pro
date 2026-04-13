@@ -97,6 +97,29 @@ defineProps({
   }
 }
 
+// 经典蓝侧边栏 — Logo 白色适配
+html.sidebar-color-blue {
+  .layout-mix .logo,
+  .layout-top .logo {
+    .logo-mark {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.2) !important;
+
+      svg {
+        color: #fff !important;
+      }
+    }
+
+    .logo-name {
+      color: #fff !important;
+    }
+
+    .logo-sub {
+      color: rgba(255, 255, 255, 0.55) !important;
+    }
+  }
+}
+
 // 宽屏时：openSidebar 状态下显示完整Logo+文字
 .openSidebar {
   &.layout-top .layout__header-left .logo,
