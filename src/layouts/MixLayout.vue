@@ -65,9 +65,9 @@
             :collapse="!isSidebarOpen"
             :collapse-transition="false"
             :unique-opened="false"
-            :background-color="useMenuColors ? variables['menu-background'] : undefined"
-            :text-color="useMenuColors ? variables['menu-text'] : undefined"
-            :active-text-color="useMenuColors ? variables['menu-active-text'] : undefined"
+            :background-color="variables['menu-background']"
+            :text-color="variables['menu-text']"
+            :active-text-color="variables['menu-active-text']"
           >
             <LayoutSidebarItem
               v-for="item in sideMenuRoutes"
