@@ -52,156 +52,27 @@
 // ============================================
 
 .layout-mix .layout__sidebar--left .el-menu {
-  // 菜单文字溢出省略
-  .el-menu-item,
-  .el-sub-menu__title {
-    span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
   .el-menu-item {
     &:hover {
-      background-color: var(--mix-sidebar-hover-bg) !important;
+      background-color: var(--el-fill-color-light) !important;
     }
   }
 
   .el-sub-menu__title {
     &:hover {
-      background-color: var(--mix-sidebar-hover-bg) !important;
+      background-color: var(--el-fill-color-light) !important;
     }
   }
 }
 
-// 深色或深蓝侧边栏的 hover 样式（由 CSS 变量自动适配）
+// 深色或深蓝侧边栏的 hover 样式
 html.dark .layout-mix .layout__sidebar--left .el-menu,
 html.sidebar-color-blue .layout-mix .layout__sidebar--left .el-menu {
   .el-menu-item,
   .el-sub-menu__title {
     &:hover {
-      background-color: var(--mix-sidebar-hover-bg) !important;
+      background-color: var(--menu-hover) !important;
     }
-  }
-}
-
-// ============================================
-// MIX 布局 - 主内容区背景透明以透出 blob 背景
-// ============================================
-
-.layout-mix .app-main {
-  background-color: transparent !important;
-}
-
-// MIX 布局 - 卡片毛玻璃风格
-.layout-mix .app-main {
-  // el-card 毛玻璃
-  .el-card {
-    background: var(--mix-glass) !important;
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    border-color: var(--mix-glass-border) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-
-    .el-card__header {
-      border-bottom-color: var(--mix-glass-border);
-    }
-  }
-
-  // el-table 半透明
-  .el-table {
-    background-color: transparent !important;
-
-    tr {
-      background-color: transparent !important;
-    }
-
-    th.el-table__cell {
-      background-color: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04) !important;
-    }
-
-    .el-table__row:hover > td.el-table__cell {
-      background-color: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06) !important;
-    }
-
-    .el-table__row--striped .el-table__cell {
-      background-color: rgba(255, 255, 255, 0.25) !important;
-    }
-  }
-
-  // 统计指标卡片顶部彩条保留，但底色透明化
-  .metric-card.accent { border-top-color: var(--el-color-primary); }
-  .metric-card.success { border-top-color: var(--el-color-success); }
-  .metric-card.warning { border-top-color: var(--el-color-warning); }
-  .metric-card.neutral { border-top-color: var(--el-color-info); }
-
-  // 参数卡片、因素面板等内部区块统一半透明
-  .param-item,
-  .factor-panel,
-  .answer-chip {
-    background: rgba(255, 255, 255, 0.35) !important;
-    border: 1px solid var(--mix-glass-border);
-  }
-
-  // 选项卡片
-  .option-card {
-    background: rgba(255, 255, 255, 0.4) !important;
-    border-color: var(--mix-glass-border) !important;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.55) !important;
-    }
-
-    &.active {
-      background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06) !important;
-      border-color: var(--el-color-primary) !important;
-    }
-  }
-
-  // 表单输入框半透明 —— 覆盖 Element Plus 所有输入类组件
-  .el-input {
-    .el-input__wrapper {
-      background-color: rgba(255, 255, 255, 0.4) !important;
-      box-shadow: 0 0 0 1px var(--mix-glass-border) inset !important;
-    }
-  }
-
-  .el-input-number {
-    .el-input__wrapper {
-      background-color: rgba(255, 255, 255, 0.4) !important;
-      box-shadow: 0 0 0 1px var(--mix-glass-border) inset !important;
-    }
-
-    .el-input-number__decrease,
-    .el-input-number__increase {
-      background-color: rgba(255, 255, 255, 0.3) !important;
-    }
-  }
-
-  .el-select {
-    .el-select__wrapper {
-      background-color: rgba(255, 255, 255, 0.4) !important;
-      box-shadow: 0 0 0 1px var(--mix-glass-border) inset !important;
-    }
-  }
-
-  // el-form-item label 颜色
-  .el-form-item__label {
-    color: var(--el-text-color-regular);
-  }
-
-  // el-tag 半透明
-  .el-tag--plain {
-    background-color: rgba(255, 255, 255, 0.3) !important;
-  }
-
-  // 按钮列对齐（与 el-form-item 底部对齐）
-  .btn-col {
-    display: flex;
-    align-items: flex-end;
-    padding-bottom: 18px;
-    gap: 8px;
   }
 }
 

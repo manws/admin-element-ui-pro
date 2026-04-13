@@ -1,16 +1,5 @@
 <template>
   <BaseLayout>
-    <!-- 动态渐变背景 -->
-    <div class="mix-bg-canvas">
-      <div class="mix-blob mix-blob--1" />
-      <div class="mix-blob mix-blob--2" />
-      <div class="mix-blob mix-blob--3" />
-      <div class="mix-blob mix-blob--4" />
-      <div class="mix-blob mix-blob--5" />
-      <!-- 噪点纹理层 -->
-      <div class="mix-noise" />
-    </div>
-
     <!-- 顶部菜单栏 -->
     <div class="layout__header">
       <div class="layout__header-content">
@@ -49,16 +38,6 @@
     <div class="layout__container">
       <!-- 左侧菜单栏 -->
       <div class="layout__sidebar--left" :class="{ 'layout__sidebar--collapsed': !isSidebarOpen }">
-        <!-- 侧边栏模块头部 -->
-        <div v-if="isSidebarOpen && activeTopMenuItem" class="layout__sidebar-head">
-          <div class="layout__sidebar-head-tag">Module</div>
-          <div class="layout__sidebar-head-title">
-            <div class="layout__sidebar-head-icon">
-              <MenuIcon :icon="activeTopMenuItem.meta?.icon" />
-            </div>
-            {{ translateRouteTitle(activeTopMenuItem.meta?.title || '') }}
-          </div>
-        </div>
         <el-scrollbar>
           <el-menu
             :default-active="activeSideMenuPath"
@@ -144,11 +123,6 @@ const { showTagsView, showLogo, isSidebarOpen, toggleSidebar, sideMenuRoutes, ac
   useLayout();
 
 const isLogoCollapsed = computed(() => width.value < 768);
-
-// 当前激活的顶部菜单项（用于侧边栏模块头部显示）
-const activeTopMenuItem = computed(() => {
-  return topMenuItems.value.find((item) => item.path === activeTopMenuPath.value);
-});
 
 // 是否使用深色菜单配色（暗色主题或经典蓝侧边栏）
 const useMenuColors = computed(
@@ -250,107 +224,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-// ===== 动态渐变背景 =====
-.mix-bg-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: var(--mix-bg-color);
-  overflow: hidden;
-  pointer-events: none;
-}
-
-// 噪点纹理 - 增强玻璃质感
-.mix-noise {
-  position: absolute;
-  inset: 0;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-  mix-blend-mode: overlay;
-}
-
-.mix-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.8;
-  will-change: transform;
-  animation: mixBlobMove 20s ease-in-out infinite alternate;
-
-  &--1 {
-    width: 700px;
-    height: 700px;
-    background: var(--mix-blob-1);
-    top: -15%;
-    left: -8%;
-    animation-delay: 0s;
-    animation-duration: 22s;
-  }
-
-  &--2 {
-    width: 550px;
-    height: 550px;
-    background: var(--mix-blob-2);
-    top: 55%;
-    right: -10%;
-    animation-delay: -5s;
-    animation-duration: 18s;
-  }
-
-  &--3 {
-    width: 500px;
-    height: 500px;
-    background: var(--mix-blob-3);
-    bottom: -12%;
-    left: 25%;
-    animation-delay: -10s;
-    animation-duration: 24s;
-  }
-
-  &--4 {
-    width: 400px;
-    height: 400px;
-    background: var(--mix-blob-4);
-    top: 15%;
-    left: 55%;
-    animation-delay: -3s;
-    animation-duration: 20s;
-  }
-
-  &--5 {
-    width: 450px;
-    height: 450px;
-    background: var(--mix-blob-3);
-    top: 35%;
-    left: 10%;
-    opacity: 0.5;
-    filter: blur(120px);
-    animation-delay: -8s;
-    animation-duration: 26s;
-  }
-}
-
-@keyframes mixBlobMove {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-  }
-  25% {
-    transform: translate(50px, -40px) scale(1.1) rotate(2deg);
-  }
-  50% {
-    transform: translate(-30px, 50px) scale(0.92) rotate(-1deg);
-  }
-  75% {
-    transform: translate(40px, 20px) scale(1.06) rotate(1.5deg);
-  }
-  100% {
-    transform: translate(-20px, -30px) scale(1.02) rotate(-0.5deg);
-  }
-}
-
-// ===== 布局主体 =====
 .layout {
   &__header {
     position: sticky;
@@ -358,41 +231,8 @@ watch(
     z-index: 999;
     width: 100%;
     height: $navbar-height;
-    // 毛玻璃效果
-    background: var(--mix-glass-strong);
-    backdrop-filter: var(--mix-glass-blur);
-    -webkit-backdrop-filter: var(--mix-glass-blur);
-    border-bottom: 1px solid var(--mix-glass-border);
-    box-shadow: var(--mix-header-shadow);
-
-    // 顶部高光线 - 模拟玻璃反光
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 10%;
-      right: 10%;
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.8) 30%,
-        rgba(255, 255, 255, 0.9) 50%,
-        rgba(255, 255, 255, 0.8) 70%,
-        transparent
-      );
-    }
-
-    // 底部渐变装饰线
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--mix-header-line);
-    }
+    background-color: var(--menu-background);
+    border-bottom: 1px solid var(--el-border-color-lighter);
 
     &-content {
       display: flex;
@@ -427,46 +267,15 @@ watch(
         display: flex;
         align-items: center;
         height: 100%;
-        gap: 4px;
 
-        // 顶部导航 - 胶囊样式
         .el-menu-item {
-          height: 36px;
-          padding: 0 18px;
-          margin: 0 1px;
-          line-height: 36px;
-          font-size: 13.5px;
-          font-weight: 500;
-          border-radius: 100px;
-          border-bottom: none !important;
-          border: 1.5px solid transparent;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          position: relative;
-
-          &:hover:not(.is-active) {
-            background-color: var(--mix-pill-hover-bg) !important;
-            transform: translateY(-1px);
-          }
+          height: 100%;
+          line-height: $navbar-height;
+          border-bottom: none;
 
           &.is-active {
-            background-color: var(--mix-pill-active-bg) !important;
-            border-color: var(--mix-pill-active-border);
-            font-weight: 600;
-            box-shadow: var(--mix-pill-active-shadow);
-
-            // 底部渐变短条
-            &::after {
-              content: "";
-              position: absolute;
-              bottom: -3px;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 20px;
-              height: 3px;
-              border-radius: 3px;
-              background: var(--mix-grad);
-              box-shadow: 0 0 8px var(--mix-grad-glow);
-            }
+            background-color: rgba(255, 255, 255, 0.12);
+            border-bottom: 2px solid var(--el-color-primary);
           }
         }
       }
@@ -485,152 +294,38 @@ watch(
     display: flex;
     height: calc(100vh - $navbar-height);
     padding-top: 0;
-    position: relative;
-    z-index: 1;
 
     .layout__sidebar--left {
       position: relative;
       width: $sidebar-width;
       height: 100%;
-      // 毛玻璃效果
-      background: var(--mix-glass);
-      backdrop-filter: var(--mix-glass-blur);
-      -webkit-backdrop-filter: var(--mix-glass-blur);
-      border-right: 1px solid var(--mix-glass-border);
-      box-shadow: var(--mix-sidebar-shadow);
+      background-color: var(--menu-background);
       transition: width 0.28s;
-      display: flex;
-      flex-direction: column;
-
-      // 右侧高光线 - 模拟玻璃边缘
-      &::after {
-        content: "";
-        position: absolute;
-        top: 5%;
-        bottom: 5%;
-        right: 0;
-        width: 1px;
-        background: linear-gradient(
-          180deg,
-          transparent,
-          rgba(255, 255, 255, 0.4) 20%,
-          rgba(255, 255, 255, 0.6) 50%,
-          rgba(255, 255, 255, 0.4) 80%,
-          transparent
-        );
-        pointer-events: none;
-      }
 
       &.layout__sidebar--collapsed {
         width: $sidebar-width-collapsed !important;
-
-        .layout__sidebar-head {
-          display: none;
-        }
       }
 
       :deep(.el-scrollbar) {
-        flex: 1;
-        min-height: 0;
+        height: calc(100vh - $navbar-height - 50px);
       }
 
       :deep(.el-menu) {
         height: 100%;
         border: none;
-        padding: 6px 8px;
-        background-color: transparent !important;
-
-        // 左侧菜单项统一圆角
-        .el-menu-item,
-        .el-sub-menu__title {
-          margin: 2px 0;
-          border-radius: 10px;
-          position: relative;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        // hover 态
-        .el-menu-item:hover,
-        .el-sub-menu__title:hover {
-          background-color: var(--mix-sidebar-hover-bg) !important;
-          transform: translateX(2px);
-        }
-
-        // 选中态 - 左侧渐变指示条 + 微光背景
-        .el-menu-item.is-active {
-          font-weight: 600;
-          background-color: var(--mix-sidebar-active-bg) !important;
-
-          &::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 18%;
-            bottom: 18%;
-            width: 3.5px;
-            border-radius: 0 4px 4px 0;
-            background: var(--mix-grad);
-            box-shadow: 0 0 12px var(--mix-grad-glow), 0 0 4px var(--mix-grad-glow);
-          }
-        }
-      }
-
-      // 侧边栏模块头部
-      .layout__sidebar-head {
-        padding: 16px 18px 12px;
-        border-bottom: 1px solid var(--mix-glass-border);
-        flex-shrink: 0;
-
-        &-tag {
-          font-family: "IBM Plex Mono", "Consolas", monospace;
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          color: var(--el-text-color-placeholder);
-        }
-
-        &-title {
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--el-text-color-primary);
-          margin-top: 6px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        &-icon {
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--mix-sidebar-active-bg);
-          border: 1px solid rgba(37, 99, 235, 0.12);
-          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
-          flex-shrink: 0;
-
-          :deep([class^="i-svg:"]) {
-            width: 14px;
-            height: 14px;
-            color: var(--el-color-primary);
-          }
-        }
       }
 
       .layout__sidebar-toggle {
-        position: relative;
-        flex-shrink: 0;
+        position: absolute;
+        bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
         height: 50px;
         line-height: 50px;
-        background-color: transparent;
-        border-top: 1px solid var(--mix-glass-border);
+        background-color: var(--menu-background);
+        box-shadow: 0 0 6px -2px var(--el-color-primary);
       }
     }
 
@@ -640,10 +335,6 @@ watch(
       height: 100%;
       margin-left: 0;
       overflow-y: auto;
-
-      :deep(.app-main) {
-        background-color: transparent;
-      }
     }
   }
 }
