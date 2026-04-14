@@ -1,10 +1,23 @@
 <template>
   <div class="app-container random-select">
+    <!-- 页头 Hero -->
+    <div class="page-hero mb-4">
+      <div class="hero-text">
+        <h1 class="hero-title">随机选择</h1>
+        <p class="hero-desc">通过问答式评估，智能推荐最适合的临床试验随机化方法</p>
+      </div>
+      <el-tag class="hero-tag" effect="plain" size="large" round>RANDOM SELECTOR</el-tag>
+      <div class="hero-watermark">RS</div>
+    </div>
+
     <!-- 选择流程 + 输出内容 -->
-    <el-row :gutter="16" class="mb-4">
+    <el-row :gutter="16" class="mb-4" style="align-items:stretch">
       <el-col :lg="16" :xs="24">
-        <el-card shadow="never" class="h-full">
-          <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">选择流程</span><el-tag size="small" effect="plain">RANDOM SELECTOR</el-tag></div></template>
+        <div class="algo-card">
+          <div class="algo-card-header">
+            <div class="algo-card-icon"><div class="i-svg:el-icon-Document" style="width:16px;height:16px" /></div>
+            <span>选择流程</span>
+          </div>
           <div class="algo-body">
             <h3>随机化方法选择</h3>
             <h4>第一步：特性与场景对比</h4>
@@ -16,7 +29,7 @@
             <h4>第四步：样本量与大数定律评估</h4>
             <p>样本量越大，简单随机越能依靠大数定律自然收敛；样本量越小、因素越多，越需要分层或最小化类方法辅助。</p>
           </div>
-        </el-card>
+        </div>
       </el-col>
       <el-col :lg="8" :xs="24">
         <div class="param-sidebar">
@@ -97,10 +110,10 @@
 
     <!-- 统计指标 -->
     <el-row :gutter="16" class="mb-4">
-      <el-col :lg="6" :md="6" :xs="12"><el-card shadow="never" class="metric-card accent"><div class="text-xs text-gray mb-2">推荐方法</div><div class="text-2xl font-bold">{{ result.winnerTitle }}</div><div class="text-xs text-gray mt-2">{{ result.runnerUpHint }}</div></el-card></el-col>
-      <el-col :lg="6" :md="6" :xs="12"><el-card shadow="never" class="metric-card success"><div class="text-xs text-gray mb-2">推荐指数</div><div class="text-2xl font-bold">{{ result.starsText }}</div><div class="text-xs text-gray mt-2">综合得分 {{ result.winnerScore }}</div></el-card></el-col>
-      <el-col :lg="6" :md="6" :xs="12"><el-card shadow="never" class="metric-card warning"><div class="text-xs text-gray mb-2">大数定律评估</div><div class="text-2xl font-bold">{{ result.llnLabel }}</div><div class="text-xs text-gray mt-2">{{ result.llnDetail }}</div></el-card></el-col>
-      <el-col :lg="6" :md="6" :xs="12"><el-card shadow="never" class="metric-card neutral"><div class="text-xs text-gray mb-2">硬约束数</div><div class="text-2xl font-bold">{{ result.constraintCount }}</div><div class="text-xs text-gray mt-2">{{ result.constraintHint }}</div></el-card></el-col>
+      <el-col :lg="6" :md="6" :xs="12"><div class="metric-card mc-blue" data-watermark="★"><div class="mc-content"><div class="mc-label">推荐方法</div><div class="mc-value mc-value-sm">{{ result.winnerTitle }}</div><div class="mc-sub">{{ result.runnerUpHint }}</div></div><div class="mc-icon"><div class="i-svg:el-icon-Trophy" /></div></div></el-col>
+      <el-col :lg="6" :md="6" :xs="12"><div class="metric-card mc-green" data-watermark="⭐"><div class="mc-content"><div class="mc-label">推荐指数</div><div class="mc-value mc-value-sm">{{ result.starsText }}</div><div class="mc-sub">综合得分 {{ result.winnerScore }}</div></div><div class="mc-icon"><div class="i-svg:el-icon-StarFilled" /></div></div></el-col>
+      <el-col :lg="6" :md="6" :xs="12"><div class="metric-card mc-amber" data-watermark="∞"><div class="mc-content"><div class="mc-label">大数定律评估</div><div class="mc-value mc-value-sm">{{ result.llnLabel }}</div><div class="mc-sub">{{ result.llnDetail }}</div></div><div class="mc-icon"><div class="i-svg:el-icon-TrendCharts" /></div></div></el-col>
+      <el-col :lg="6" :md="6" :xs="12"><div class="metric-card mc-neutral" data-watermark="!"><div class="mc-content"><div class="mc-label">硬约束数</div><div class="mc-value">{{ result.constraintCount }}</div><div class="mc-sub">{{ result.constraintHint }}</div></div><div class="mc-icon"><div class="i-svg:el-icon-Warning" /></div></div></el-col>
     </el-row>
 
     <!-- 决策说明 + 方案摘要 -->
@@ -301,28 +314,10 @@ onMounted(evaluate);
 </script>
 
 <style scoped>
-.algo-body h3 { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
-.algo-body h4 { font-size: 14px; font-weight: 600; margin: 16px 0 6px; color: var(--el-text-color-primary); }
-.algo-body h4:first-of-type { margin-top: 0; }
-.algo-body p { font-size: 13px; color: var(--el-text-color-secondary); line-height: 1.85; margin: 0 0 4px; }
+@import './random-shared.css';
 
-.param-sidebar { height: 100%; padding: 18px; border-radius: var(--el-card-border-radius, 12px); background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.03); border: 1px solid var(--el-border-color-lighter); }
-.param-sidebar-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; }
-.param-sidebar-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.08); flex-shrink: 0; }
-.param-sidebar-list { display: flex; flex-direction: column; gap: 14px; }
-.param-sidebar-item { display: flex; gap: 10px; align-items: flex-start; }
-.param-sidebar-num { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.07); color: var(--el-color-primary); font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-.param-sidebar-name { font-size: 13px; font-weight: 600; color: var(--el-text-color-primary); margin-bottom: 3px; }
-.param-sidebar-desc { font-size: 11.5px; color: var(--el-text-color-secondary); line-height: 1.65; }
-
-.h-full { height: 100%; }
 .param-list { display: grid; gap: 12px; }
 .param-item { padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,0.3); border: 1px solid var(--el-border-color-lighter); }
-.metric-card { text-align: center; }
-.metric-card.accent { border-top: 3px solid #409EFF; }
-.metric-card.success { border-top: 3px solid #67C23A; }
-.metric-card.warning { border-top: 3px solid #E6A23C; }
-.metric-card.neutral { border-top: 3px solid #909399; }
 
 .option-card {
   padding: 14px;
@@ -339,8 +334,8 @@ onMounted(evaluate);
 }
 .option-card.active {
   border-color: var(--el-color-primary);
-  background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04);
-  box-shadow: 0 4px 20px rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.08);
+  background: rgba(69, 88, 208, 0.04);
+  box-shadow: 0 4px 20px rgba(69, 88, 208, 0.08);
 }
 
 .answer-chip {
