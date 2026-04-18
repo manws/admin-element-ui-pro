@@ -93,10 +93,11 @@
               </el-form-item>
             </el-col>
             <el-col :lg="4" :md="6" :xs="12" class="btn-col">
-              <el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button>
+              <el-button type="primary" style="width:100%" :disabled="!!blockSizeWarning" @click="runSimulation">开始模拟</el-button>
             </el-col>
           </el-row>
         </el-form>
+        <el-alert v-if="blockSizeWarning" :title="blockSizeWarning" type="warning" show-icon :closable="false" class="mb-3" style="border-radius:10px" />
         <div class="sim-card-tip">{{ footnote }}</div>
       </div>
     </div>
@@ -195,13 +196,13 @@
 </template>
 
 <script setup lang="ts">
-import { createSeededRandom, padNumber, parseRatio, normalizeBlockSize, shuffleArray } from "./utils/random";
+import { createSeededRandom, padNumber, parseRatio, shuffleArray } from "./utils/random";
 
 defineOptions({ name: "RandomBlock" });
 
 const paramIntros = [
   { title: "模拟受试者总数", desc: "设置本次模拟纳入的受试者数量。区组随机特别适合边入组边随机的场景，能够减少过程中的组间失衡。" },
-  { title: "区组大小", desc: "定义每个区组内包含多少名受试者。系统会根据分配比例自动校正为可用区组大小。" },
+  { title: "区组大小", desc: "定义每个区组内包含多少名受试者。区组大小需为分配比例之和的倍数，否则无法按比例均匀分配。" },
   { title: "分配比例 A:B", desc: "定义区组内 A 组与 B 组的理论分配比例，例如 1:1、2:1。" },
   { title: "随机种子与随机号前缀", desc: "随机种子用于复现实验结果；随机号前缀用于生成模拟随机码。" },
 ];
@@ -212,6 +213,14 @@ const form = reactive({ subjectCount: 120, blockSize: 4, ratio: "1:1", seed: "BL
 const res = ref<any>({ rows: [], countA: 0, countB: 0, percentA: "0.0", percentB: "0.0", gap: 0, totalBlocks: 0, fullBlocks: 0, tailSize: 0, subjectCount: 0 });
 const pieOpts = ref({}); const barOpts = ref({}); const lineOpts = ref({});
 const narrativeHtml = ref(""); const footnote = ref("");
+
+const blockSizeWarning = computed(() => {
+  const { ratioTotal } = parseRatio(form.ratio);
+  if (form.blockSize % ratioTotal !== 0) {
+    return `区组大小 ${form.blockSize} 与分配比例 ${form.ratio} 不兼容：区组大小应为分配比例之和 (${ratioTotal}) 的倍数，请调整为 ${ratioTotal}、${ratioTotal * 2}、${ratioTotal * 3} 等数值。`;
+  }
+  return "";
+});
 
 function createBlockAssignments(blockSize: number, ratioA: number, ratioB: number, ratioTotal: number, random: () => number, runA: number, runB: number) {
   const exactA = (blockSize * ratioA) / ratioTotal;
@@ -228,7 +237,7 @@ function createBlockAssignments(blockSize: number, ratioA: number, ratioB: numbe
 function simulate() {
   const n = Math.min(500, Math.max(10, Math.round(form.subjectCount || 120)));
   const { ratioA, ratioB, ratioTotal } = parseRatio(form.ratio);
-  const bs = normalizeBlockSize(form.blockSize, ratioTotal);
+  const bs = form.blockSize;
   const seed = form.seed.trim() || "BLOCK-DEFAULT";
   const prefix = (form.codePrefix.trim() || "BLK").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10).toUpperCase() || "BLK";
   const random = createSeededRandom(seed);
@@ -253,7 +262,7 @@ function simulate() {
   const gap = Math.abs(cA - cB), full = Math.floor(n / bs), tail = n % bs;
   res.value = { rows, countA: cA, countB: cB, percentA: pA, percentB: pB, gap, totalBlocks, fullBlocks: full, tailSize: tail, subjectCount: n };
 
-  footnote.value = `当前模拟采用 ${ratioA}:${ratioB} 分配比例，区组大小 ${bs}。若输入区组大小与分配比例不兼容，系统已自动校正。`;
+  footnote.value = `当前模拟采用 ${ratioA}:${ratioB} 分配比例，区组大小 ${bs}。`;
 
   pieOpts.value = { tooltip: { trigger: "item" }, legend: { bottom: 0 }, series: [{ type: "pie", radius: ["40%", "70%"], data: [{ value: cA, name: "A组", itemStyle: { color: "#4558d0" } }, { value: cB, name: "B组", itemStyle: { color: "#22c55e" } }], label: { formatter: "{b}: {c} ({d}%)" } }] };
   barOpts.value = { tooltip: { trigger: "axis" }, grid: { left: "10%", right: "4%", bottom: "8%", top: "8%" }, xAxis: { type: "category", data: ["A组", "B组"] }, yAxis: { type: "value" }, series: [{ type: "bar", barWidth: "40%", data: [{ value: cA, itemStyle: { color: "#4558d0", borderRadius: [6, 6, 0, 0] } }, { value: cB, itemStyle: { color: "#22c55e", borderRadius: [6, 6, 0, 0] } }] }] };

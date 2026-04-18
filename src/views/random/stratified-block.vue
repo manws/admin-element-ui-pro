@@ -66,9 +66,10 @@
             <el-col :lg="3" :md="6" :xs="12"><el-form-item label="分配比例 A:B"><el-select v-model="form.ratio" style="width:100%"><el-option value="1:1" label="1 : 1" /><el-option value="2:1" label="2 : 1" /><el-option value="3:1" label="3 : 1" /><el-option value="3:2" label="3 : 2" /></el-select></el-form-item></el-col>
             <el-col :lg="3" :md="6" :xs="12"><el-form-item label="随机种子"><el-input v-model="form.seed" /></el-form-item></el-col>
             <el-col :lg="3" :md="6" :xs="12"><el-form-item label="随机号前缀"><el-input v-model="form.codePrefix" maxlength="10" /></el-form-item></el-col>
-            <el-col :lg="3" :md="6" :xs="12" class="btn-col"><el-button type="primary" style="width:100%" @click="runSimulation">开始模拟</el-button></el-col>
+            <el-col :lg="3" :md="6" :xs="12" class="btn-col"><el-button type="primary" style="width:100%" :disabled="!!blockSizeWarning" @click="runSimulation">开始模拟</el-button></el-col>
           </el-row>
         </el-form>
+        <el-alert v-if="blockSizeWarning" :title="blockSizeWarning" type="warning" show-icon :closable="false" class="mb-3" style="border-radius:10px" />
         <div class="factor-panel">
           <div class="flex justify-between items-center mb-3"><strong>分层因素配置</strong><span class="text-xs text-gray">每个因素均为二分类变量</span></div>
           <div v-for="(f, i) in factors" v-show="i < form.factorCount" :key="i" class="factor-row">
@@ -167,14 +168,14 @@
 </template>
 
 <script setup lang="ts">
-import { createSeededRandom, padNumber, parseRatio, normalizeBlockSize, shuffleArray, clampProbability } from "./utils/random";
+import { createSeededRandom, padNumber, parseRatio, shuffleArray, clampProbability } from "./utils/random";
 
 defineOptions({ name: "RandomStratifiedBlock" });
 
 const paramIntros = [
   { title: "分层因素个数", desc: "支持 1-4 个分层因素，每个因素均视作一个二分类变量。系统会自动展开为 2^k 个理论分层组合。" },
   { title: "分层因素配置", desc: "每个因素都可以设置因素名称、低水平标签、高水平标签和高水平出现概率。" },
-  { title: "区组大小与分配比例", desc: "每个分层组合内部独立维护区组随机序列。区组大小需与分配比例兼容。" },
+  { title: "区组大小与分配比例", desc: "每个分层组合内部独立维护区组随机序列。区组大小必须是分配比例之和的倍数，否则无法按比例均匀分配。" },
   { title: "随机种子与前缀", desc: "随机种子用于复现实验；随机号前缀用于模拟受试者随机码。" },
 ];
 
@@ -191,6 +192,14 @@ const form = reactive({ subjectCount: 150, factorCount: 2, blockSize: 4, ratio: 
 const res = ref<any>({ rows: [], countA: 0, countB: 0, percentA: "0.0", percentB: "0.0", gap: 0, totalBlocks: 0, activeStrata: 0, theoreticalStrata: 0, strataSummary: [], subjectCount: 0 });
 const pieOpts = ref({}); const barOpts = ref({}); const lineOpts = ref({});
 const narrativeHtml = ref(""); const footnote = ref("");
+
+const blockSizeWarning = computed(() => {
+  const { ratioTotal } = parseRatio(form.ratio);
+  if (form.blockSize % ratioTotal !== 0) {
+    return `区组大小 ${form.blockSize} 与分配比例 ${form.ratio} 不兼容：区组大小应为分配比例之和 (${ratioTotal}) 的倍数，请调整为 ${ratioTotal}、${ratioTotal * 2}、${ratioTotal * 3} 等数值。`;
+  }
+  return "";
+});
 
 function buildStrata(fcts: Factor[]) {
   let combos: { weight: number; detail: string[]; short: string[] }[] = [{ weight: 1, detail: [], short: [] }];
@@ -219,7 +228,7 @@ function simulate() {
   const n = Math.min(500, Math.max(20, Math.round(form.subjectCount || 150)));
   const fcts = factors.slice(0, form.factorCount).map(f => ({ ...f, probability: clampProbability(f.probability) }));
   const { ratioA, ratioB, ratioTotal } = parseRatio(form.ratio);
-  const bs = normalizeBlockSize(form.blockSize, ratioTotal);
+  const bs = form.blockSize;
   const seed = form.seed.trim() || "SBLOCK-DEFAULT";
   const prefix = (form.codePrefix.trim() || "SBK").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10).toUpperCase() || "SBK";
   const random = createSeededRandom(seed);
