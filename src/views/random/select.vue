@@ -117,15 +117,15 @@
     </el-row>
 
     <!-- 决策说明 + 方案摘要 -->
-    <el-row :gutter="16" class="mb-4">
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
+    <el-row :gutter="16" class="mb-4" style="align-items:stretch">
+      <el-col :lg="12" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">决策说明</span></template>
           <div class="text-sm leading-relaxed" v-html="result.narrativeHtml" />
         </el-card>
       </el-col>
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
+      <el-col :lg="12" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">随机化方案摘要</span></template>
           <div class="text-sm leading-relaxed" v-html="result.summaryHtml" />
         </el-card>
@@ -133,7 +133,7 @@
     </el-row>
 
     <!-- 评分明细 -->
-    <el-card shadow="never">
+    <el-card shadow="never" class="mb-4">
       <template #header><span class="font-bold">评分明细</span></template>
       <el-table :data="result.scoreRows" size="small" stripe border>
         <el-table-column prop="title" label="方法" width="120" />
@@ -149,6 +149,30 @@
         <el-table-column prop="noteText" label="说明" min-width="240" />
       </el-table>
     </el-card>
+
+    <!-- 参考文献 -->
+    <div class="ref-card mb-4">
+      <div class="ref-card-header">
+        <div class="ref-card-icon"><div class="i-svg:el-icon-Collection" style="width:16px;height:16px" /></div>
+        <span>参考文献</span>
+        <span class="ref-card-count">{{ references.length }} 篇</span>
+      </div>
+      <div class="ref-card-body">
+        <div v-for="(ref, i) in references" :key="i" class="ref-item">
+          <div class="ref-num">{{ i + 1 }}</div>
+          <div class="ref-content">
+            <div class="ref-authors">{{ ref.authors }}</div>
+            <div class="ref-title">{{ ref.title }}</div>
+            <div class="ref-source">
+              <span class="ref-journal">{{ ref.journal }}</span>
+              <span v-if="ref.year" class="ref-year">{{ ref.year }}</span>
+              <span v-if="ref.volume" class="ref-volume">{{ ref.volume }}</span>
+              <el-tag v-if="ref.doi" size="small" effect="plain" class="ref-doi" @click="openDoi(ref.doi)">DOI</el-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -309,6 +333,15 @@ function evaluate() {
     scoreRows,
   };
 }
+
+const references = [
+  { authors: "Suresh KP.", title: "An overview of randomization techniques: an unbiased assessment of outcome in clinical research.", journal: "Journal of Human Reproductive Sciences", year: "2011", volume: "4(1): 8-11", doi: "10.4103/0974-1208.82352" },
+  { authors: "Schulz KF, Grimes DA.", title: "Generation of allocation sequences in randomised trials: chance, not choice.", journal: "The Lancet", year: "2002", volume: "359(9305): 515-519", doi: "10.1016/S0140-6736(02)07683-3" },
+  { authors: "Rosenberger WF, Lachin JM.", title: "Randomization in Clinical Trials: Theory and Practice.", journal: "John Wiley & Sons", year: "2015", volume: "2nd Edition", doi: "10.1002/9781118742112" },
+  { authors: "Pocock SJ, Simon R.", title: "Sequential treatment assignment with balancing for prognostic factors in the controlled clinical trial.", journal: "Biometrics", year: "1975", volume: "31(1): 103-115", doi: "10.2307/2529712" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
+function openDoi(doi: string) { if (doi) window.open(`https://doi.org/${doi}`, "_blank"); }
 
 onMounted(evaluate);
 </script>

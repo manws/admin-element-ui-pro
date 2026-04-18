@@ -116,11 +116,11 @@
     </el-row>
 
     <!-- 入组列表 + 结果说明 -->
-    <el-row :gutter="16">
-      <el-col :lg="14" :xs="24">
-        <el-card shadow="never">
+    <el-row :gutter="16" class="mb-4" style="align-items:stretch">
+      <el-col :lg="14" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">受试者入组列表</span></template>
-          <el-table :data="res.rows" size="small" max-height="420" stripe border>
+          <el-table :data="res.rows" size="small" max-height="260" stripe border>
             <el-table-column prop="subjectId" label="编号" width="80" />
             <el-table-column prop="strataLabel" label="分层" width="120" />
             <el-table-column prop="blockNo" label="区组号" width="110" />
@@ -132,13 +132,37 @@
           </el-table>
         </el-card>
       </el-col>
-      <el-col :lg="10" :xs="24">
-        <el-card shadow="never">
+      <el-col :lg="10" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">结果说明</span></template>
           <div class="text-sm leading-relaxed" v-html="narrativeHtml" />
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 参考文献 -->
+    <div class="ref-card mb-4">
+      <div class="ref-card-header">
+        <div class="ref-card-icon"><div class="i-svg:el-icon-Collection" style="width:16px;height:16px" /></div>
+        <span>参考文献</span>
+        <span class="ref-card-count">{{ references.length }} 篇</span>
+      </div>
+      <div class="ref-card-body">
+        <div v-for="(ref, i) in references" :key="i" class="ref-item">
+          <div class="ref-num">{{ i + 1 }}</div>
+          <div class="ref-content">
+            <div class="ref-authors">{{ ref.authors }}</div>
+            <div class="ref-title">{{ ref.title }}</div>
+            <div class="ref-source">
+              <span class="ref-journal">{{ ref.journal }}</span>
+              <span v-if="ref.year" class="ref-year">{{ ref.year }}</span>
+              <span v-if="ref.volume" class="ref-volume">{{ ref.volume }}</span>
+              <el-tag v-if="ref.doi" size="small" effect="plain" class="ref-doi" @click="openDoi(ref.doi)">DOI</el-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -232,6 +256,15 @@ function simulate() {
   const dominant = tA === tB ? "两组完全均衡" : tA > tB ? "A组略多" : "B组略多";
   narrativeHtml.value = `本次分层区组随机共模拟 <strong>${n}</strong> 例受试者，配置 <strong>${fcts.length}</strong> 个二分类分层因素，理论 <strong>${strata.length}</strong> 个分层组合，实际启用 <strong>${summary.length}</strong> 个。<br/><br/>分配比例 <strong>${ratioA}:${ratioB}</strong>，区组大小 <strong>${bs}</strong>。最终 <strong>A组 ${tA} 例</strong>（${pA}%），<strong>B组 ${tB} 例</strong>（${pB}%），${dominant}，总差值 <strong>${Math.abs(tA - tB)}</strong> 例。共使用 <strong>${totalBlocks}</strong> 个区组。`;
 }
+
+const references = [
+  { authors: "Kernan WN, Viscoli CM, Makuch RW, et al.", title: "Stratified randomization for clinical trials.", journal: "Journal of Clinical Epidemiology", year: "1999", volume: "52(1): 19-26", doi: "10.1016/S0895-4356(98)00138-3" },
+  { authors: "Zelen M.", title: "The randomization and stratification of patients to clinical trials.", journal: "Journal of Chronic Diseases", year: "1974", volume: "27(7-8): 365-375", doi: "10.1016/0021-9681(74)90015-0" },
+  { authors: "Matts JP, Lachin JM.", title: "Properties of permuted-block randomization in clinical trials.", journal: "Controlled Clinical Trials", year: "1988", volume: "9(4): 327-344", doi: "10.1016/0197-2456(88)90047-5" },
+  { authors: "Rosenberger WF, Lachin JM.", title: "Randomization in Clinical Trials: Theory and Practice.", journal: "John Wiley & Sons", year: "2015", volume: "2nd Edition", doi: "10.1002/9781118742112" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
+function openDoi(doi: string) { if (doi) window.open(`https://doi.org/${doi}`, "_blank"); }
 
 function runSimulation() { simulate(); }
 onMounted(simulate);

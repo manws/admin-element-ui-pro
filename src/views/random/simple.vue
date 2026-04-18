@@ -163,11 +163,11 @@
     </el-row>
 
     <!-- 入组列表 + 结果说明 -->
-    <el-row :gutter="16" class="mb-4">
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
+    <el-row :gutter="16" class="mb-4" style="align-items:stretch">
+      <el-col :lg="12" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">受试者入组列表</span></template>
-          <el-table :data="result.rows" size="small" max-height="400" stripe border>
+          <el-table :data="result.rows" size="small" max-height="260" stripe border>
             <el-table-column prop="subjectId" label="受试者编号" width="110" />
             <el-table-column prop="randomCode" label="随机号" min-width="200" />
             <el-table-column prop="randomValue" label="随机值" width="90" />
@@ -179,13 +179,39 @@
           </el-table>
         </el-card>
       </el-col>
-      <el-col :lg="12" :xs="24">
-        <el-card shadow="never">
+      <el-col :lg="12" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">结果说明</span></template>
           <div class="text-sm leading-relaxed" v-html="narrativeHtml" />
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 参考文献 -->
+    <div class="ref-card mb-4">
+      <div class="ref-card-header">
+        <div class="ref-card-icon">
+          <div class="i-svg:el-icon-Collection" style="width:16px;height:16px" />
+        </div>
+        <span>参考文献</span>
+        <span class="ref-card-count">{{ references.length }} 篇</span>
+      </div>
+      <div class="ref-card-body">
+        <div v-for="(ref, i) in references" :key="i" class="ref-item">
+          <div class="ref-num">{{ i + 1 }}</div>
+          <div class="ref-content">
+            <div class="ref-authors">{{ ref.authors }}</div>
+            <div class="ref-title">{{ ref.title }}</div>
+            <div class="ref-source">
+              <span class="ref-journal">{{ ref.journal }}</span>
+              <span v-if="ref.year" class="ref-year">{{ ref.year }}</span>
+              <span v-if="ref.volume" class="ref-volume">{{ ref.volume }}</span>
+              <el-tag v-if="ref.doi" size="small" effect="plain" class="ref-doi" @click="openDoi(ref.doi)">DOI</el-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -200,6 +226,61 @@ const paramIntros = [
   { title: "随机种子", desc: "用于复现实验结果。相同参数与相同种子会得到一致的模拟结果，便于演示、复核与讨论。" },
   { title: "随机号前缀", desc: "用于生成模拟随机码，例如 RAND、SIM。最终会与序号和随机片段组合成受试者随机号。" },
 ];
+
+const references = [
+  {
+    authors: "Schulz KF, Grimes DA.",
+    title: "Generation of allocation sequences in randomised trials: chance, not choice.",
+    journal: "The Lancet",
+    year: "2002",
+    volume: "359(9305): 515-519",
+    doi: "10.1016/S0140-6736(02)07683-3",
+  },
+  {
+    authors: "Lachin JM, Matts JP, Wei LJ.",
+    title: "Randomization in clinical trials: conclusions and recommendations.",
+    journal: "Controlled Clinical Trials",
+    year: "1988",
+    volume: "9(4): 365-374",
+    doi: "10.1016/0197-2456(88)90049-9",
+  },
+  {
+    authors: "Rosenberger WF, Lachin JM.",
+    title: "Randomization in Clinical Trials: Theory and Practice.",
+    journal: "John Wiley & Sons",
+    year: "2015",
+    volume: "2nd Edition",
+    doi: "10.1002/9781118742112",
+  },
+  {
+    authors: "ICH Expert Working Group.",
+    title: "ICH E9: Statistical Principles for Clinical Trials.",
+    journal: "International Council for Harmonisation",
+    year: "1998",
+    volume: "Step 4 Guideline",
+    doi: "",
+  },
+  {
+    authors: "Kernan WN, Viscoli CM, Makuch RW, et al.",
+    title: "Stratified randomization for clinical trials.",
+    journal: "Journal of Clinical Epidemiology",
+    year: "1999",
+    volume: "52(1): 19-26",
+    doi: "10.1016/S0895-4356(98)00138-3",
+  },
+  {
+    authors: "Suresh KP.",
+    title: "An overview of randomization techniques: an unbiased assessment of outcome in clinical research.",
+    journal: "Journal of Human Reproductive Sciences",
+    year: "2011",
+    volume: "4(1): 8-11",
+    doi: "10.4103/0974-1208.82352",
+  },
+];
+
+function openDoi(doi: string) {
+  if (doi) window.open(`https://doi.org/${doi}`, "_blank");
+}
 
 interface SimRow {
   subjectId: string;
@@ -540,7 +621,142 @@ onMounted(simulate);
   -webkit-backdrop-filter: blur(4px);
 }
 
+/* ===== 结果说明卡片 ===== */
+.narrative-card {
+  border-radius: 14px;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-lighter);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.narrative-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+  background: linear-gradient(180deg, rgba(14,165,233,0.03) 0%, transparent 100%);
+  font-size: 15px; font-weight: 700;
+  color: var(--el-text-color-primary);
+}
+.narrative-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: #fff; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(14,165,233,0.25);
+}
+.narrative-body { padding: 18px 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+
+/* 摘要数据条 */
+.narrative-summary {
+  display: flex; align-items: center; gap: 0;
+  padding: 12px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(69,88,208,0.04) 0%, rgba(14,165,233,0.03) 100%);
+  border: 1px solid var(--el-border-color-extra-light);
+}
+.ns-item { display: flex; align-items: baseline; gap: 5px; flex: 1; justify-content: center; }
+.ns-label { font-size: 11px; color: var(--el-text-color-placeholder); font-weight: 500; }
+.ns-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
+}
+.ns-blue { color: #4558d0; }
+.ns-green { color: #16a34a; }
+.ns-amber { color: #e67e22; }
+.ns-pct { font-size: 11px; color: var(--el-text-color-secondary); font-weight: 500; }
+.ns-divider {
+  width: 1px; height: 24px; flex-shrink: 0;
+  background: var(--el-border-color-lighter);
+}
+
+/* 叙述正文 */
+.narrative-text {
+  font-size: 13px; line-height: 1.85;
+  color: var(--el-text-color-secondary);
+  padding-left: 12px;
+  border-left: 3px solid var(--el-border-color-lighter);
+}
+.narrative-text :deep(strong) {
+  color: var(--el-text-color-primary);
+  font-weight: 600;
+}
+
 /* ===== 通用 ===== */
 .h-full { height: 100%; }
 .btn-col { display: flex; align-items: flex-end; padding-bottom: 18px; }
+
+/* ===== 参考文献卡片 ===== */
+.ref-card {
+  border-radius: 14px;
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-lighter);
+  overflow: hidden;
+}
+.ref-card-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+  background: linear-gradient(180deg, rgba(139,92,246,0.03) 0%, transparent 100%);
+  font-size: 15px; font-weight: 700;
+  color: var(--el-text-color-primary);
+}
+.ref-card-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(124,58,237,0.25);
+}
+.ref-card-count {
+  margin-left: auto;
+  font-size: 11px; font-weight: 600;
+  color: #7c3aed;
+  background: rgba(124,58,237,0.06);
+  padding: 2px 10px; border-radius: 100px;
+}
+.ref-card-body { padding: 12px 20px; }
+
+.ref-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+  transition: background 0.15s;
+}
+.ref-item:last-child { border-bottom: none; }
+.ref-item:hover { background: rgba(124,58,237,0.015); margin: 0 -20px; padding-left: 20px; padding-right: 20px; border-radius: 8px; }
+
+.ref-num {
+  width: 24px; height: 24px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(124,58,237,0.06);
+  color: #7c3aed;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0; margin-top: 2px;
+}
+.ref-content { flex: 1; min-width: 0; }
+.ref-authors {
+  font-size: 12px; font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 2px;
+}
+.ref-title {
+  font-size: 13px; font-weight: 500;
+  color: var(--el-text-color-regular);
+  line-height: 1.55;
+  margin-bottom: 4px;
+}
+.ref-source {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: 11.5px; color: var(--el-text-color-secondary);
+}
+.ref-journal { font-style: italic; font-weight: 500; }
+.ref-year { color: var(--el-text-color-placeholder); }
+.ref-volume { color: var(--el-text-color-placeholder); }
+.ref-doi {
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px !important;
+  transition: all 0.15s;
+}
+.ref-doi:hover { color: #7c3aed !important; border-color: #7c3aed !important; }
 </style>

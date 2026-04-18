@@ -113,11 +113,11 @@
     </el-row>
 
     <!-- 入组列表 + 结果说明 -->
-    <el-row :gutter="16">
-      <el-col :lg="14" :xs="24">
-        <el-card shadow="never">
+    <el-row :gutter="16" class="mb-4" style="align-items:stretch">
+      <el-col :lg="14" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">受试者入组列表</span></template>
-          <el-table :data="res.rows" size="small" max-height="420" stripe border>
+          <el-table :data="res.rows" size="small" max-height="260" stripe border>
             <el-table-column prop="subjectId" label="编号" width="80" />
             <el-table-column prop="profileShort" label="协变量" width="120" />
             <el-table-column prop="scoreA" label="候选A分" width="90" />
@@ -129,13 +129,37 @@
           </el-table>
         </el-card>
       </el-col>
-      <el-col :lg="10" :xs="24">
-        <el-card shadow="never">
+      <el-col :lg="10" :xs="24" style="display:flex">
+        <el-card shadow="never" style="flex:1">
           <template #header><span class="font-bold">结果说明</span></template>
           <div class="text-sm leading-relaxed" v-html="narrativeHtml" />
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 参考文献 -->
+    <div class="ref-card mb-4">
+      <div class="ref-card-header">
+        <div class="ref-card-icon"><div class="i-svg:el-icon-Collection" style="width:16px;height:16px" /></div>
+        <span>参考文献</span>
+        <span class="ref-card-count">{{ references.length }} 篇</span>
+      </div>
+      <div class="ref-card-body">
+        <div v-for="(ref, i) in references" :key="i" class="ref-item">
+          <div class="ref-num">{{ i + 1 }}</div>
+          <div class="ref-content">
+            <div class="ref-authors">{{ ref.authors }}</div>
+            <div class="ref-title">{{ ref.title }}</div>
+            <div class="ref-source">
+              <span class="ref-journal">{{ ref.journal }}</span>
+              <span v-if="ref.year" class="ref-year">{{ ref.year }}</span>
+              <span v-if="ref.volume" class="ref-volume">{{ ref.volume }}</span>
+              <el-tag v-if="ref.doi" size="small" effect="plain" class="ref-doi" @click="openDoi(ref.doi)">DOI</el-tag>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -249,6 +273,15 @@ function simulate() {
   const dominant = tA === tB ? "两组完全均衡" : tA > tB ? "A组略多" : "B组略多";
   narrativeHtml.value = `本次最小化随机共模拟 <strong>${n}</strong> 例受试者，配置 <strong>${fcts.length}</strong> 个二分类因素，目标比例 <strong>${ratioA}:${ratioB}</strong>，优选概率 <strong>${(bp * 100).toFixed(0)}%</strong>。<br/><br/>最终 <strong>A组 ${tA} 例</strong>（${pA}%），<strong>B组 ${tB} 例</strong>（${pB}%），${dominant}，差值 <strong>${Math.abs(tA - tB)}</strong> 例。按优选方向分配 <strong>${prefWins}</strong> 次，平局 <strong>${ties}</strong> 次，反向保留 <strong>${opps}</strong> 次。`;
 }
+
+const references = [
+  { authors: "Pocock SJ, Simon R.", title: "Sequential treatment assignment with balancing for prognostic factors in the controlled clinical trial.", journal: "Biometrics", year: "1975", volume: "31(1): 103-115", doi: "10.2307/2529712" },
+  { authors: "Taves DR.", title: "Minimization: a new method of assigning patients to treatment and control groups.", journal: "Clinical Pharmacology & Therapeutics", year: "1974", volume: "15(5): 443-453", doi: "10.1002/cpt1974155443" },
+  { authors: "Scott NW, McPherson GC, Ramsay CR, Campbell MK.", title: "The method of minimization for allocation to clinical trials: a review.", journal: "Controlled Clinical Trials", year: "2002", volume: "23(6): 662-674", doi: "10.1016/S0197-2456(02)00242-8" },
+  { authors: "Treasure T, MacRae KD.", title: "Minimisation: the platinum standard for trials?", journal: "BMJ", year: "1998", volume: "317(7155): 362-363", doi: "10.1136/bmj.317.7155.362" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
+function openDoi(doi: string) { if (doi) window.open(`https://doi.org/${doi}`, "_blank"); }
 
 function runSimulation() { simulate(); }
 onMounted(simulate);
