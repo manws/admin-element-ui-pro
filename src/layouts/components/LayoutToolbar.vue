@@ -23,8 +23,8 @@
       </div>
     </template>
 
-    <!-- 用户菜单 -->
-    <div class="navbar-actions__item">
+    <!-- 用户菜单（已登录） -->
+    <div v-if="isLoggedIn" class="navbar-actions__item">
       <el-dropdown trigger="click">
         <div class="user-profile">
           <el-avatar :size="28" :src="userStore.userInfo.avatar">
@@ -44,6 +44,31 @@
       </el-dropdown>
     </div>
 
+    <!-- 未登录头像（点击打开登录弹框） -->
+    <div v-else class="navbar-actions__item" @click="openLogin">
+      <div class="user-profile user-profile--guest">
+        <div class="guest-avatar">
+          <svg viewBox="0 0 36 36" class="guest-avatar__svg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="guest-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#e8efff" />
+                <stop offset="100%" stop-color="#d0dcff" />
+              </linearGradient>
+              <linearGradient id="guest-fg" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#6b82f0" />
+                <stop offset="100%" stop-color="#4558d0" />
+              </linearGradient>
+            </defs>
+            <circle cx="18" cy="18" r="18" fill="url(#guest-bg)" />
+            <circle cx="18" cy="14" r="5.5" fill="url(#guest-fg)" />
+            <path d="M6.5 32 C 8 24 12.5 21 18 21 C 23.5 21 28 24 29.5 32 Z" fill="url(#guest-fg)" />
+          </svg>
+          <span class="guest-avatar__dot" />
+        </div>
+        <span class="user-profile__name">未登录</span>
+      </div>
+    </div>
+
     <!-- 系统设置 -->
     <div
       v-if="defaults.showSettings"
@@ -52,6 +77,28 @@
     >
       <div class="i-svg:setting" />
     </div>
+
+    <!-- 登录弹框 -->
+    <LoginDialog v-model="loginDialogVisible" @success="handleLoginSuccess" />
+
+    <!-- Token 失效提示弹框 -->
+    <el-dialog
+      v-model="tokenExpiredDialogVisible"
+      title="登录已过期"
+      width="380"
+      align-center
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <div class="token-expired-body">
+        <el-icon class="token-expired-icon" :size="22"><WarningFilled /></el-icon>
+        <span>{{ tokenExpiredMessage }}</span>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="handleTokenExpiredConfirm">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -65,21 +112,31 @@ import {
   ThemeMode,
   LayoutMode,
 } from "@/enums/settings";
-import { useAppStore, useSettingsStore, useUserStore } from "@/store";
+import { useAppStore, useSettingsStore, useUserStore, usePermissionStore } from "@/store";
+import {
+  loginDialogVisible,
+  tokenExpiredDialogVisible,
+  tokenExpiredMessage,
+} from "@/utils/auth-events";
 
 // 导入子组件
 import CommandPalette from "@/components/CommandPalette/index.vue";
 import Fullscreen from "@/components/Fullscreen/index.vue";
 import SizeSelect from "@/components/SizeSelect/index.vue";
 import LangSelect from "@/components/LangSelect/index.vue";
+import LoginDialog from "@/components/LoginDialog/index.vue";
 
 const { t } = useI18n();
 const appStore = useAppStore();
 const settingStore = useSettingsStore();
 const userStore = useUserStore();
+const permissionStore = usePermissionStore();
 
 const route = useRoute();
 const router = useRouter();
+
+// 登录态（响应式）— 用 userInfo.userId 判断，登录成功后该字段变化会触发 UI 刷新
+const isLoggedIn = computed(() => !!userStore.userInfo?.userId);
 
 // 是否为桌面设备
 const isDesktop = computed(() => appStore.device === DeviceEnum.DESKTOP);
@@ -121,9 +178,55 @@ function logout() {
     lockScroll: false,
   }).then(() => {
     userStore.logout().then(() => {
-      router.push(`/login?redirect=${route.fullPath}`);
+      // 登出后刷新路由状态，让菜单回到"游客"视角
+      permissionStore.resetRouter();
+      router.replace("/").catch(() => {});
+      // 触发重新生成路由
+      setTimeout(() => {
+        permissionStore.generateRoutes().catch(() => {});
+      }, 0);
     });
   });
+}
+
+/**
+ * 打开登录弹框
+ */
+function openLogin() {
+  loginDialogVisible.value = true;
+}
+
+/**
+ * 登录成功回调：若当前在登录页则跳首页
+ */
+function handleLoginSuccess() {
+  if (route.path === "/login") {
+    router.replace("/").catch(() => {});
+  }
+}
+
+/**
+ * Token 失效弹框确认：清理认证态 + 重置路由 + 回首页
+ */
+async function handleTokenExpiredConfirm() {
+  await userStore.resetAllState();
+  tokenExpiredDialogVisible.value = false;
+  // 重新生成路由（此时用户已登出，菜单自动进入游客视角）
+  try {
+    await permissionStore.generateRoutes();
+  } catch {
+    // ignore
+  }
+  // 若当前页面需要登录则回首页，否则保持当前页
+  const currentPath = router.currentRoute.value.fullPath;
+  const needsAuth =
+    router.currentRoute.value.meta?.requiresAuth ||
+    router.currentRoute.value.matched.some((m) => m.meta?.requiresAuth);
+  if (needsAuth) {
+    router.replace("/").catch(() => {});
+  } else {
+    router.replace(currentPath).catch(() => {});
+  }
 }
 
 /**
@@ -209,6 +312,20 @@ function handleSettingsClick() {
       border-radius: 50%;
     }
 
+    &__guest-avatar {
+      background: color-mix(in srgb, var(--el-color-primary) 12%, transparent);
+      color: var(--el-color-primary);
+    }
+
+    &--guest {
+      cursor: pointer;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.85;
+      }
+    }
+
     &__name {
       margin-left: 8px;
       color: var(--el-text-color-regular);
@@ -216,6 +333,57 @@ function handleSettingsClick() {
       transition: color 0.3s;
     }
   }
+}
+
+// 未登录默认头像（SVG）
+.guest-avatar {
+  position: relative;
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: visible;
+  box-shadow: 0 0 0 2px rgba(69, 88, 208, 0.12);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+
+  &__svg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: block;
+  }
+
+  &__dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  }
+}
+
+.user-profile--guest:hover .guest-avatar {
+  box-shadow: 0 0 0 3px rgba(69, 88, 208, 0.2);
+  transform: scale(1.03);
+}
+
+// Token 失效弹框
+.token-expired-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px 16px;
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+  line-height: 1.6;
+}
+.token-expired-icon {
+  color: var(--el-color-warning);
+  flex-shrink: 0;
 }
 
 // 白色文字样式（用于深色背景：暗黑主题、顶部布局、混合布局等）

@@ -4,50 +4,54 @@ import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";
 
 /**
+ * 判断路由链中是否存在 requiresAuth 要求
+ */
+function routeRequiresAuth(to: { matched: { meta?: Record<string, any> }[]; meta?: Record<string, any> }): boolean {
+  if (to.meta?.requiresAuth) return true;
+  return to.matched.some((m) => m.meta?.requiresAuth);
+}
+
+/**
  * 路由权限守卫
  *
- * 处理登录验证、动态路由生成、404检测等
+ * 策略：
+ * - 未登录用户可以直接访问首页及大部分页面（游客模式）
+ * - 只有带 meta.requiresAuth 的路由才强制要求登录
+ * - 已登录但 token 失效时由响应拦截器统一处理（弹框）
  */
 export function setupPermissionGuard() {
-  const whiteList = ["/login"];
-
   router.beforeEach(async (to, _from, next) => {
     NProgress.start();
 
     try {
-      const isLoggedIn = useUserStore().isLoggedIn();
+      const userStore = useUserStore();
+      const permissionStore = usePermissionStore();
+      const isLoggedIn = userStore.isLoggedIn();
 
-      // 未登录处理
-      if (!isLoggedIn) {
-        if (whiteList.includes(to.path)) {
-          next();
-        } else {
-          next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
-          NProgress.done();
-        }
-        return;
-      }
-
-      // 已登录访问登录页，重定向到首页
-      if (to.path === "/login") {
+      // 已登录访问登录页 -> 跳首页
+      if (isLoggedIn && to.path === "/login") {
         next({ path: "/" });
         return;
       }
 
-      const permissionStore = usePermissionStore();
-      const userStore = useUserStore();
+      // 访问需登录页面时检查登录态
+      if (!isLoggedIn && routeRequiresAuth(to)) {
+        // 未登录访问受限页面：弹框提示并阻止导航（UI 层应引导至登录弹框）
+        ElMessage.warning("请先登录后访问该页面");
+        NProgress.done();
+        next(false);
+        return;
+      }
 
-      // 动态路由生成
+      // 首次访问时生成动态路由（登录与否都要生成，未登录时仅展示未受限的菜单项）
       if (!permissionStore.isRouteGenerated) {
-        if (!userStore.userInfo?.userId) {
+        if (isLoggedIn && !userStore.userInfo?.userId) {
           userStore.getUserInfo();
         }
-
         const dynamicRoutes = await permissionStore.generateRoutes();
         dynamicRoutes.forEach((route: RouteRecordRaw) => {
           router.addRoute(route);
         });
-
         next({ ...to, replace: true });
         return;
       }
@@ -67,8 +71,7 @@ export function setupPermissionGuard() {
       next();
     } catch (error) {
       console.error("Route guard error:", error);
-      await useUserStore().resetAllState();
-      next("/login");
+      next();
       NProgress.done();
     }
   });

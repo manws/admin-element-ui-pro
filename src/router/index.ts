@@ -388,13 +388,13 @@ export const constantRoutes: RouteRecordRaw[] = [
     component: Layout,
     redirect: "/my-data/index",
     name: "MyData",
-    meta: { title: "我的数据", icon: "el-icon-FolderOpened" },
+    meta: { title: "我的数据", icon: "el-icon-FolderOpened", requiresAuth: true },
     children: [
       {
         path: "index",
         component: () => import("@/views/my-data/index.vue"),
         name: "MyDataIndex",
-        meta: { title: "我的数据", keepAlive: true },
+        meta: { title: "我的数据", keepAlive: true, requiresAuth: true },
       },
     ],
   },

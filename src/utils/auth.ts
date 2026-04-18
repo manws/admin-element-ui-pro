@@ -1,7 +1,7 @@
 import { Storage } from "./storage";
 import { STORAGE_KEYS, ROLE_ROOT } from "@/constants";
 import { useUserStoreHook } from "@/store/modules/user";
-import router from "@/router";
+import { showTokenExpiredDialog } from "./auth-events";
 
 // 负责本地凭证的读写
 export const AuthStorage = {
@@ -41,27 +41,13 @@ export function hasPerm(value: string | string[], type: "button" | "role" = "but
 }
 
 /**
- * 重定向到登录页面
+ * Token 失效处理
+ *
+ * 旧行为：直接跳转到登录页
+ * 新行为：触发全局 Token 失效提示弹框，由 Layout 层监听；用户确认后清 token 并回到首页，菜单自动刷新
  */
 export async function redirectToLogin(
-  message: string = "请重新登录",
+  message: string = "登录已过期，请重新登录",
 ): Promise<void> {
-  ElNotification({
-    title: "提示",
-    message,
-    type: "warning",
-    duration: 3000,
-  });
-
-  await useUserStoreHook().resetAllState();
-
-  try {
-    // 跳转到登录页，保留当前路由用于登录后跳转
-    const currentPath = router.currentRoute.value.fullPath;
-    await router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
-  } catch (error) {
-    console.error("Redirect to login error:", error);
-    // 强制跳转，即使路由重定向失败
-    window.location.href = "/login";
-  }
+  showTokenExpiredDialog(message);
 }

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!item.meta || !item.meta.hidden">
+  <div v-if="isMenuVisible">
     <!--【叶子节点】显示叶子节点或唯一子节点且父节点未配置始终显示 -->
     <template
       v-if="
@@ -60,6 +60,7 @@ import { RouteRecordRaw } from "vue-router";
 import { isExternal } from "@/utils";
 import { translateRouteTitle } from "@/lang/utils";
 import { ElIcon } from "element-plus";
+import { useUserStore } from "@/store";
 
 defineOptions({
   name: "LayoutSidebarItem",
@@ -117,6 +118,23 @@ const props = defineProps({
 
 // 可见的唯一子节点
 const onlyOneChild = ref();
+
+const userStore = useUserStore();
+
+/**
+ * 菜单是否可见
+ * - meta.hidden：硬隐藏
+ * - meta.requiresAuth + 未登录：游客模式下隐藏
+ *
+ * 用响应式字段 userInfo.userId 做登录态判断，登录状态变化时会自动刷新
+ */
+const isMenuVisible = computed(() => {
+  const meta = props.item.meta;
+  if (!meta) return true;
+  if (meta.hidden) return false;
+  if (meta.requiresAuth && !userStore.userInfo?.userId) return false;
+  return true;
+});
 
 /**
  * 检查是否仅有一个可见子节点
