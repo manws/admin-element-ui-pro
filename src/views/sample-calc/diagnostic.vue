@@ -1,5 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container sample-calc-page">
+    <AlgoIntro
+      title="诊断试验灵敏度与特异度"
+      hero-desc="基于置信区间方法估算诊断性能评估所需的病例、对照与横断面样本量"
+      hero-tag="DIAGNOSTIC"
+      watermark="Dx"
+      :definition="introDefinition"
+      :scenarios="introScenarios"
+      :features="introFeatures"
+      :params="introParams"
+    />
     <el-row :gutter="20">
       <el-col :lg="8" :xs="24">
         <el-card shadow="never" class="mb-4">
@@ -61,15 +71,33 @@
       </el-col>
       <el-col :lg="16" :xs="24">
         <el-row :gutter="12" class="mb-4">
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">病例数（阳性）</div><div class="text-3xl font-bold font-mono text-[--el-color-primary]">{{ results.nDiseased }}</div><div class="text-xs text-gray">基于灵敏度</div></el-card></el-col>
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">对照数（阴性）</div><div class="text-3xl font-bold font-mono text-[--el-color-success]">{{ results.nHealthy }}</div><div class="text-xs text-gray">基于特异度</div></el-card></el-col>
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">横断面总人数</div><div class="text-3xl font-bold font-mono text-[--el-color-warning]">{{ results.totalN }}</div><div class="text-xs text-gray">患病率 {{ (inputs.prev*100).toFixed(0) }}%</div></el-card></el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-blue" data-watermark="D+">
+              <div class="sc-label">病例数（阳性）</div>
+              <div class="sc-value">{{ results.nDiseased }}</div>
+              <div class="sc-sub">基于灵敏度</div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-green" data-watermark="D−">
+              <div class="sc-label">对照数（阴性）</div>
+              <div class="sc-value">{{ results.nHealthy }}</div>
+              <div class="sc-sub">基于特异度</div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-amber" data-watermark="ΣN">
+              <div class="sc-label">横断面总人数</div>
+              <div class="sc-value">{{ results.totalN }}</div>
+              <div class="sc-sub">患病率 {{ (inputs.prev*100).toFixed(0) }}%</div>
+            </div>
+          </el-col>
         </el-row>
-        <div class="flex flex-wrap gap-2 mb-4">
+        <div class="sc-tag-row">
           <el-tag effect="plain" size="small">{{ (params.ci*100).toFixed(0) }}% CI</el-tag>
           <el-tag effect="plain" size="small">Sn={{ (inputs.sens*100).toFixed(0) }}% ±{{ (inputs.dSens*100).toFixed(0) }}%</el-tag>
           <el-tag effect="plain" size="small">Sp={{ (inputs.spec*100).toFixed(0) }}% ±{{ (inputs.dSpec*100).toFixed(0) }}%</el-tag>
-          <el-tag effect="plain" size="small">患病率={{ (inputs.prev*100).toFixed(0) }}%</el-tag>
+          <el-tag effect="plain" size="small" type="warning">患病率={{ (inputs.prev*100).toFixed(0) }}%</el-tag>
         </div>
         <el-card shadow="never" class="mb-4">
           <template #header><span class="font-bold">敏感性分析 · 允许误差 vs 样本量</span></template>
@@ -93,13 +121,46 @@
           <template #header><div class="flex justify-between items-center"><span class="font-bold">方法学段落</span><el-button size="small" @click="copyReport">{{ copied ? '✓ 已复制' : '复制文本' }}</el-button></div></template>
           <el-input type="textarea" :rows="6" :model-value="reportText" readonly resize="none" />
         </el-card>
+        <References :references="references" class="mt-4" />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
+import AlgoIntro from "./AlgoIntro.vue";
+import References from "./References.vue";
+
 defineOptions({ name: "Diagnostic" });
+
+const introDefinition = [
+  "诊断试验样本量估算围绕<strong>灵敏度 (Sn)、特异度 (Sp)</strong>等诊断性能指标，基于<strong>置信区间半宽</strong>方法计算所需样本量。",
+  "通常采用公式 <strong>n = z² × p(1−p) / d²</strong>，其中 p 为预期 Sn 或 Sp，d 为允许误差半宽（置信区间宽度的一半）。",
+];
+const introScenarios = [
+  "新诊断试剂盒、生物标志物、体外诊断产品的<strong>性能评价</strong>研究。",
+  "影像诊断（CT、MRI、超声）的准确性研究，AI 辅助诊断模型的验证。",
+  "基因检测、快速筛查（POCT）等诊断方法的灵敏度/特异度评估。",
+];
+const introFeatures = [
+  "<strong>同时估算</strong>：若同时评估 Sn 和 Sp，最终样本量取两者较大值。",
+  "<strong>金标准要求</strong>：病例与对照的判定需依赖独立可靠的金标准（病理、随访、共识诊断）。",
+  "<strong>前瞻 vs. 回顾</strong>：前瞻性横断面研究需额外考虑患病率，以估算总受试者数。",
+];
+const introParams = [
+  { title: "置信水平", desc: "常用 95%，对应 z₀.₉₇₅ = 1.96；要求严格时可取 99%。" },
+  { title: "预期 Sn / Sp", desc: "基于既往研究或预试验给出的点估计。Sn、Sp 越接近 0.5 所需样本量越大。" },
+  { title: "允许误差 (半宽)", desc: "置信区间半宽 d。d 越小精度越高，样本量显著增加。临床常用 ±5% 或 ±10%。" },
+  { title: "目标人群患病率", desc: "用于横断面设计换算总招募数。病例数 = n_Sn / 患病率，对照数 = n_Sp / (1−患病率)。" },
+];
+
+const references = [
+  { authors: "Buderer NM.", title: "Statistical methodology: I. Incorporating the prevalence of disease into the sample size calculation for sensitivity and specificity.", journal: "Academic Emergency Medicine", year: "1996", volume: "3(9): 895-900", doi: "10.1111/j.1553-2712.1996.tb03538.x" },
+  { authors: "Flahault A, Cadilhac M, Thomas G.", title: "Sample size calculation should be performed for design accuracy in diagnostic test studies.", journal: "Journal of Clinical Epidemiology", year: "2005", volume: "58(8): 859-862", doi: "10.1016/j.jclinepi.2004.12.009" },
+  { authors: "Pepe MS.", title: "The Statistical Evaluation of Medical Tests for Classification and Prediction.", journal: "Oxford University Press", year: "2003", volume: "1st Edition", doi: "10.1093/oso/9780198509844.001.0001" },
+  { authors: "Bossuyt PM, Reitsma JB, Bruns DE, et al.", title: "STARD 2015: An Updated List of Essential Items for Reporting Diagnostic Accuracy Studies.", journal: "BMJ", year: "2015", volume: "351: h5527", doi: "10.1136/bmj.h5527" },
+  { authors: "Obuchowski NA.", title: "Sample size calculations in studies of test accuracy.", journal: "Statistical Methods in Medical Research", year: "1998", volume: "7(4): 371-392", doi: "10.1177/096228029800700405" },
+];
 
 const params = ref({ ci: 0.95, metric: "both" });
 const inputs = ref({ sens: 0.90, dSens: 0.05, spec: 0.85, dSpec: 0.05, prev: 0.30 });
@@ -158,4 +219,6 @@ function copyReport() { navigator.clipboard.writeText(reportText.value); copied.
 watch([params, inputs], update, { deep: true });
 onMounted(update);
 </script>
-<style scoped>.font-mono { font-family: "JetBrains Mono", monospace; }</style>
+<style scoped>
+.font-mono { font-family: "JetBrains Mono", monospace; }
+</style>

@@ -1,5 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container sample-calc-page">
+    <AlgoIntro
+      title="配对设计均数/率"
+      hero-desc="基于配对 t 检验或 McNemar χ² 检验估算前后对照或匹配对照研究的样本量"
+      hero-tag="PAIRED DESIGN"
+      watermark="±d"
+      :definition="introDefinition"
+      :scenarios="introScenarios"
+      :features="introFeatures"
+      :params="introParams"
+    />
     <el-row :gutter="20">
       <el-col :lg="8" :xs="24">
         <el-card shadow="never" class="mb-4">
@@ -36,8 +46,20 @@
       </el-col>
       <el-col :lg="16" :xs="24">
         <el-row :gutter="16" class="mb-4">
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">所需配对数</div><div class="text-4xl font-bold font-mono text-[--el-color-primary]">{{ results.nPairs }}</div><div class="text-sm text-gray">对</div></el-card></el-col>
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">计划招募（含脱落）</div><div class="text-4xl font-bold font-mono text-[--el-color-success]">{{ results.totalN }}</div><div class="text-sm text-gray">含 {{ dropoutPct }}% 脱落</div></el-card></el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-blue" data-watermark="P">
+              <div class="sc-label">所需配对数</div>
+              <div class="sc-value">{{ results.nPairs }}</div>
+              <div class="sc-sub">对</div>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-green" data-watermark="ΣN">
+              <div class="sc-label">计划招募（含脱落）</div>
+              <div class="sc-value">{{ results.totalN }}</div>
+              <div class="sc-sub">含 {{ dropoutPct }}% 脱落</div>
+            </div>
+          </el-col>
         </el-row>
         <el-row :gutter="16" class="mb-4">
           <el-col :span="12"><el-card shadow="never"><template #header><span class="font-bold">敏感性分析</span></template><ECharts :options="sensOpts" height="340px" /></el-card></el-col>
@@ -60,13 +82,48 @@
           <template #header><div class="flex justify-between items-center"><span class="font-bold">方法学段落</span><el-button size="small" @click="copyReport">{{ copied?'✓ 已复制':'复制文本' }}</el-button></div></template>
           <el-input type="textarea" :rows="6" :model-value="reportText" readonly resize="none" />
         </el-card>
+        <References :references="references" class="mt-4" />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
+import AlgoIntro from "./AlgoIntro.vue";
+import References from "./References.vue";
+
 defineOptions({ name: "Paired" });
+
+const introDefinition = [
+  "配对设计是同一受试者或匹配对象在两个条件下的对比研究。连续型结局使用<strong>配对 t 检验</strong>，二分类结局使用 <strong>McNemar χ² 检验</strong>。",
+  "配对设计的效应量是<strong>差值</strong>，利用个体内匹配特性可以消除个体差异，样本量通常显著低于独立样本设计。",
+];
+const introScenarios = [
+  "<strong>前后对照</strong>：同一受试者治疗前后的指标对比（血压、血糖、量表评分）。",
+  "<strong>同体双侧</strong>：同一个体双眼、双耳、双肢对比研究。",
+  "<strong>1:1 匹配病例对照</strong>：按年龄、性别等特征精确匹配的对照研究。",
+  "<strong>交叉设计</strong>：同一受试者先后接受 A/B 两种干预（需考虑洗脱期）。",
+];
+const introFeatures = [
+  "<strong>优点</strong>：通过个体内比较大幅减小方差，样本量相比独立样本设计可降低 30-50%。",
+  "<strong>对标准差敏感</strong>：配对 t 检验依赖差值标准差 σd，需重点评估其合理性。",
+  "<strong>缺失数据处理</strong>：若一方数据缺失则整对丢失，需严格控制脱落。",
+];
+const introParams = [
+  { title: "设计模式", desc: "配对均数用于连续变量；配对率（McNemar）用于二分类变量。" },
+  { title: "差值均数 μd / 标准差 σd", desc: "配对 t 检验的核心效应量，μd/σd 即为配对效应量。" },
+  { title: "p₁₀ / p₀₁", desc: "McNemar 设计中前阳性/后阴性、前阴性/后阳性的不一致率。" },
+  { title: "显著性水平 α & 把握度", desc: "常用双侧 α=0.05、Power=80%。" },
+  { title: "脱落率", desc: "配对设计脱落 = 整对丢失，通常需要按 1/(1−dropout) 上调。" },
+];
+
+const references = [
+  { authors: "McNemar Q.", title: "Note on the sampling error of the difference between correlated proportions or percentages.", journal: "Psychometrika", year: "1947", volume: "12(2): 153-157", doi: "10.1007/BF02295996" },
+  { authors: "Miettinen OS.", title: "The matched pairs design in the case of all-or-none responses.", journal: "Biometrics", year: "1968", volume: "24(2): 339-352", doi: "10.2307/2528038" },
+  { authors: "Connor RJ.", title: "Sample size for testing differences in proportions for the paired-sample design.", journal: "Biometrics", year: "1987", volume: "43(1): 207-211", doi: "10.2307/2531961" },
+  { authors: "Chow SC, Shao J, Wang H, Lokhnygina Y.", title: "Sample Size Calculations in Clinical Research.", journal: "Chapman and Hall/CRC", year: "2017", volume: "3rd Edition", doi: "10.1201/9781315183084" },
+  { authors: "Julious SA.", title: "Sample Sizes for Clinical Trials.", journal: "Chapman and Hall/CRC", year: "2023", volume: "2nd Edition", doi: "10.1201/9780429503658" },
+];
 
 const mode = ref<"mean"|"prop">("mean");
 const params = ref({ alpha: 0.05, power: 0.80, tail: "two" as "two"|"one", dropout: 0.10 });
@@ -147,4 +204,6 @@ function copyReport() { navigator.clipboard.writeText(reportText.value); copied.
 watch([mode, params, meanInputs, propInputs], update, { deep: true });
 onMounted(update);
 </script>
-<style scoped>.font-mono{font-family:"JetBrains Mono",monospace}</style>
+<style scoped>
+.font-mono { font-family: "JetBrains Mono", monospace; }
+</style>

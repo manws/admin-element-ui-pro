@@ -1,5 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container sample-calc-page">
+    <AlgoIntro
+      title="生存分析 Log-Rank 检验"
+      hero-desc="基于 Schoenfeld 公式估算事件驱动型研究的样本量与所需事件数，适用于 OS/PFS 等生存终点"
+      hero-tag="LOG-RANK"
+      watermark="S(t)"
+      :definition="introDefinition"
+      :scenarios="introScenarios"
+      :features="introFeatures"
+      :params="introParams"
+    />
     <el-row :gutter="20">
       <el-col :lg="8" :xs="24">
         <el-card shadow="never" class="mb-4">
@@ -44,11 +54,29 @@
       </el-col>
       <el-col :lg="16" :xs="24">
         <el-row :gutter="12" class="mb-4">
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">所需事件数</div><div class="text-3xl font-bold font-mono text-[--el-color-primary]">{{ results.events }}</div><div class="text-xs text-gray">终点事件</div></el-card></el-col>
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">每组受试者</div><div class="text-3xl font-bold font-mono text-[--el-color-success]">{{ results.nControl }}</div><div class="text-xs text-gray">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div></el-card></el-col>
-          <el-col :span="8"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">总入组（含脱落）</div><div class="text-3xl font-bold font-mono text-[--el-color-warning]">{{ results.totalN }}</div><div class="text-xs text-gray">含 {{ dropoutPct }}% 脱落</div></el-card></el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-blue" data-watermark="E">
+              <div class="sc-label">所需事件数</div>
+              <div class="sc-value">{{ results.events }}</div>
+              <div class="sc-sub">终点事件</div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-green" data-watermark="N">
+              <div class="sc-label">每组受试者</div>
+              <div class="sc-value">{{ results.nControl }}</div>
+              <div class="sc-sub">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="sc-metric-card sc-mc-amber" data-watermark="ΣN">
+              <div class="sc-label">总入组（含脱落）</div>
+              <div class="sc-value">{{ results.totalN }}</div>
+              <div class="sc-sub">含 {{ dropoutPct }}% 脱落</div>
+            </div>
+          </el-col>
         </el-row>
-        <div class="flex flex-wrap gap-2 mb-4">
+        <div class="sc-tag-row">
           <el-tag effect="plain" size="small">α={{ params.alpha }}</el-tag>
           <el-tag effect="plain" size="small">Power={{ (params.power*100).toFixed(0) }}%</el-tag>
           <el-tag effect="plain" size="small" type="success">HR={{ hr }}</el-tag>
@@ -77,13 +105,47 @@
           <template #header><div class="flex justify-between items-center"><span class="font-bold">方法学段落</span><el-button size="small" @click="copyReport">{{ copied?'✓ 已复制':'复制文本' }}</el-button></div></template>
           <el-input type="textarea" :rows="7" :model-value="reportText" readonly resize="none" />
         </el-card>
+        <References :references="references" class="mt-4" />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
+import AlgoIntro from "./AlgoIntro.vue";
+import References from "./References.vue";
+
 defineOptions({ name: "LogRank" });
+
+const introDefinition = [
+  "生存分析样本量估算基于 <strong>Log-Rank 检验</strong>与 <strong>Schoenfeld 公式</strong>，核心是先确定所需<strong>事件数 d</strong>，再根据预期的事件发生概率回推受试者数量。",
+  "关键效应量为 <strong>Hazard Ratio (HR)</strong>，HR<1 表示实验组风险更低（预后更好），HR 越偏离 1 所需事件数越少。",
+];
+const introScenarios = [
+  "肿瘤学中 <strong>OS（总生存）</strong>、<strong>PFS（无进展生存）</strong>、<strong>DFS（无病生存）</strong>等时间-事件型终点。",
+  "心血管、肾病等慢性病长期随访研究（首次 MACE、ESRD 等）。",
+  "器官移植、透析、血管再通等需要长期随访的设备/干预研究。",
+];
+const introFeatures = [
+  "<strong>事件驱动</strong>：统计效力取决于事件数而非受试者数，低事件率场景需更大样本。",
+  "<strong>比例风险假设</strong>：Schoenfeld 公式要求 HR 在随访期内大致恒定，需检验 PH 假设。",
+  "<strong>入组期与随访期</strong>：较长入组期+较短随访期 vs. 较短入组期+较长随访期对总周期影响较大。",
+];
+const introParams = [
+  { title: "对照组与实验组中位生存期", desc: "常用 m₁、m₂（月），换算 HR = ln(2)/m₂ ÷ ln(2)/m₁ = m₁/m₂（指数分布假设下）。" },
+  { title: "入组期 + 随访期", desc: "入组期内受试者陆续入组，随访期指入组结束后的额外观察时间。" },
+  { title: "Hazard Ratio (HR)", desc: "风险比。临床常见 HR=0.70-0.80 范围的肿瘤研究，较小 HR 需要更多事件数。" },
+  { title: "显著性水平与把握度", desc: "肿瘤研究常用双侧 α=0.05、Power=80%；重要 III 期研究可提高到 Power=90%。" },
+  { title: "脱落率", desc: "长期随访的脱落/失访通常明显，建议按 1/(1−dropout) 放大招募数。" },
+];
+
+const references = [
+  { authors: "Schoenfeld DA.", title: "Sample-size formula for the proportional-hazards regression model.", journal: "Biometrics", year: "1983", volume: "39(2): 499-503", doi: "10.2307/2531021" },
+  { authors: "Freedman LS.", title: "Tables of the number of patients required in clinical trials using the logrank test.", journal: "Statistics in Medicine", year: "1982", volume: "1(2): 121-129", doi: "10.1002/sim.4780010204" },
+  { authors: "Collett D.", title: "Modelling Survival Data in Medical Research.", journal: "Chapman and Hall/CRC", year: "2015", volume: "3rd Edition", doi: "10.1201/b18041" },
+  { authors: "Lakatos E.", title: "Sample sizes based on the log-rank statistic in complex clinical trials.", journal: "Biometrics", year: "1988", volume: "44(1): 229-241", doi: "10.2307/2531910" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
 
 const params = ref({ alpha: 0.05, power: 0.80, tail: "two" as "two"|"one", dropout: 0.10, ratio: 1 });
 const inputs = ref({ medianControl: 12, medianTreat: 18, accrualTime: 24, followupTime: 12 });
@@ -160,4 +222,6 @@ function copyReport() { navigator.clipboard.writeText(reportText.value); copied.
 watch([params, inputs], update, { deep: true });
 onMounted(update);
 </script>
-<style scoped>.font-mono{font-family:"JetBrains Mono",monospace}</style>
+<style scoped>
+.font-mono { font-family: "JetBrains Mono", monospace; }
+</style>

@@ -1,5 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container sample-calc-page">
+    <AlgoIntro
+      title="两独立样本均值比较"
+      hero-desc="基于两独立样本 t 检验估算连续型结局的样本量，适用于血压、血糖等量化指标对比"
+      hero-tag="TWO MEANS"
+      watermark="μ"
+      :definition="introDefinition"
+      :scenarios="introScenarios"
+      :features="introFeatures"
+      :params="introParams"
+    />
     <el-row :gutter="20">
       <el-col :lg="8" :xs="24">
         <el-card shadow="never" class="mb-4">
@@ -33,13 +43,25 @@
       </el-col>
       <el-col :lg="16" :xs="24">
         <el-row :gutter="16" class="mb-4">
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">每组（不含脱落）</div><div class="text-3xl font-bold font-mono text-[--el-color-primary]">{{ results.nControl }}</div><div class="text-xs text-gray">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div></el-card></el-col>
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">总入组（含脱落）</div><div class="text-3xl font-bold font-mono text-[--el-color-success]">{{ results.totalN }}</div><div class="text-xs text-gray">含 {{ dropoutPct }}% 脱落</div></el-card></el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-blue" data-watermark="N">
+              <div class="sc-label">每组（不含脱落）</div>
+              <div class="sc-value">{{ results.nControl }}</div>
+              <div class="sc-sub">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-green" data-watermark="ΣN">
+              <div class="sc-label">总入组（含脱落）</div>
+              <div class="sc-value">{{ results.totalN }}</div>
+              <div class="sc-sub">含 {{ dropoutPct }}% 脱落</div>
+            </div>
+          </el-col>
         </el-row>
-        <div class="flex flex-wrap gap-2 mb-4">
+        <div class="sc-tag-row">
           <el-tag effect="plain" size="small">α={{ params.alpha }}</el-tag>
           <el-tag effect="plain" size="small">Power={{ (params.power*100).toFixed(0) }}%</el-tag>
-          <el-tag effect="plain" size="small">d={{ cohenD }}</el-tag>
+          <el-tag effect="plain" size="small" type="warning">d={{ cohenD }}</el-tag>
           <el-tag effect="plain" size="small">{{ params.ratio }}:1</el-tag>
         </div>
         <el-row :gutter="16" class="mb-4">
@@ -67,13 +89,47 @@
           <template #header><div class="flex justify-between items-center"><span class="font-bold">方法学段落</span><el-button size="small" @click="copyReport">{{ copied?'✓ 已复制':'复制文本' }}</el-button></div></template>
           <el-input type="textarea" :rows="6" :model-value="reportText" readonly resize="none" />
         </el-card>
+        <References :references="references" class="mt-4" />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
+import AlgoIntro from "./AlgoIntro.vue";
+import References from "./References.vue";
+
 defineOptions({ name: "TwoMeans" });
+
+const introDefinition = [
+  "两独立样本均值比较是针对<strong>连续型结局指标</strong>在两个独立试验组之间进行均值差异检验的统计方法，对应的样本量计算基于<strong>两独立样本 t 检验</strong>（大样本时可近似为 Z 检验）。",
+  "核心公式基于效应量 <strong>Cohen's d = |μ₁ − μ₂| / σ</strong>，d 越大所需样本量越小。",
+];
+const introScenarios = [
+  "血压、血糖、胆固醇、BMI、体重等<strong>连续数值型</strong>结局变量的组间比较。",
+  "量表总分（如 HAMD、SF-36）的优效或等效性研究。",
+  "生理指标（肺功能、心功能）、生化指标的干预前后对比。",
+];
+const introFeatures = [
+  "<strong>优点</strong>：统计效力高，公式成熟，是临床最常用的均值比较方法之一。",
+  "<strong>前提假设</strong>：两组数据近似正态分布，方差齐；若方差不齐需使用 Welch 校正。",
+  "<strong>参数敏感</strong>：样本量对 σ 的估计非常敏感，建议通过预试验或文献获取可靠估计。",
+];
+const introParams = [
+  { title: "显著性水平 α", desc: "第一类错误率，常用双侧 0.05；检验方向选择会直接影响临界值。" },
+  { title: "把握度 1-β", desc: "正确拒绝 H₀ 的概率，临床常用 80% 或 90%。" },
+  { title: "μ₁ / μ₂ / σ", desc: "两组均值与共同标准差，决定效应量 Cohen's d。" },
+  { title: "Cohen's d", desc: "标准化效应量：d<0.2 极小、0.2-0.5 小、0.5-0.8 中、>0.8 大效应。" },
+  { title: "分配比例与脱落", desc: "非 1:1 分配会增加总样本，脱落率需按 1/(1−dropout) 放大入组数。" },
+];
+
+const references = [
+  { authors: "Cohen J.", title: "Statistical Power Analysis for the Behavioral Sciences.", journal: "Lawrence Erlbaum Associates", year: "1988", volume: "2nd Edition", doi: "10.4324/9780203771587" },
+  { authors: "Chow SC, Shao J, Wang H, Lokhnygina Y.", title: "Sample Size Calculations in Clinical Research.", journal: "Chapman and Hall/CRC", year: "2017", volume: "3rd Edition", doi: "10.1201/9781315183084" },
+  { authors: "Julious SA.", title: "Sample sizes for clinical trials with normal data.", journal: "Statistics in Medicine", year: "2004", volume: "23(12): 1921-1986", doi: "10.1002/sim.1783" },
+  { authors: "Lachin JM.", title: "Introduction to sample size determination and power analysis for clinical trials.", journal: "Controlled Clinical Trials", year: "1981", volume: "2(2): 93-113", doi: "10.1016/0197-2456(81)90001-5" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
 
 const params = ref({ alpha: 0.05, power: 0.80, tail: "two" as "two"|"one", dropout: 0.10, ratio: 1 });
 const inputs = ref({ mean1: 140, mean2: 130, stdDev: 15 });
@@ -142,4 +198,6 @@ function copyReport() { navigator.clipboard.writeText(reportText.value); copied.
 watch([params, inputs], update, { deep: true });
 onMounted(update);
 </script>
-<style scoped>.font-mono{font-family:"JetBrains Mono",monospace}</style>
+<style scoped>
+.font-mono { font-family: "JetBrains Mono", monospace; }
+</style>

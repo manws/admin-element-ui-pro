@@ -15,6 +15,8 @@ import "vxe-table/lib/style.css";
 import "@/styles/index.scss";
 import "uno.css";
 import "animate.css";
+// 样本量计算模块共享样式（全局生效）
+import "@/views/sample-calc/sample-calc-shared.css";
 
 // ===== 核心配置 =====
 import { setupDirective } from "@/directives";

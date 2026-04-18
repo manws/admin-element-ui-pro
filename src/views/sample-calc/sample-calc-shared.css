@@ -1,0 +1,303 @@
+/**
+ * 样本量计算模块共享样式
+ * 复用 random 模块的设计规范（page-hero / algo-card / param-sidebar / ref-card）
+ * 由 AlgoIntro.vue 与 References.vue 以非 scoped 方式加载，使样式全局生效
+ */
+
+/* ===== 结果指标卡（彩色渐变底 + 水印）===== */
+.sc-metric-card {
+  position: relative;
+  padding: 20px 22px 18px;
+  border-radius: 14px;
+  color: #fff;
+  overflow: hidden;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sc-metric-card:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.04);
+}
+.sc-metric-card::after {
+  content: attr(data-watermark);
+  position: absolute;
+  right: -8px;
+  bottom: -18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 78px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+  user-select: none;
+}
+.sc-metric-card .sc-label {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: 6px;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.sc-metric-card .sc-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 4px;
+}
+.sc-metric-card .sc-sub {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.65);
+  position: relative;
+  z-index: 1;
+}
+.sc-mc-blue { background: linear-gradient(135deg, #4558d0, #6b82f0); box-shadow: 0 6px 20px rgba(69,88,208,0.25); }
+.sc-mc-green { background: linear-gradient(135deg, #16a34a, #4ade80); box-shadow: 0 6px 20px rgba(22,163,74,0.22); }
+.sc-mc-amber { background: linear-gradient(135deg, #e67e22, #f0b44a); box-shadow: 0 6px 20px rgba(230,126,34,0.22); }
+.sc-mc-neutral { background: linear-gradient(135deg, #5b6178, #8b91a8); box-shadow: 0 6px 20px rgba(91,97,120,0.22); }
+
+/* ===== 参数标签条（tag 行的节律）===== */
+.sc-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(69, 88, 208, 0.03);
+  border: 1px dashed rgba(69, 88, 208, 0.15);
+  border-radius: 10px;
+}
+
+/* ===== 页头 Hero ===== */
+.page-hero {
+  position: relative;
+  padding: 28px 28px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(69,88,208,0.08) 0%, rgba(69,88,208,0.02) 100%);
+  border: 1px solid var(--el-border-color-lighter);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hero-text { position: relative; z-index: 1; }
+.hero-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--el-text-color-primary); margin: 0 0 4px; }
+.hero-desc { font-size: 13.5px; color: var(--el-text-color-secondary); margin: 0; line-height: 1.5; }
+.hero-tag { position: relative; z-index: 1; flex-shrink: 0; }
+.hero-watermark {
+  position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 88px; font-weight: 900; line-height: 1;
+  color: rgba(69, 88, 208, 0.05);
+  pointer-events: none; user-select: none;
+}
+
+/* ===== 算法介绍卡 ===== */
+.algo-card {
+  border-radius: 14px;
+  border: 1px solid var(--el-border-color-lighter);
+  background: #fff;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.algo-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, rgba(69,88,208,0.05), rgba(69,88,208,0.01));
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+}
+.algo-card-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4558d0, #6b82f0);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(69, 88, 208, 0.25);
+}
+.algo-body {
+  padding: 20px 24px;
+  flex: 1;
+  font-size: 13.5px;
+  color: var(--el-text-color-regular);
+  line-height: 1.75;
+}
+.algo-body h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--el-text-color-primary);
+  margin: 0 0 12px;
+  position: relative;
+  padding-left: 12px;
+}
+.algo-body h3::before {
+  content: '';
+  position: absolute; left: 0; top: 4px; bottom: 4px;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4558d0, #6b82f0);
+}
+.algo-body h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin: 16px 0 8px;
+  position: relative;
+  padding-left: 10px;
+}
+.algo-body h4::before {
+  content: '';
+  position: absolute; left: 0; top: 5px;
+  width: 3px; height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #4558d0, #6b82f0);
+}
+.algo-body p { margin: 0 0 8px; }
+.algo-body ul { padding-left: 22px; margin: 6px 0; }
+.algo-body li { margin-bottom: 4px; }
+.algo-body strong { color: var(--el-text-color-primary); font-weight: 700; }
+
+/* ===== 参数侧栏 ===== */
+.param-sidebar {
+  border-radius: 14px;
+  border: 1px solid var(--el-border-color-lighter);
+  background: linear-gradient(160deg, rgba(69,88,208,0.06) 0%, rgba(69,88,208,0.015) 100%);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.param-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  border-bottom: 1px solid rgba(69,88,208,0.1);
+}
+.param-sidebar-icon {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.8);
+  display: flex; align-items: center; justify-content: center;
+}
+.param-sidebar-list {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+.param-sidebar-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.param-sidebar-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4558d0, #6b82f0);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(69, 88, 208, 0.25);
+}
+.param-sidebar-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin-bottom: 3px;
+}
+.param-sidebar-desc {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.6;
+}
+
+/* ===== 参考文献卡 ===== */
+.ref-card {
+  border-radius: 14px;
+  border: 1px solid var(--el-border-color-lighter);
+  background: #fff;
+  overflow: hidden;
+}
+.ref-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, rgba(69,88,208,0.05), rgba(69,88,208,0.01));
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  font-size: 14px;
+  font-weight: 700;
+}
+.ref-card-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4558d0, #6b82f0);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(69, 88, 208, 0.25);
+}
+.ref-card-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(69,88,208,0.08);
+}
+.ref-card-body {
+  padding: 8px 20px;
+}
+.ref-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--el-border-color-lighter);
+}
+.ref-item:last-child { border-bottom: none; }
+.ref-num {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: rgba(69,88,208,0.1);
+  color: #4558d0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ref-content { flex: 1; font-size: 13px; line-height: 1.6; }
+.ref-authors { color: var(--el-text-color-regular); margin-bottom: 2px; }
+.ref-title { color: var(--el-text-color-primary); font-weight: 600; margin-bottom: 4px; }
+.ref-source {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.ref-journal { font-style: italic; }
+.ref-doi { cursor: pointer; }

@@ -1,5 +1,15 @@
 <template>
-  <div class="app-container">
+  <div class="app-container sample-calc-page">
+    <AlgoIntro
+      title="两独立样本率比较"
+      hero-desc="基于两独立样本 χ² 检验估算二分类结局的样本量，适用于有效率、治愈率等比率指标比较"
+      hero-tag="TWO PROPORTIONS"
+      watermark="χ²"
+      :definition="introDefinition"
+      :scenarios="introScenarios"
+      :features="introFeatures"
+      :params="introParams"
+    />
     <el-row :gutter="20">
       <el-col :lg="8" :xs="24">
         <el-card shadow="never" class="mb-4">
@@ -22,7 +32,7 @@
             </div>
           </el-form>
         </el-card>
-        <el-card shadow="never">
+        <el-card shadow="never" class="mb-4">
           <template #header><span class="font-bold">校正</span></template>
           <el-form label-position="top">
             <el-form-item><template #label><div class="flex justify-between w-full"><span>脱落率</span><span class="font-mono text-[--el-color-primary]">{{ dropoutPct }}%</span></div></template><el-slider v-model="params.dropout" :min="0" :max="0.50" :step="0.05" :format-tooltip="v=>(v*100).toFixed(0)+'%'" /></el-form-item>
@@ -31,10 +41,34 @@
         </el-card>
       </el-col>
       <el-col :lg="16" :xs="24">
+        <!-- 结果指标卡 -->
         <el-row :gutter="16" class="mb-4">
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">每组（不含脱落）</div><div class="text-3xl font-bold font-mono text-[--el-color-primary]">{{ results.nControl }}</div><div class="text-xs text-gray">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div></el-card></el-col>
-          <el-col :span="12"><el-card shadow="never" class="text-center"><div class="text-xs text-gray mb-1">总入组（含脱落）</div><div class="text-3xl font-bold font-mono text-[--el-color-success]">{{ results.totalN }}</div><div class="text-xs text-gray">含 {{ dropoutPct }}% 脱落</div></el-card></el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-blue" data-watermark="N">
+              <div class="sc-label">每组（不含脱落）</div>
+              <div class="sc-value">{{ results.nControl }}</div>
+              <div class="sc-sub">对照 {{ results.nControl }} · 实验 {{ results.nTreat }}</div>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <div class="sc-metric-card sc-mc-green" data-watermark="ΣN">
+              <div class="sc-label">总入组（含脱落）</div>
+              <div class="sc-value">{{ results.totalN }}</div>
+              <div class="sc-sub">含 {{ dropoutPct }}% 脱落</div>
+            </div>
+          </el-col>
         </el-row>
+
+        <!-- 参数标签行 -->
+        <div class="sc-tag-row">
+          <el-tag effect="plain" size="small">α={{ params.alpha }}</el-tag>
+          <el-tag effect="plain" size="small">Power={{ (params.power*100).toFixed(0) }}%</el-tag>
+          <el-tag effect="plain" size="small">p₁={{ (inputs.p1*100).toFixed(1) }}%</el-tag>
+          <el-tag effect="plain" size="small">p₂={{ (inputs.p2*100).toFixed(1) }}%</el-tag>
+          <el-tag effect="plain" size="small" type="warning">Cohen's h={{ cohenH }}</el-tag>
+          <el-tag effect="plain" size="small">{{ params.ratio }}:1</el-tag>
+        </div>
+
         <el-row :gutter="16" class="mb-4">
           <el-col :span="12"><el-card shadow="never"><template #header><span class="font-bold">敏感性 · 率差 vs 样本量</span></template><ECharts :options="sensOpts" height="340px" /></el-card></el-col>
           <el-col :span="12"><el-card shadow="never"><template #header><span class="font-bold">功效曲线</span></template><ECharts :options="powerOpts" height="340px" /></el-card></el-col>
@@ -52,17 +86,53 @@
             <el-descriptions-item label="总招募"><span class="font-bold text-[--el-color-primary]">{{ results.totalN }}</span></el-descriptions-item>
           </el-descriptions>
         </el-card>
-        <el-card shadow="never">
+        <el-card shadow="never" class="mb-4">
           <template #header><div class="flex justify-between items-center"><span class="font-bold">方法学段落</span><el-button size="small" @click="copyReport">{{ copied?'✓ 已复制':'复制文本' }}</el-button></div></template>
           <el-input type="textarea" :rows="6" :model-value="reportText" readonly resize="none" />
         </el-card>
+
+        <!-- 参考文献（全宽延伸） -->
+        <References :references="references" class="mt-4" />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
+import AlgoIntro from "./AlgoIntro.vue";
+import References from "./References.vue";
+
 defineOptions({ name: "TwoProportions" });
+
+const introDefinition = [
+  "两独立样本率比较用于比较两个独立试验组在<strong>二分类结局</strong>（如有效/无效、治愈/未治愈）上的率差异，样本量计算基于<strong>两样本率差 χ² 检验</strong>（或 Z 检验）。",
+  "效应量通常以 <strong>Cohen's h = 2·arcsin(√p₂) − 2·arcsin(√p₁)</strong> 衡量，h 越大所需样本越小。",
+];
+const introScenarios = [
+  "新药或干预的<strong>有效率</strong>、治愈率、缓解率对照研究。",
+  "不良事件发生率、并发症率的组间比较。",
+  "疫苗保护率、筛查阳性率的人群对比。",
+];
+const introFeatures = [
+  "<strong>优点</strong>：二分类结局的样本量估算标准方法，易于解释与实施。",
+  "<strong>连续性校正</strong>：样本量较小时建议启用 Yates 校正以获得更保守的估计。",
+  "<strong>注意边界值</strong>：当 p 接近 0 或 1 时，方差趋近于 0，公式可能失真，需转为精确方法（Fisher）。",
+];
+const introParams = [
+  { title: "显著性水平 α", desc: "第一类错误率，常用双侧 0.05；非劣效设计单侧 0.025。" },
+  { title: "把握度 1-β", desc: "临床研究常用 80% 或 90%。" },
+  { title: "对照组率 p₁", desc: "基于既往数据或已有标准治疗的预期发生率。" },
+  { title: "实验组率 p₂", desc: "预期效应下试验组的发生率，与 p₁ 的差即为效应量。" },
+  { title: "连续性校正", desc: "Yates 校正用于样本量较小或 p 接近边界时，略微增大所需样本量。" },
+];
+
+const references = [
+  { authors: "Fleiss JL, Levin B, Paik MC.", title: "Statistical Methods for Rates and Proportions.", journal: "Wiley", year: "2003", volume: "3rd Edition", doi: "10.1002/0471445428" },
+  { authors: "Cohen J.", title: "Statistical Power Analysis for the Behavioral Sciences.", journal: "Lawrence Erlbaum Associates", year: "1988", volume: "2nd Edition", doi: "10.4324/9780203771587" },
+  { authors: "Casagrande JT, Pike MC, Smith PG.", title: "An improved approximate formula for calculating sample sizes for comparing two binomial distributions.", journal: "Biometrics", year: "1978", volume: "34(3): 483-486", doi: "10.2307/2530613" },
+  { authors: "Fisher RA.", title: "The logic of inductive inference.", journal: "Journal of the Royal Statistical Society", year: "1935", volume: "98(1): 39-82", doi: "10.2307/2342435" },
+  { authors: "ICH Expert Working Group.", title: "ICH E9: Statistical Principles for Clinical Trials.", journal: "International Council for Harmonisation", year: "1998", volume: "Step 4 Guideline", doi: "" },
+];
 
 const params = ref({ alpha: 0.05, power: 0.80, tail: "two" as "two"|"one", dropout: 0.10, ratio: 1, continuity: true });
 const inputs = ref({ p1: 0.30, p2: 0.50 });
@@ -127,4 +197,6 @@ function copyReport() { navigator.clipboard.writeText(reportText.value); copied.
 watch([params, inputs], update, { deep: true });
 onMounted(update);
 </script>
-<style scoped>.font-mono{font-family:"JetBrains Mono",monospace}</style>
+<style scoped>
+.font-mono { font-family: "JetBrains Mono", monospace; }
+</style>
