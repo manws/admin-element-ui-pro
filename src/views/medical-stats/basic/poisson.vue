@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">Poisson 分布</h1>
-          <p class="hero-desc">概率计算、总体均数区间估计、样本均数与总体均数比较、两样本均数比较</p>
+          <p class="hero-desc">适用于稀有事件计数资料（发病率、事故率等）的统计分析：计算 Poisson 分布精确概率 P(X=k)，基于卡方分布精确法估计总体均数/率的置信区间，通过 u 检验比较样本率与总体均数的差异，以及两独立样本率的比较（H₀: λ₁=λ₂）</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · POISSON</el-tag>
       </div>

@@ -5,7 +5,7 @@
         <div class="hero-text">
           <h1 class="hero-title">正态性检验</h1>
           <p class="hero-desc">
-            输入一组数据，计算偏度/峰度系数及其 Z 检验，判定数据是否服从正态分布，绘制概率密度曲线
+            输入一组定量数据，计算均值、标准差、偏度系数及峰度系数，并通过偏度/峰度的 Z 检验综合判定数据是否近似服从正态分布（H₀: 偏度=0 且 峰度=0），同时绘制理论正态概率密度曲线与实际数据频率直方图的叠加对比图
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · NORMAL</el-tag>
@@ -15,22 +15,83 @@
     <el-row :gutter="20" class="mb-4 input-row">
       <el-col :lg="16" :xs="24">
         <el-card shadow="never" class="input-card">
-          <el-form label-position="top">
-            <el-form-item label="输入数据（逗号、空格或换行分隔）">
-              <el-input
-                v-model="rawData"
-                type="textarea"
-                :rows="4"
-                placeholder="例如：168, 170, 172, 165, 175, 169, 171, 174, 166, 173, 170, 168, 172, 167, 176, 171, 169, 173, 170, 174"
-              />
-            </el-form-item>
-            <el-form-item label="显著性水平">
-              <el-radio-group v-model="alphaLevel">
-                <el-radio :value="0.05">α = 0.05</el-radio>
-                <el-radio :value="0.1">α = 0.10</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-form>
+          <!-- 输入模式切换 -->
+          <div class="input-mode-bar">
+            <el-radio-group v-model="inputMode" size="small">
+              <el-radio-button value="table">
+                <el-icon class="mr-1"><Grid /></el-icon>表格输入
+              </el-radio-button>
+              <el-radio-button value="text">
+                <el-icon class="mr-1"><EditPen /></el-icon>文本输入
+              </el-radio-button>
+            </el-radio-group>
+            <span class="input-count-badge" v-if="parsedCount > 0">
+              已输入 <strong>{{ parsedCount }}</strong> 个数据
+            </span>
+          </div>
+
+          <!-- 表格输入模式 -->
+          <div v-if="inputMode === 'table'" class="data-table-area">
+            <div class="data-table-toolbar">
+              <el-button size="small" @click="addRows(5)">
+                <el-icon class="mr-1"><Plus /></el-icon>添加 5 行
+              </el-button>
+              <el-button size="small" @click="addRows(10)">
+                <el-icon class="mr-1"><Plus /></el-icon>添加 10 行
+              </el-button>
+              <el-tooltip content="从剪贴板粘贴：支持 Excel 复制、逗号/空格/换行分隔" placement="top">
+                <el-button size="small" @click="pasteFromClipboard">
+                  <el-icon class="mr-1"><DocumentCopy /></el-icon>粘贴导入
+                </el-button>
+              </el-tooltip>
+            </div>
+            <div class="data-grid">
+              <div class="data-grid-header">
+                <div class="dg-cell dg-idx-cell">#</div>
+                <div v-for="col in tableCols" :key="col" class="dg-cell dg-head-cell">
+                  X<sub>{{ col }}</sub>
+                </div>
+              </div>
+              <div class="data-grid-body">
+                <div v-for="(_row, ri) in tableRowCount" :key="ri" class="dg-row" :class="{ 'dg-row-even': ri % 2 === 0 }">
+                  <div class="dg-cell dg-idx-cell dg-row-idx">{{ ri * tableCols + 1 }}</div>
+                  <div v-for="ci in tableCols" :key="ci" class="dg-cell dg-data-cell">
+                    <input
+                      v-if="ri * tableCols + ci - 1 < tableData.length"
+                      v-model="tableData[ri * tableCols + ci - 1]"
+                      class="dg-input"
+                      type="text"
+                      inputmode="decimal"
+                      placeholder="—"
+                      @keydown.tab.prevent="handleTab(ri * tableCols + ci - 1)"
+                      @keydown.enter.prevent="handleTab(ri * tableCols + ci - 1)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 文本输入模式 -->
+          <div v-else class="text-input-area">
+            <el-form label-position="top">
+              <el-form-item label="输入数据（逗号、空格或换行分隔）">
+                <el-input
+                  v-model="rawData"
+                  type="textarea"
+                  :rows="4"
+                  placeholder="例如：168, 170, 172, 165, 175, 169, 171, 174, 166, 173"
+                />
+              </el-form-item>
+            </el-form>
+          </div>
+
+          <el-form-item label="显著性水平" class="mt-3">
+            <el-radio-group v-model="alphaLevel">
+              <el-radio :value="0.05">α = 0.05</el-radio>
+              <el-radio :value="0.1">α = 0.10</el-radio>
+            </el-radio-group>
+          </el-form-item>
           <div class="action-bar">
             <el-button type="primary" class="calc-btn" @click="calculate"
               ><el-icon class="mr-1"><DataAnalysis /></el-icon
@@ -120,7 +181,7 @@
         </el-row>
 
         <el-row :gutter="20" class="mb-4 equal-row">
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header
                 ><div class="card-header-inner">
@@ -134,7 +195,7 @@
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="14" :xs="24" class="mb-4">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header
                 ><div class="card-header-inner">
@@ -159,11 +220,16 @@ import {
   Histogram,
   Document,
   ChatLineSquare,
+  Grid,
+  Plus,
+  DocumentCopy,
+  EditPen,
 } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "NormalDist" });
 
+const inputMode = ref<"table" | "text">("table");
 const rawData = ref("");
 const alphaLevel = ref(0.05);
 const hasResult = ref(false);
@@ -173,21 +239,70 @@ const pdfOpts = ref({});
 const histOpts = ref({});
 const narrativeHtml = ref("");
 
+// 表格输入
+const tableCols = 5;
+const tableData = ref<string[]>(Array(20).fill(""));
+const tableRowCount = computed(() => Math.ceil(tableData.value.length / tableCols));
+const parsedCount = computed(() => {
+  if (inputMode.value === "table") {
+    return tableData.value.filter((v) => v.trim() !== "" && Number.isFinite(Number(v))).length;
+  }
+  return S.parseNumbers(rawData.value).length;
+});
+
+function addRows(count: number) {
+  for (let i = 0; i < count * tableCols; i++) tableData.value.push("");
+}
+function handleTab(idx: number) {
+  const next = idx + 1;
+  if (next >= tableData.value.length) addRows(1);
+  nextTick(() => {
+    const inputs = document.querySelectorAll<HTMLInputElement>(".dg-input");
+    inputs[next]?.focus();
+  });
+}
+async function pasteFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const nums = text.replace(/[，、；\t\n\r]+/g, ",").split(",").map((s) => s.trim()).filter((s) => s !== "");
+    if (nums.length === 0) { ElMessage.warning("剪贴板中未找到有效数据"); return; }
+    const needed = nums.length - tableData.value.length;
+    if (needed > 0) { for (let i = 0; i < Math.ceil(needed / tableCols) * tableCols; i++) tableData.value.push(""); }
+    nums.forEach((v, i) => (tableData.value[i] = v));
+    ElMessage.success(`已导入 ${nums.length} 个数据`);
+  } catch { ElMessage.error("无法读取剪贴板，请检查浏览器权限"); }
+}
+function getDataFromInput(): number[] {
+  if (inputMode.value === "table") {
+    return tableData.value.map((v) => v.trim()).filter((v) => v !== "").map(Number).filter((v) => Number.isFinite(v));
+  }
+  return S.parseNumbers(rawData.value);
+}
+
 const demoData =
   "168, 170, 172, 165, 175, 169, 171, 174, 166, 173, 170, 168, 172, 167, 176, 171, 169, 173, 170, 174, 168, 171, 172, 169, 175, 170, 173, 167, 174, 171";
 
 function loadDemo() {
-  rawData.value = demoData;
+  const nums = demoData.split(",").map((s) => s.trim());
+  if (inputMode.value === "table") {
+    const needed = nums.length - tableData.value.length;
+    if (needed > 0) { for (let i = 0; i < Math.ceil(needed / tableCols) * tableCols; i++) tableData.value.push(""); }
+    tableData.value.fill("");
+    nums.forEach((v, i) => (tableData.value[i] = v));
+  } else {
+    rawData.value = demoData;
+  }
   calculate();
 }
 
 function clearAll() {
+  tableData.value = Array(20).fill("");
   rawData.value = "";
   hasResult.value = false;
 }
 
 function calculate() {
-  const data = S.parseNumbers(rawData.value);
+  const data = getDataFromInput();
   if (data.length < 5) {
     ElMessage.warning("请输入至少 5 个数值以进行正态性检验");
     return;
@@ -399,6 +514,126 @@ function calculate() {
 .input-card {
   border-radius: 14px;
   flex: 1;
+}
+.input-mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+.input-count-badge {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.06);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.input-count-badge strong {
+  color: var(--el-color-primary);
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+}
+.data-table-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.data-grid {
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--el-bg-color);
+}
+.data-grid-header {
+  display: flex;
+  background: linear-gradient(135deg, #eef1fb 0%, #f6f7fc 100%);
+  border-bottom: 2px solid #d0d7ea;
+}
+.data-grid-header .dg-cell {
+  padding: 11px 6px;
+  font-weight: 700;
+  font-size: 12px;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--el-text-color-primary);
+  text-align: center;
+}
+.data-grid-header .dg-cell sub {
+  font-size: 10px;
+  color: var(--el-text-color-secondary);
+}
+.data-grid-body {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.data-grid-body::-webkit-scrollbar {
+  width: 5px;
+}
+.data-grid-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+.dg-row {
+  display: flex;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+.dg-row:last-child {
+  border-bottom: none;
+}
+.dg-row:hover {
+  background: rgba(69, 88, 208, 0.03);
+}
+.dg-row-even {
+  background: rgba(69, 88, 208, 0.015);
+}
+.dg-cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dg-idx-cell {
+  flex: 0 0 56px;
+  max-width: 56px;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 500;
+  color: var(--el-text-color-placeholder);
+}
+.dg-row-idx {
+  background: rgba(69, 88, 208, 0.02);
+  border-right: 1px solid var(--el-border-color-extra-light);
+}
+.dg-data-cell {
+  padding: 0;
+}
+.dg-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  font-size: 14px;
+  font-family: "JetBrains Mono", "SF Mono", monospace;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  padding: 10px 4px;
+  box-sizing: border-box;
+}
+.dg-input:focus {
+  background: rgba(69, 88, 208, 0.07);
+  box-shadow: inset 0 -2px 0 #4558d0;
+}
+.dg-input::placeholder {
+  color: var(--el-border-color);
+  font-weight: 400;
+  font-size: 13px;
+}
+.text-input-area {
+  padding: 4px 0 0;
 }
 .action-bar {
   display: flex;

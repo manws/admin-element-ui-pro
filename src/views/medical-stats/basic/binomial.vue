@@ -5,7 +5,7 @@
         <div class="hero-text">
           <h1 class="hero-title">二项分布</h1>
           <p class="hero-desc">
-            概率计算、总体率区间估计、样本率与总体率比较、两样本率比较
+            适用于二分类资料（阳性/阴性、有效/无效）的统计分析：计算二项分布精确概率 P(X=k)，采用 Wilson 法估计总体率的置信区间，通过 Z 检验比较样本率与已知总体率的差异，以及两独立样本阳性率的比较（H₀: p₁=p₂）
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · BINOMIAL</el-tag>
