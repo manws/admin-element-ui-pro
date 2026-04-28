@@ -42,6 +42,7 @@
               >开始计算</el-button
             >
             <el-button class="reset-btn" @click="loadDemo">加载示例</el-button>
+            <el-button class="reset-btn" @click="rawData = ''">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -57,12 +58,20 @@
             </div>
             <div class="principle-block">
               <div class="principle-label">频率</div>
-              <p>频数 / 总数</p>
+              <p>频数 / 总数，反映各组数据的相对比例</p>
             </div>
             <div class="principle-block">
               <div class="principle-label">累计频率</div>
-              <p>从最小组到当前组的频率累加</p>
+              <p>从最小组到当前组的频率累加，用于了解数据分布的集中趋势</p>
             </div>
+            <div class="principle-block">
+              <div class="principle-label">适用场景</div>
+              <p>将连续数据分组后观察分布形态，判断数据是否近似正态分布、是否存在偏态或多峰等特征。分组数建议取 √n 或 Sturges 公式。</p>
+            </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
           </div>
         </div>
       </el-col>
@@ -392,6 +401,25 @@ function calculate() {
 }
 .principle-block p {
   margin: 3px 0;
+}
+.ref-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+.ref-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-warning);
+}
+.ref-item {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  margin: 2px 0;
 }
 .result-fade-enter-active {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);

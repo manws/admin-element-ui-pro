@@ -5,7 +5,7 @@
         <div class="hero-text">
           <h1 class="hero-title">描述性统计量</h1>
           <p class="hero-desc">
-            计算均值、中位数、标准差、分位数等常用统计指标，并生成分布图
+            对定量数据进行全面描述分析，涵盖集中趋势（算术均值、几何平均数、调和平均数、截尾均值、中位数）、离散程度（标准差、方差、变异系数、标准误、均值95%CI）、分位数（Q1/Q3/IQR）及分布形态（偏度、峰度），同时生成直方图与箱线图
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round
@@ -45,11 +45,11 @@
           <div class="principle-content">
             <div class="principle-block">
               <div class="principle-label">集中趋势</div>
-              <p>均值、中位数</p>
+              <p>算术均值、中位数、几何平均数、调和平均数、截尾均值（两端各去 5%）</p>
             </div>
             <div class="principle-block">
               <div class="principle-label">离散程度</div>
-              <p>标准差、方差、极差、变异系数、标准误</p>
+              <p>标准差、方差、极差、变异系数、标准误、均值 95% 置信区间</p>
             </div>
             <div class="principle-block">
               <div class="principle-label">分位数</div>
@@ -57,8 +57,21 @@
             </div>
             <div class="principle-block">
               <div class="principle-label">分布形态</div>
-              <p>偏度、峰度</p>
+              <p>偏度（对称性）、峰度（尖峰/平峰程度）</p>
             </div>
+            <div class="principle-block">
+              <div class="principle-label">可视化</div>
+              <p>数据分布直方图、箱线图（Min, Q1, Median, Q3, Max）</p>
+            </div>
+            <div class="principle-block">
+              <div class="principle-label">适用场景</div>
+              <p>适用于对定量数据进行全面描述，快速了解数据的集中位置、离散程度和分布形态特征，为后续推断性统计分析提供基础信息。</p>
+            </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Altman DG. Practical Statistics for Medical Research. Chapman & Hall, 1991.</p>
           </div>
         </div>
       </el-col>
@@ -114,7 +127,7 @@
                 </div></template
               >
               <el-table :data="detailRows" size="small" stripe border>
-                <el-table-column prop="name" label="统计量" width="140" />
+                <el-table-column prop="name" label="统计量" width="180" />
                 <el-table-column prop="value" label="值" min-width="120" />
               </el-table>
             </el-card>
@@ -187,12 +200,20 @@ function calculate() {
     mx = S.max(data),
     rng = S.range(data),
     cvv = S.cv(data);
+  const gm = S.geometricMean(data);
+  const hm = S.harmonicMean(data);
+  const tm = S.trimmedMean(data);
+  const ci95 = S.meanCI(data, 0.05);
 
   result.value = true;
   metrics.value = [
     { label: "样本量", value: n, type: "accent" },
     { label: "均值", value: S.fmt(m), type: "accent" },
+    { label: "均值 95%CI", value: `[${S.fmt(ci95.lower, 2)}, ${S.fmt(ci95.upper, 2)}]`, type: "accent" },
     { label: "中位数", value: S.fmt(med), type: "accent" },
+    { label: "几何平均数", value: Number.isNaN(gm) ? "N/A" : S.fmt(gm), type: "accent" },
+    { label: "调和平均数", value: Number.isNaN(hm) ? "N/A" : S.fmt(hm), type: "accent" },
+    { label: "截尾均值(5%)", value: S.fmt(tm), type: "accent" },
     { label: "标准差", value: S.fmt(sd), type: "success" },
     { label: "最小值", value: S.fmt(mn), type: "neutral" },
     { label: "最大值", value: S.fmt(mx), type: "neutral" },
@@ -201,6 +222,10 @@ function calculate() {
   detailRows.value = [
     { name: "样本量 (n)", value: n },
     { name: "均值 (Mean)", value: S.fmt(m) },
+    { name: "均值 95%CI", value: `[${S.fmt(ci95.lower, 4)}, ${S.fmt(ci95.upper, 4)}]` },
+    { name: "几何平均数 (GM)", value: Number.isNaN(gm) ? "N/A（含非正值）" : S.fmt(gm) },
+    { name: "调和平均数 (HM)", value: Number.isNaN(hm) ? "N/A（含零值）" : S.fmt(hm) },
+    { name: "截尾均值 (5%)", value: S.fmt(tm) },
     { name: "中位数 (Median)", value: S.fmt(med) },
     { name: "标准差 (SD)", value: S.fmt(sd) },
     { name: "方差 (Var)", value: S.fmt(v) },
@@ -258,7 +283,8 @@ function calculate() {
 
   narrativeHtml.value = `
     <p>本次分析共纳入 <strong>${n}</strong> 个观测值。</p>
-    <p>集中趋势：均值 = <strong>${S.fmt(m)}</strong>，中位数 = <strong>${S.fmt(med)}</strong>${Math.abs(m - med) / sd > 0.5 ? "，均值与中位数差异较大，数据可能存在偏态。" : "，两者接近，数据分布较对称。"}</p>
+    <p>集中趋势：算术均值 = <strong>${S.fmt(m)}</strong>，均值 95% CI = [${S.fmt(ci95.lower, 2)}, ${S.fmt(ci95.upper, 2)}]，中位数 = <strong>${S.fmt(med)}</strong>${Math.abs(m - med) / sd > 0.5 ? "，均值与中位数差异较大，数据可能存在偏态。" : "，两者接近，数据分布较对称。"}</p>
+    <p>其他均值：几何平均数 = <strong>${Number.isNaN(gm) ? "N/A" : S.fmt(gm)}</strong>，调和平均数 = <strong>${Number.isNaN(hm) ? "N/A" : S.fmt(hm)}</strong>，截尾均值(5%) = <strong>${S.fmt(tm)}</strong>。</p>
     <p>离散程度：标准差 SD = <strong>${S.fmt(sd)}</strong>，变异系数 CV = <strong>${S.fmt(cvv, 2)}%</strong>${cvv > 30 ? "（变异较大）" : cvv > 15 ? "（中等变异）" : "（变异较小）"}。</p>
     <p>数据范围 [${S.fmt(mn)}, ${S.fmt(mx)}]，极差 = ${S.fmt(rng)}，四分位距 IQR = ${S.fmt(iqr)}。</p>
     <p>分布形态：偏度 = <strong>${S.fmt(sk)}</strong>${Math.abs(sk) < 0.5 ? "（近似对称）" : sk > 0 ? "（右偏）" : "（左偏）"}，峰度 = <strong>${S.fmt(ku)}</strong>${ku > 0 ? "（尖峰）" : "（平峰）"}。</p>
@@ -391,6 +417,25 @@ function calculate() {
 }
 .principle-block p {
   margin: 3px 0;
+}
+.ref-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+.ref-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-warning);
+}
+.ref-item {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  margin: 2px 0;
 }
 .result-fade-enter-active {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);

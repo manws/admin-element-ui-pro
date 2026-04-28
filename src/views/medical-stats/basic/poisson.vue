@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">Poisson 分布</h1>
-          <p class="hero-desc">概率计算、率的区间估计、两样本率比较</p>
+          <p class="hero-desc">概率计算、总体均数区间估计、样本均数与总体均数比较、两样本均数比较</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · POISSON</el-tag>
       </div>
@@ -58,15 +58,17 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcProb"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoProb">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearResult">清除</el-button>
               </div>
             </el-tab-pane>
 
             <el-tab-pane name="ci">
               <template #label
                 ><span class="tab-label"
-                  ><el-icon><TrendCharts /></el-icon>率的区间估计</span
+                  ><el-icon><TrendCharts /></el-icon>总体均数区间估计</span
                 ></template
               >
               <div class="ff-table-area">
@@ -114,15 +116,78 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcCI"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoCI">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearResult">清除</el-button>
+              </div>
+            </el-tab-pane>
+
+            <el-tab-pane name="oneSample">
+              <template #label
+                ><span class="tab-label"
+                  ><el-icon><DataLine /></el-icon>样本均数 vs 总体均数</span
+                ></template
+              >
+              <div class="ff-table-area">
+                <table class="fourfold-table">
+                  <thead>
+                    <tr>
+                      <th>总体均数 (μ₀)</th>
+                      <th>事件数 (X)</th>
+                      <th>观察单位 (T)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="ft-input">
+                        <el-input-number
+                          v-model="oneSample.mu0"
+                          :min="0.001"
+                          :step="0.01"
+                          :precision="3"
+                          :controls="false"
+                          class="fourfold-input"
+                        />
+                      </td>
+                      <td class="ft-input">
+                        <el-input-number
+                          v-model="oneSample.x"
+                          :min="0"
+                          :max="10000"
+                          :step="1"
+                          :controls="false"
+                          class="fourfold-input"
+                        />
+                      </td>
+                      <td class="ft-input">
+                        <el-input-number
+                          v-model="oneSample.t"
+                          :min="1"
+                          :max="100000"
+                          :step="100"
+                          :controls="false"
+                          class="fourfold-input"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="action-bar">
+                <el-button type="primary" class="calc-btn" @click="calcOneSample"
+                  ><el-icon class="mr-1"><DataAnalysis /></el-icon
+                  >开始计算</el-button
+                >
+                <el-button class="reset-btn" @click="loadDemoOneSample">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearResult">清除</el-button>
               </div>
             </el-tab-pane>
 
             <el-tab-pane name="compare">
               <template #label
                 ><span class="tab-label"
-                  ><el-icon><Grid /></el-icon>两样本率比较</span
+                  ><el-icon><Grid /></el-icon>两样本均数比较</span
                 ></template
               >
               <div class="ff-table-area">
@@ -187,8 +252,10 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcCmp"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoCmp">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearResult">清除</el-button>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -203,16 +270,30 @@
           <div class="principle-content">
             <div class="principle-block">
               <div class="principle-label">Poisson 分布</div>
-              <p>X ~ P(μ)，描述单位时间/空间内稀有事件发生次数的分布。</p>
+              <p>X ~ P(μ)，描述单位时间或空间内稀有事件发生次数的分布。适用于发病率、事故率、稀有事件计数等场景。</p>
             </div>
             <div class="principle-block">
               <div class="principle-label">概率公式</div>
               <div class="formula-box">P(X=k) = e^(-μ) · μ^k / k!</div>
             </div>
             <div class="principle-block">
+              <div class="principle-label">区间估计</div>
+              <p>基于卡方分布精确法计算总体率/均数的置信区间。当 X 较大时也可用正态近似。</p>
+              <div class="formula-box">下限: χ²(α/2, 2X) / (2T)<br/>上限: χ²(1-α/2, 2X+2) / (2T)</div>
+            </div>
+            <div class="principle-block">
+              <div class="principle-label">均数比较</div>
+              <p>u 检验：u = (λ₁ - λ₂) / √(λ₁/T₁ + λ₂/T₂)</p>
+            </div>
+            <div class="principle-block">
               <div class="principle-label">性质</div>
               <p>E(X) = Var(X) = μ</p>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Ulm K. A simple method to calculate the confidence interval of a standardized mortality ratio (SMR). Am J Epidemiol, 1990.</p>
           </div>
         </div>
       </el-col>
@@ -270,6 +351,7 @@
 import {
   Histogram,
   TrendCharts,
+  DataLine,
   Grid,
   InfoFilled,
   DataAnalysis,
@@ -286,8 +368,11 @@ const showChart = ref(false);
 const probChartOpts = ref({});
 const narrativeHtml = ref("");
 
-// Tab 1
+function clearResult() { currentResult.value = null; }
+
+// Tab 1 — 概率计算
 const prob = reactive({ mu: 5, x: 3 });
+function loadDemoProb() { prob.mu = 5; prob.x = 3; calcProb(); }
 function calcProb() {
   const { mu, x } = prob;
   const exact = S.poissonPMF(x, mu);
@@ -320,47 +405,94 @@ function calcProb() {
       },
     ],
   };
-  narrativeHtml.value = `<p>在 Poisson(μ=${mu}) 分布下，恰好观察到 ${x} 次事件的概率为 <strong>${S.fmt(exact, 6)}</strong>。</p><p>观察到 ≤ ${x} 次的累积概率为 <strong>${S.fmt(cumLe, 6)}</strong>，≥ ${x} 次的概率为 <strong>${S.fmt(cumGe, 6)}</strong>。</p>`;
+  narrativeHtml.value = `<p>在 Poisson(μ=${mu}) 分布下，恰好观察到 ${x} 次事件的概率为 <strong>${S.fmt(exact, 6)}</strong>。</p><p>观察到 ≤ ${x} 次的累积概率为 <strong>${S.fmt(cumLe, 6)}</strong>，≥ ${x} 次的概率为 <strong>${S.fmt(cumGe, 6)}</strong>。</p><p>期望 E(X) = Var(X) = <strong>${mu}</strong>，标准差 SD = <strong>${S.fmt(Math.sqrt(mu), 4)}</strong>。</p>`;
 }
 
-// Tab 2
+// Tab 2 — 总体均数区间估计（基于卡方分布）
 const ci = reactive({ x: 25, t: 1000, alpha: 0.05 });
+function loadDemoCI() { ci.x = 25; ci.t = 1000; ci.alpha = 0.05; calcCI(); }
 function calcCI() {
-  const rate = ci.x / ci.t,
-    se = Math.sqrt(ci.x) / ci.t;
-  const z = S.normInv(1 - ci.alpha / 2);
-  const lower = Math.max(0, rate - z * se),
-    upper = rate + z * se;
+  const rate = ci.x / ci.t;
+  const alpha = ci.alpha;
+  let lower: number, upper: number;
+
+  if (ci.x === 0) {
+    lower = 0;
+    upper = S.chiSquareInv(1 - alpha / 2, 2) / (2 * ci.t);
+  } else {
+    // 精确法：基于卡方分布
+    lower = S.chiSquareInv(alpha / 2, 2 * ci.x) / (2 * ci.t);
+    upper = S.chiSquareInv(1 - alpha / 2, 2 * ci.x + 2) / (2 * ci.t);
+  }
+
+  const se = Math.sqrt(ci.x) / ci.t;
   currentResult.value = true;
   showChart.value = false;
   resultMetrics.value = [
-    { label: "观察率", value: S.fmt(rate, 6), type: "accent" },
-    { label: "标准误", value: S.fmt(se, 6), type: "neutral" },
+    { label: "观察率 (λ)", value: S.fmt(rate, 6), type: "accent" },
+    { label: "事件数 (X)", value: ci.x, type: "neutral" },
+    { label: "标准误 (SE)", value: S.fmt(se, 6), type: "neutral" },
     { label: "置信下限", value: S.fmt(lower, 6), type: "success" },
     { label: "置信上限", value: S.fmt(upper, 6), type: "warning" },
+    {
+      label: `${(1 - alpha) * 100}% CI`,
+      value: `[${S.fmt(lower, 6)}, ${S.fmt(upper, 6)}]`,
+      type: "accent",
+    },
   ];
-  narrativeHtml.value = `<p>观察事件数 X = ${ci.x}，观察单位 T = ${ci.t}，观察率 = <strong>${S.fmt(rate, 6)}</strong>。</p><p>${(1 - ci.alpha) * 100}% 置信区间为 [<strong>${S.fmt(lower, 6)}</strong>, <strong>${S.fmt(upper, 6)}</strong>]。</p>`;
+  narrativeHtml.value = `<p>观察事件数 X = ${ci.x}，观察单位 T = ${ci.t}，观察率 λ = X/T = <strong>${S.fmt(rate, 6)}</strong>。</p><p>采用基于卡方分布的精确法，${(1 - alpha) * 100}% 置信区间为 [<strong>${S.fmt(lower, 6)}</strong>, <strong>${S.fmt(upper, 6)}</strong>]。</p><p>计算公式：下限 = χ²<sub>${alpha / 2}</sub>(${2 * ci.x}) / (2T)，上限 = χ²<sub>${1 - alpha / 2}</sub>(${2 * ci.x + 2}) / (2T)。此方法在小样本时比正态近似法更为准确。</p>`;
 }
 
-// Tab 3
+// Tab 3 — 样本均数 vs 总体均数
+const oneSample = reactive({ mu0: 0.03, x: 25, t: 1000 });
+function loadDemoOneSample() { oneSample.mu0 = 0.03; oneSample.x = 25; oneSample.t = 1000; calcOneSample(); }
+function calcOneSample() {
+  const lambda = oneSample.x / oneSample.t;
+  const se = Math.sqrt(oneSample.x) / oneSample.t;
+  const u = (lambda - oneSample.mu0) / Math.sqrt(oneSample.mu0 / oneSample.t);
+  const pVal = 2 * (1 - S.normCDF(Math.abs(u)));
+  const sig = pVal < 0.05;
+  currentResult.value = true;
+  showChart.value = false;
+  resultMetrics.value = [
+    { label: "样本率 (λ)", value: S.fmt(lambda, 6), type: "accent" },
+    { label: "总体均数 (μ₀)", value: oneSample.mu0, type: "neutral" },
+    { label: "标准误 (SE)", value: S.fmt(se, 6), type: "neutral" },
+    { label: "u 统计量", value: S.fmt(u, 4), type: "success" },
+    {
+      label: "P 值",
+      value: S.fmtP(pVal),
+      type: pVal < 0.05 ? "warning" : "neutral",
+    },
+    {
+      label: "结论 (α=0.05)",
+      value: sig ? "差异有统计学意义" : "差异无统计学意义",
+      type: sig ? "warning" : "neutral",
+    },
+  ];
+  narrativeHtml.value = `<p>样本率 λ = ${oneSample.x}/${oneSample.t} = <strong>${S.fmt(lambda, 6)}</strong>，总体均数 μ₀ = <strong>${oneSample.mu0}</strong>。</p><p>u 检验：u = (λ - μ₀) / √(μ₀/T) = <strong>${S.fmt(u, 4)}</strong>，P = <strong>${S.fmtP(pVal)}</strong>。</p><p>${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，认为样本率与总体均数差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为样本率与总体均数有差异。`}</p>`;
+}
+
+// Tab 4 — 两样本均数比较
 const cmp = reactive({ x1: 25, t1: 1000, x2: 40, t2: 1000 });
+function loadDemoCmp() { cmp.x1 = 25; cmp.t1 = 1000; cmp.x2 = 40; cmp.t2 = 1000; calcCmp(); }
 function calcCmp() {
   const r1 = cmp.x1 / cmp.t1,
     r2 = cmp.x2 / cmp.t2;
-  const rPool = (cmp.x1 + cmp.x2) / (cmp.t1 + cmp.t2);
-  const se = Math.sqrt(rPool * (1 / cmp.t1 + 1 / cmp.t2));
+  const se = Math.sqrt(r1 / cmp.t1 + r2 / cmp.t2);
   const u = (r1 - r2) / se;
   const pVal = 2 * (1 - S.normCDF(Math.abs(u)));
   const sig = pVal < 0.05;
   currentResult.value = true;
   showChart.value = false;
   resultMetrics.value = [
-    { label: "率₁", value: S.fmt(r1, 6), type: "accent" },
-    { label: "率₂", value: S.fmt(r2, 6), type: "accent" },
+    { label: "率₁ (λ₁)", value: S.fmt(r1, 6), type: "accent" },
+    { label: "率₂ (λ₂)", value: S.fmt(r2, 6), type: "accent" },
+    { label: "标准误 (SE)", value: S.fmt(se, 6), type: "neutral" },
     { label: "u 值", value: S.fmt(u, 4), type: "success" },
     {
       label: "P 值",
-      value: S.fmt(pVal, 6),
+      value: S.fmtP(pVal),
       type: pVal < 0.05 ? "warning" : "neutral",
     },
     {
@@ -369,7 +501,7 @@ function calcCmp() {
       type: sig ? "warning" : "neutral",
     },
   ];
-  narrativeHtml.value = `<p>组1率 = <strong>${S.fmt(r1, 6)}</strong>（${cmp.x1}/${cmp.t1}），组2率 = <strong>${S.fmt(r2, 6)}</strong>（${cmp.x2}/${cmp.t2}）。</p><p>u = <strong>${S.fmt(u, 4)}</strong>，P = <strong>${S.fmt(pVal, 6)}</strong>。</p><p>${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，两组率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为两组率有差异。`}</p>`;
+  narrativeHtml.value = `<p><strong>假设检验</strong>：H₀: λ₁ = λ₂，H₁: λ₁ ≠ λ₂（双侧检验）。</p><p>组1率 λ₁ = <strong>${S.fmt(r1, 6)}</strong>（${cmp.x1}/${cmp.t1}），组2率 λ₂ = <strong>${S.fmt(r2, 6)}</strong>（${cmp.x2}/${cmp.t2}）。</p><p>u = (λ₁ - λ₂) / √(λ₁/T₁ + λ₂/T₂) = <strong>${S.fmt(u, 4)}</strong>，P = <strong>${S.fmtP(pVal)}</strong>。</p><p>在显著性水平 α = 0.05 下，${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，两组率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为两组率有差异。`}</p>`;
 }
 
 watch(activeTab, () => {
@@ -525,6 +657,9 @@ watch(activeTab, () => {
   font-weight: 600;
   border-radius: 8px;
 }
+.reset-btn {
+  border-radius: 8px;
+}
 .param-sidebar {
   flex: 1;
   display: flex;
@@ -583,6 +718,25 @@ watch(activeTab, () => {
   color: var(--el-text-color-primary);
   margin: 6px 0;
   font-weight: 600;
+}
+.ref-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+.ref-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-warning);
+}
+.ref-item {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  margin: 2px 0;
 }
 .result-fade-enter-active {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);

@@ -3,9 +3,9 @@
     <div class="page-hero">
       <div class="hero-inner">
         <div class="hero-text">
-          <h1 class="hero-title">正态分布</h1>
+          <h1 class="hero-title">正态性检验</h1>
           <p class="hero-desc">
-            计算正态分布的概率密度、累积概率，生成 PDF/CDF 曲线
+            输入一组数据，计算偏度/峰度系数及其 Z 检验，判定数据是否服从正态分布，绘制概率密度曲线
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · NORMAL</el-tag>
@@ -15,51 +15,29 @@
     <el-row :gutter="20" class="mb-4 input-row">
       <el-col :lg="16" :xs="24">
         <el-card shadow="never" class="input-card">
-          <div class="ff-table-area">
-            <table class="fourfold-table">
-              <thead>
-                <tr>
-                  <th>均值 (μ)</th>
-                  <th>标准差 (σ)</th>
-                  <th>X 值</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="ft-input">
-                    <el-input-number
-                      v-model="mu"
-                      :step="1"
-                      :controls="false"
-                      class="fourfold-input"
-                    />
-                  </td>
-                  <td class="ft-input">
-                    <el-input-number
-                      v-model="sigma"
-                      :min="0.01"
-                      :step="1"
-                      :controls="false"
-                      class="fourfold-input"
-                    />
-                  </td>
-                  <td class="ft-input">
-                    <el-input-number
-                      v-model="xVal"
-                      :step="0.5"
-                      :controls="false"
-                      class="fourfold-input"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <el-form label-position="top">
+            <el-form-item label="输入数据（逗号、空格或换行分隔）">
+              <el-input
+                v-model="rawData"
+                type="textarea"
+                :rows="4"
+                placeholder="例如：168, 170, 172, 165, 175, 169, 171, 174, 166, 173, 170, 168, 172, 167, 176, 171, 169, 173, 170, 174"
+              />
+            </el-form-item>
+            <el-form-item label="显著性水平">
+              <el-radio-group v-model="alphaLevel">
+                <el-radio :value="0.05">α = 0.05</el-radio>
+                <el-radio :value="0.1">α = 0.10</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
           <div class="action-bar">
             <el-button type="primary" class="calc-btn" @click="calculate"
               ><el-icon class="mr-1"><DataAnalysis /></el-icon
               >开始计算</el-button
             >
+            <el-button class="reset-btn" @click="loadDemo">加载示例</el-button>
+            <el-button class="reset-btn" @click="clearAll">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -70,17 +48,32 @@
           </div>
           <div class="principle-content">
             <div class="principle-block">
-              <div class="principle-label">概率密度 f(x)</div>
-              <p>正态曲线在 x 处的高度值</p>
+              <div class="principle-label">正态性检验</div>
+              <p>通过偏度系数和峰度系数的 Z 检验判断数据是否近似服从正态分布。正态分布的偏度为 0、峰度为 0（超额峰度）。</p>
             </div>
             <div class="principle-block">
-              <div class="principle-label">累积概率 P(X≤x)</div>
-              <p>X 取值不超过 x 的概率</p>
+              <div class="principle-label">偏度检验</div>
+              <p>H₀: 偏度 = 0（分布对称）</p>
+              <p>Z_偏度 = 偏度 / SE_偏度</p>
             </div>
             <div class="principle-block">
-              <div class="principle-label">标准化公式</div>
-              <div class="formula-box">Z = (X − μ) / σ</div>
+              <div class="principle-label">峰度检验</div>
+              <p>H₀: 峰度 = 0（正态峰度）</p>
+              <p>Z_峰度 = 峰度 / SE_峰度</p>
             </div>
+            <div class="principle-block">
+              <div class="principle-label">综合判定</div>
+              <p>若偏度 P 值和峰度 P 值均 > α，则不拒绝 H₀，认为数据近似服从正态分布。</p>
+            </div>
+            <div class="principle-block">
+              <div class="principle-label">适用场景</div>
+              <p>在进行 t 检验、方差分析等参数检验前，需要先验证数据是否满足正态分布假设。本方法适用于小样本到中等样本量的正态性初步判断。</p>
+            </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] D'Agostino RB, Belanger A, D'Agostino RB Jr. Tests for Departure from Normality. Biometrika, 1990.</p>
           </div>
         </div>
       </el-col>
@@ -97,7 +90,7 @@
           >
             <div class="metric-indicator" />
             <div class="metric-label">{{ m.label }}</div>
-            <div class="metric-value">{{ m.value }}</div>
+            <div class="metric-value" :class="{ small: String(m.value).length > 12 }">{{ m.value }}</div>
           </div>
         </div>
 
@@ -117,24 +110,42 @@
             <el-card shadow="never" class="detail-card">
               <template #header
                 ><div class="card-header-inner">
-                  <el-icon class="header-icon"><TrendCharts /></el-icon
-                  ><span class="font-bold">累积分布曲线 (CDF)</span>
+                  <el-icon class="header-icon"><Histogram /></el-icon
+                  ><span class="font-bold">数据频率直方图 & 理论正态曲线</span>
                 </div></template
               >
-              <ECharts :options="cdfOpts" height="320px" />
+              <ECharts :options="histOpts" height="320px" />
             </el-card>
           </el-col>
         </el-row>
 
-        <el-card shadow="never" class="detail-card mb-4">
-          <template #header
-            ><div class="card-header-inner">
-              <el-icon class="header-icon"><ChatLineSquare /></el-icon
-              ><span class="font-bold">结果解读</span>
-            </div></template
-          >
-          <div class="narrative-body" v-html="narrativeHtml" />
-        </el-card>
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="10" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header
+                ><div class="card-header-inner">
+                  <el-icon class="header-icon"><Document /></el-icon
+                  ><span class="font-bold">检验详表</span>
+                </div></template
+              >
+              <el-table :data="detailRows" size="small" stripe border>
+                <el-table-column prop="name" label="指标" width="180" />
+                <el-table-column prop="value" label="值" min-width="120" />
+              </el-table>
+            </el-card>
+          </el-col>
+          <el-col :lg="14" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header
+                ><div class="card-header-inner">
+                  <el-icon class="header-icon"><ChatLineSquare /></el-icon
+                  ><span class="font-bold">结果解读</span>
+                </div></template
+              >
+              <div class="narrative-body" v-html="narrativeHtml" />
+            </el-card>
+          </el-col>
+        </el-row>
       </div>
     </transition>
   </div>
@@ -145,48 +156,92 @@ import {
   InfoFilled,
   DataAnalysis,
   TrendCharts,
+  Histogram,
+  Document,
   ChatLineSquare,
 } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "NormalDist" });
 
-const mu = ref(0);
-const sigma = ref(1);
-const xVal = ref(1.96);
+const rawData = ref("");
+const alphaLevel = ref(0.05);
 const hasResult = ref(false);
 const resultMetrics = ref<any[]>([]);
+const detailRows = ref<any[]>([]);
 const pdfOpts = ref({});
-const cdfOpts = ref({});
+const histOpts = ref({});
 const narrativeHtml = ref("");
 
+const demoData =
+  "168, 170, 172, 165, 175, 169, 171, 174, 166, 173, 170, 168, 172, 167, 176, 171, 169, 173, 170, 174, 168, 171, 172, 169, 175, 170, 173, 167, 174, 171";
+
+function loadDemo() {
+  rawData.value = demoData;
+  calculate();
+}
+
+function clearAll() {
+  rawData.value = "";
+  hasResult.value = false;
+}
+
 function calculate() {
-  const z = (xVal.value - mu.value) / sigma.value;
-  const cdf = S.normCDF(z);
-  const pdf = S.normPDF(z) / sigma.value;
+  const data = S.parseNumbers(rawData.value);
+  if (data.length < 5) {
+    ElMessage.warning("请输入至少 5 个数值以进行正态性检验");
+    return;
+  }
+
+  const n = data.length;
+  const m = S.mean(data);
+  const sd = S.stdDev(data);
+  const alpha = alphaLevel.value;
+
+  // 偏度系数检验
+  const skTest = S.skewnessZTest(data);
+  // 峰度系数检验
+  const kuTest = S.kurtosisZTest(data);
+
+  // 综合判定
+  const skNormal = skTest.p > alpha;
+  const kuNormal = kuTest.p > alpha;
+  const isNormal = skNormal && kuNormal;
 
   hasResult.value = true;
+
   resultMetrics.value = [
-    { label: "Z 值", value: S.fmt(z), type: "accent" },
-    { label: `P(X ≤ ${xVal.value})`, value: S.fmt(cdf, 6), type: "success" },
-    {
-      label: `P(X > ${xVal.value})`,
-      value: S.fmt(1 - cdf, 6),
-      type: "warning",
-    },
-    { label: `f(${xVal.value})`, value: S.fmt(pdf, 6), type: "neutral" },
+    { label: "样本量", value: n, type: "accent" },
+    { label: "均值", value: S.fmt(m), type: "accent" },
+    { label: "标准差", value: S.fmt(sd), type: "accent" },
+    { label: "偏度系数", value: S.fmt(skTest.skew), type: skNormal ? "success" : "warning" },
+    { label: "峰度系数", value: S.fmt(kuTest.kurt), type: kuNormal ? "success" : "warning" },
+    { label: "正态判定", value: isNormal ? "近似正态" : "偏离正态", type: isNormal ? "success" : "warning" },
   ];
 
-  const lo = mu.value - 4 * sigma.value,
-    hi = mu.value + 4 * sigma.value;
-  const xs: number[] = [],
-    pdfY: number[] = [],
-    cdfY: number[] = [];
+  detailRows.value = [
+    { name: "样本量 (n)", value: n },
+    { name: "均值 (Mean)", value: S.fmt(m) },
+    { name: "标准差 (SD)", value: S.fmt(sd) },
+    { name: "偏度系数 (Skewness)", value: S.fmt(skTest.skew) },
+    { name: "偏度标准误 (SE_sk)", value: S.fmt(skTest.se) },
+    { name: "偏度 Z 值", value: S.fmt(skTest.z) },
+    { name: "偏度 P 值", value: S.fmtP(skTest.p) },
+    { name: "峰度系数 (Kurtosis)", value: S.fmt(kuTest.kurt) },
+    { name: "峰度标准误 (SE_ku)", value: S.fmt(kuTest.se) },
+    { name: "峰度 Z 值", value: S.fmt(kuTest.z) },
+    { name: "峰度 P 值", value: S.fmtP(kuTest.p) },
+    { name: `显著性水平 (α)`, value: alpha },
+    { name: "正态性判定", value: isNormal ? "不拒绝 H₀，近似正态" : "拒绝 H₀，偏离正态" },
+  ];
+
+  // 基于均值和标准差绘制理论正态 PDF 曲线
+  const lo = m - 4 * sd, hi = m + 4 * sd;
+  const xs: number[] = [], pdfY: number[] = [];
   for (let x = lo; x <= hi; x += (hi - lo) / 200) {
-    const zz = (x - mu.value) / sigma.value;
+    const zz = (x - m) / sd;
     xs.push(+x.toFixed(3));
-    pdfY.push(+(S.normPDF(zz) / sigma.value).toFixed(6));
-    cdfY.push(+S.normCDF(zz).toFixed(6));
+    pdfY.push(+(S.normPDF(zz) / sd).toFixed(6));
   }
 
   pdfOpts.value = {
@@ -197,57 +252,91 @@ function calculate() {
       data: xs.map(String),
       axisLabel: { interval: Math.floor(xs.length / 8) },
     },
-    yAxis: { type: "value" },
+    yAxis: { type: "value", name: "f(x)" },
     series: [
       {
+        name: "理论正态 PDF",
         type: "line",
         data: pdfY,
         smooth: true,
         showSymbol: false,
-        lineStyle: { width: 2.5, color: "#409EFF" },
-        areaStyle: { opacity: 0 },
-      },
-      {
-        type: "line",
-        data: xs.map((x, i) => (x <= xVal.value ? pdfY[i] : null)),
-        smooth: true,
-        showSymbol: false,
-        lineStyle: { width: 0 },
-        areaStyle: { color: "rgba(64,158,255,0.15)" },
+        lineStyle: { width: 2.5, color: "#4558d0" },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: "rgba(69,88,208,0.15)" },
+              { offset: 1, color: "rgba(69,88,208,0)" },
+            ],
+          },
+        },
       },
     ],
   };
 
-  cdfOpts.value = {
+  // 频率直方图 + 理论正态曲线
+  const sorted = S.sorted(data);
+  const minVal = sorted[0], maxVal = sorted[sorted.length - 1];
+  const bins = Math.max(Math.ceil(Math.sqrt(n)), 5);
+  const bw = (maxVal - minVal) / bins;
+  const counts = Array(bins).fill(0);
+  const histLabels: string[] = [];
+  for (let i = 0; i < bins; i++) {
+    const loBin = minVal + i * bw;
+    histLabels.push(`${S.fmt(loBin, 1)}-${S.fmt(loBin + bw, 1)}`);
+    data.forEach((val) => {
+      if (val >= loBin && (i === bins - 1 ? val <= loBin + bw : val < loBin + bw))
+        counts[i]++;
+    });
+  }
+  // 频率（密度）
+  const freqDensity = counts.map((c) => +(c / (n * bw)).toFixed(6));
+  // 理论曲线在各组段中点
+  const theoryLine = histLabels.map((_, i) => {
+    const mid = minVal + (i + 0.5) * bw;
+    const zz = (mid - m) / sd;
+    return +(S.normPDF(zz) / sd).toFixed(6);
+  });
+
+  histOpts.value = {
     tooltip: { trigger: "axis" },
-    grid: { left: "8%", right: "4%", bottom: "10%", top: "6%" },
-    xAxis: {
-      type: "category",
-      data: xs.map(String),
-      axisLabel: { interval: Math.floor(xs.length / 8) },
-    },
-    yAxis: { type: "value", max: 1 },
+    legend: { data: ["频率密度", "理论正态曲线"], bottom: 0 },
+    grid: { left: "8%", right: "4%", bottom: "14%", top: "6%" },
+    xAxis: { type: "category", data: histLabels },
+    yAxis: { type: "value", name: "密度" },
     series: [
       {
+        name: "频率密度",
+        type: "bar",
+        data: freqDensity,
+        itemStyle: { color: "rgba(69,88,208,0.3)", borderColor: "#4558d0", borderRadius: [3, 3, 0, 0] },
+      },
+      {
+        name: "理论正态曲线",
         type: "line",
-        data: cdfY,
+        data: theoryLine,
         smooth: true,
         showSymbol: false,
-        lineStyle: { width: 2.5, color: "#67C23A" },
+        lineStyle: { width: 2.5, color: "#22c55e" },
       },
     ],
   };
 
+  const skConclusion = skNormal
+    ? `偏度 P = ${S.fmtP(skTest.p)} > ${alpha}，不拒绝偏度 H₀，分布对称性可接受`
+    : `偏度 P = ${S.fmtP(skTest.p)} < ${alpha}，拒绝偏度 H₀，分布存在${skTest.skew > 0 ? "右偏" : "左偏"}`;
+  const kuConclusion = kuNormal
+    ? `峰度 P = ${S.fmtP(kuTest.p)} > ${alpha}，不拒绝峰度 H₀，峰度正常`
+    : `峰度 P = ${S.fmtP(kuTest.p)} < ${alpha}，拒绝峰度 H₀，分布呈${kuTest.kurt > 0 ? "尖峰" : "平峰"}`;
+
   narrativeHtml.value = `
-    <p>对于参数 μ = <strong>${mu.value}</strong>，σ = <strong>${sigma.value}</strong> 的正态分布：</p>
-    <p>X = <strong>${xVal.value}</strong> 对应的标准化值 Z = <strong>${S.fmt(z)}</strong>。</p>
-    <p>P(X ≤ ${xVal.value}) = <strong>${S.fmt(cdf, 6)}</strong>，即约有 ${(cdf * 100).toFixed(2)}% 的值小于等于 ${xVal.value}。</p>
-    <p>P(X > ${xVal.value}) = <strong>${S.fmt(1 - cdf, 6)}</strong>，即约有 ${((1 - cdf) * 100).toFixed(2)}% 的值大于 ${xVal.value}。</p>
-    <p>该点的概率密度 f(${xVal.value}) = <strong>${S.fmt(pdf, 6)}</strong>。</p>
+    <p>对 <strong>${n}</strong> 个观测值进行正态性检验，均值 = <strong>${S.fmt(m)}</strong>，标准差 SD = <strong>${S.fmt(sd)}</strong>。</p>
+    <p><strong>偏度检验</strong>：偏度系数 = ${S.fmt(skTest.skew)}，SE = ${S.fmt(skTest.se)}，Z = <strong>${S.fmt(skTest.z)}</strong>，P = <strong>${S.fmtP(skTest.p)}</strong>。${skConclusion}。</p>
+    <p><strong>峰度检验</strong>：峰度系数 = ${S.fmt(kuTest.kurt)}，SE = ${S.fmt(kuTest.se)}，Z = <strong>${S.fmt(kuTest.z)}</strong>，P = <strong>${S.fmtP(kuTest.p)}</strong>。${kuConclusion}。</p>
+    <p><strong>综合判定</strong>（α = ${alpha}）：${isNormal ? `偏度和峰度检验 P 值均 > ${alpha}，<strong>不拒绝 H₀</strong>，认为该组数据近似服从正态分布 N(${S.fmt(m)}, ${S.fmt(sd)}²)。` : `偏度或峰度检验 P 值 < ${alpha}，<strong>拒绝 H₀</strong>，该组数据不满足正态分布假设。`}</p>
   `;
 }
-
-onMounted(calculate);
 </script>
 
 <style scoped>
@@ -311,41 +400,6 @@ onMounted(calculate);
   border-radius: 14px;
   flex: 1;
 }
-.ff-table-area {
-  display: flex;
-  justify-content: center;
-  padding: 16px 0;
-}
-.fourfold-table {
-  width: 100%;
-  max-width: 500px;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-.fourfold-table thead {
-  border-top: 2px solid var(--el-text-color-primary);
-  border-bottom: 1px solid var(--el-text-color-primary);
-}
-.fourfold-table th,
-.fourfold-table td {
-  padding: 14px 20px;
-  text-align: center;
-}
-.fourfold-table th {
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--el-text-color-primary);
-}
-.fourfold-table tbody tr {
-  border-bottom: 2px solid var(--el-text-color-primary);
-}
-.ft-input {
-  padding: 10px 16px;
-}
-.fourfold-input {
-  width: 100%;
-  max-width: 140px;
-}
 .action-bar {
   display: flex;
   gap: 10px;
@@ -357,6 +411,9 @@ onMounted(calculate);
 .calc-btn {
   padding: 10px 28px;
   font-weight: 600;
+  border-radius: 8px;
+}
+.reset-btn {
   border-radius: 8px;
 }
 .param-sidebar {
@@ -408,15 +465,24 @@ onMounted(calculate);
 .principle-block p {
   margin: 3px 0;
 }
-.formula-box {
-  font-family: "JetBrains Mono", "SF Mono", monospace;
+.ref-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+.ref-title {
   font-size: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05);
+  font-weight: 700;
   color: var(--el-text-color-primary);
-  margin: 6px 0;
-  font-weight: 600;
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-warning);
+}
+.ref-item {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  margin: 2px 0;
 }
 .result-fade-enter-active {
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -497,6 +563,9 @@ onMounted(calculate);
   color: var(--el-text-color-primary);
   line-height: 1.2;
 }
+.metric-value.small {
+  font-size: 13px;
+}
 .card-header-inner {
   display: flex;
   align-items: center;
@@ -510,6 +579,16 @@ onMounted(calculate);
   border-radius: 14px;
   height: 100%;
 }
+.equal-row {
+  align-items: stretch;
+}
+.equal-row > .el-col {
+  display: flex;
+  flex-direction: column;
+}
+.equal-row .detail-card {
+  flex: 1;
+}
 .narrative-body {
   font-size: 14px;
   line-height: 1.85;
@@ -521,37 +600,5 @@ onMounted(calculate);
 }
 .narrative-body :deep(p) {
   margin: 8px 0;
-}
-</style>
-
-<style lang="scss">
-.layout-mix .app-main .fourfold-table .el-input-number .el-input__wrapper,
-.layout-mix .app-main .fourfold-table .el-input .el-input__wrapper,
-.fourfold-table .el-input-number .el-input__wrapper,
-.fourfold-table .el-input .el-input__wrapper {
-  background-color: transparent !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-  border-bottom: 1px solid var(--el-border-color);
-  padding: 0 4px !important;
-  transition: border-color 0.2s;
-  &:hover,
-  &:focus-within,
-  &.is-focus {
-    background-color: transparent !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-bottom-color: var(--el-color-primary);
-  }
-}
-.fourfold-table .el-input-number .el-input__inner,
-.fourfold-table .el-input .el-input__inner {
-  text-align: center !important;
-  font-size: 15px !important;
-  font-family: "JetBrains Mono", monospace !important;
-  font-weight: 600 !important;
-  color: var(--el-text-color-primary) !important;
-  background: transparent !important;
 }
 </style>

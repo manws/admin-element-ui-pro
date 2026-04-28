@@ -71,8 +71,10 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcProb"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoProb">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearProb">清除</el-button>
               </div>
             </el-tab-pane>
 
@@ -127,8 +129,10 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcCI"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoCI">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearCI">清除</el-button>
               </div>
             </el-tab-pane>
 
@@ -195,8 +199,10 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcOne"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoOne">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearOne">清除</el-button>
               </div>
             </el-tab-pane>
 
@@ -268,8 +274,10 @@
               <div class="action-bar">
                 <el-button type="primary" class="calc-btn" @click="calcTwo"
                   ><el-icon class="mr-1"><DataAnalysis /></el-icon
-                  >计算</el-button
+                  >开始计算</el-button
                 >
+                <el-button class="reset-btn" @click="loadDemoTwo">加载示例</el-button>
+                <el-button class="reset-btn" @click="clearTwo">清除</el-button>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -284,17 +292,33 @@
           <div class="principle-content">
             <div class="principle-block">
               <div class="principle-label">二项分布</div>
-              <p>X ~ B(n, π)，描述 n 次独立试验中成功次数的分布。</p>
+              <p>X ~ B(n, π)，描述 n 次独立试验中成功次数的分布。适用于二分类变量（如阳性/阴性、有效/无效）的分析。</p>
             </div>
             <div class="principle-block">
               <div class="principle-label">概率公式</div>
               <div class="formula-box">P(X=k) = C(n,k) · π^k · (1-π)^(n-k)</div>
             </div>
             <div class="principle-block">
-              <div class="principle-label">期望与方差</div>
-              <p>E(X) = nπ</p>
-              <p>Var(X) = nπ(1-π)</p>
+              <div class="principle-label">区间估计</div>
+              <p>基于 Wilson 方法计算总体率的置信区间，相比正态近似法在小样本和接近 0/1 的率时更为准确。</p>
             </div>
+            <div class="principle-block">
+              <div class="principle-label">样本率 vs 总体率</div>
+              <p>H₀: p = π₀，通过 Z 检验判断样本率与已知总体率是否有差异。</p>
+            </div>
+            <div class="principle-block">
+              <div class="principle-label">两样本率比较</div>
+              <p>H₀: p₁ = p₂（双侧检验），H₁: p₁ ≠ p₂，采用合并率的 Z 检验。</p>
+            </div>
+            <div class="principle-block">
+              <div class="principle-label">期望与方差</div>
+              <p>E(X) = nπ，Var(X) = nπ(1-π)</p>
+            </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Agresti A, Coull BA. Approximate is better than "exact" for interval estimation of binomial proportions. The American Statistician, 1998.</p>
           </div>
         </div>
       </el-col>
@@ -371,6 +395,8 @@ const narrativeHtml = ref("");
 
 // Tab 1
 const prob = reactive({ pi: 0.3, n: 20, x: 6 });
+function loadDemoProb() { prob.pi = 0.3; prob.n = 20; prob.x = 6; calcProb(); }
+function clearProb() { prob.pi = 0.3; prob.n = 20; prob.x = 6; currentResult.value = null; }
 function calcProb() {
   const { pi, n, x } = prob;
   const exact = S.binomPMF(x, n, pi);
@@ -405,30 +431,42 @@ function calcProb() {
   narrativeHtml.value = `<p>在 B(${n}, ${pi}) 二项分布下，恰好出现 ${x} 次阳性的概率 P(X=${x}) = <strong>${S.fmt(exact, 6)}</strong>。</p><p>出现 ≤ ${x} 次的累积概率 P(X≤${x}) = <strong>${S.fmt(cumLe, 6)}</strong>，出现 ≥ ${x} 次的概率 P(X≥${x}) = <strong>${S.fmt(cumGe, 6)}</strong>。</p><p>期望 E(X) = <strong>${S.fmt(n * pi, 2)}</strong>，标准差 SD = <strong>${S.fmt(Math.sqrt(n * pi * (1 - pi)), 4)}</strong>。</p>`;
 }
 
-// Tab 2
+// Tab 2 — 区间估计（Wilson 方法）
 const ci = reactive({ x: 30, n: 100, alpha: 0.05 });
+function loadDemoCI() { ci.x = 30; ci.n = 100; ci.alpha = 0.05; calcCI(); }
+function clearCI() { ci.x = 30; ci.n = 100; ci.alpha = 0.05; currentResult.value = null; }
 function calcCI() {
   const pHat = ci.x / ci.n;
   const z = S.normInv(1 - ci.alpha / 2);
-  const se = Math.sqrt((pHat * (1 - pHat)) / ci.n);
-  const lower = Math.max(0, pHat - z * se),
-    upper = Math.min(1, pHat + z * se);
+  const z2 = z * z;
+  const n = ci.n;
+  // Wilson 置信区间
+  const denom = 1 + z2 / n;
+  const center = (pHat + z2 / (2 * n)) / denom;
+  const margin = (z / denom) * Math.sqrt(pHat * (1 - pHat) / n + z2 / (4 * n * n));
+  const lower = Math.max(0, center - margin);
+  const upper = Math.min(1, center + margin);
+  const se = Math.sqrt((pHat * (1 - pHat)) / n);
   currentResult.value = true;
   showChart.value = false;
   resultMetrics.value = [
     { label: "样本率 (p̂)", value: S.fmt(pHat, 4), type: "accent" },
+    { label: "标准误 (SE)", value: S.fmt(se, 4), type: "neutral" },
     { label: "置信下限", value: S.fmt(lower, 4), type: "success" },
     { label: "置信上限", value: S.fmt(upper, 4), type: "warning" },
     {
-      label: `${(1 - ci.alpha) * 100}% CI`,
+      label: `${(1 - ci.alpha) * 100}% CI (Wilson)`,
       value: `[${S.fmt(lower, 4)}, ${S.fmt(upper, 4)}]`,
-      type: "neutral",
+      type: "accent",
     },
   ];
+  narrativeHtml.value = `<p>观察阳性数 X = ${ci.x}，样本量 n = ${ci.n}，样本率 p̂ = <strong>${S.fmt(pHat, 4)}</strong>，标准误 SE = <strong>${S.fmt(se, 4)}</strong>。</p><p>采用 Wilson 方法计算 ${(1 - ci.alpha) * 100}% 置信区间为 [<strong>${S.fmt(lower, 4)}</strong>, <strong>${S.fmt(upper, 4)}</strong>]。</p><p>Wilson 置信区间在小样本及率接近 0 或 1 时比正态近似法更为准确，是医学统计中推荐的方法。</p>`;
 }
 
-// Tab 3
+// Tab 3 — 样本率 vs 总体率
 const one = reactive({ pi0: 0.5, x: 60, n: 100, tail: "two" });
+function loadDemoOne() { one.pi0 = 0.5; one.x = 60; one.n = 100; one.tail = "two"; calcOne(); }
+function clearOne() { one.pi0 = 0.5; one.x = 60; one.n = 100; one.tail = "two"; currentResult.value = null; }
 function calcOne() {
   const pHat = one.x / one.n;
   const se = Math.sqrt((one.pi0 * (1 - one.pi0)) / one.n);
@@ -442,10 +480,11 @@ function calcOne() {
   showChart.value = false;
   resultMetrics.value = [
     { label: "样本率", value: S.fmt(pHat, 4), type: "accent" },
+    { label: "标准误 (SE)", value: S.fmt(se, 4), type: "neutral" },
     { label: "Z 统计量", value: S.fmt(z, 4), type: "success" },
     {
       label: "P 值",
-      value: S.fmt(pVal, 6),
+      value: S.fmtP(pVal),
       type: pVal < 0.05 ? "warning" : "neutral",
     },
     {
@@ -455,11 +494,13 @@ function calcOne() {
     },
   ];
   const tailText = one.tail === "two" ? "双侧" : "单侧";
-  narrativeHtml.value = `<p>样本率 p̂ = ${one.x}/${one.n} = <strong>${S.fmt(pHat, 4)}</strong>，总体率 π₀ = <strong>${one.pi0}</strong>。</p><p>${tailText}检验：Z = <strong>${S.fmt(z, 4)}</strong>，P = <strong>${S.fmt(pVal, 6)}</strong>。</p><p>${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，认为样本率与总体率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为样本率与总体率有差异。`}</p>`;
+  narrativeHtml.value = `<p>样本率 p̂ = ${one.x}/${one.n} = <strong>${S.fmt(pHat, 4)}</strong>，总体率 π₀ = <strong>${one.pi0}</strong>，标准误 SE = <strong>${S.fmt(se, 4)}</strong>。</p><p>${tailText}检验：Z = <strong>${S.fmt(z, 4)}</strong>，P = <strong>${S.fmtP(pVal)}</strong>。</p><p>${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，认为样本率与总体率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为样本率与总体率有差异。`}</p>`;
 }
 
-// Tab 4
+// Tab 4 — 两样本率比较
 const two = reactive({ x1: 30, n1: 100, x2: 45, n2: 100 });
+function loadDemoTwo() { two.x1 = 30; two.n1 = 100; two.x2 = 45; two.n2 = 100; calcTwo(); }
+function clearTwo() { two.x1 = 30; two.n1 = 100; two.x2 = 45; two.n2 = 100; currentResult.value = null; }
 function calcTwo() {
   const p1 = two.x1 / two.n1,
     p2 = two.x2 / two.n2;
@@ -474,10 +515,12 @@ function calcTwo() {
   resultMetrics.value = [
     { label: "p̂₁", value: S.fmt(p1, 4), type: "accent" },
     { label: "p̂₂", value: S.fmt(p2, 4), type: "accent" },
+    { label: "标准误 (SE)", value: S.fmt(se, 4), type: "neutral" },
+    { label: "Z 值", value: S.fmt(z, 4), type: "success" },
     { label: "χ²", value: S.fmt(chi2, 4), type: "success" },
     {
       label: "P 值",
-      value: S.fmt(pVal, 6),
+      value: S.fmtP(pVal),
       type: pVal < 0.05 ? "warning" : "neutral",
     },
     {
@@ -486,7 +529,7 @@ function calcTwo() {
       type: sig ? "warning" : "neutral",
     },
   ];
-  narrativeHtml.value = `<p>组1率 p̂₁ = ${two.x1}/${two.n1} = <strong>${S.fmt(p1, 4)}</strong>，组2率 p̂₂ = ${two.x2}/${two.n2} = <strong>${S.fmt(p2, 4)}</strong>，率差 = <strong>${S.fmt(p1 - p2, 4)}</strong>。</p><p>χ² = <strong>${S.fmt(chi2, 4)}</strong>，P = <strong>${S.fmt(pVal, 6)}</strong>。</p><p>${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，两组率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为两组率有差异。`}</p>`;
+  narrativeHtml.value = `<p><strong>假设检验</strong>：H₀: p₁ = p₂，H₁: p₁ ≠ p₂（双侧检验）。</p><p>组1率 p̂₁ = ${two.x1}/${two.n1} = <strong>${S.fmt(p1, 4)}</strong>，组2率 p̂₂ = ${two.x2}/${two.n2} = <strong>${S.fmt(p2, 4)}</strong>，率差 = <strong>${S.fmt(p1 - p2, 4)}</strong>。</p><p>合并率 p̂ = <strong>${S.fmt(pPool, 4)}</strong>，标准误 SE = <strong>${S.fmt(se, 4)}</strong>。</p><p>Z = <strong>${S.fmt(z, 4)}</strong>，χ² = <strong>${S.fmt(chi2, 4)}</strong>，P = <strong>${S.fmtP(pVal)}</strong>。</p><p>在显著性水平 α = 0.05 下，${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，两组阳性率差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为两组阳性率有差异。`}</p>`;
 }
 
 watch(activeTab, () => {
@@ -642,6 +685,9 @@ watch(activeTab, () => {
   font-weight: 600;
   border-radius: 8px;
 }
+.reset-btn {
+  border-radius: 8px;
+}
 .param-sidebar {
   flex: 1;
   display: flex;
@@ -690,6 +736,25 @@ watch(activeTab, () => {
 }
 .principle-block p {
   margin: 3px 0;
+}
+.ref-section {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--el-border-color-lighter);
+}
+.ref-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid var(--el-color-warning);
+}
+.ref-item {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  margin: 2px 0;
 }
 .formula-box {
   font-family: "JetBrains Mono", "SF Mono", monospace;

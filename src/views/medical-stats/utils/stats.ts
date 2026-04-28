@@ -98,6 +98,71 @@ export function cv(arr: number[]): number {
   return m !== 0 ? (stdDev(arr) / Math.abs(m)) * 100 : 0;
 }
 
+/** 几何平均数 */
+export function geometricMean(arr: number[]): number {
+  if (arr.length === 0) return 0;
+  if (arr.some((v) => v <= 0)) return NaN;
+  const logSum = arr.reduce((s, v) => s + Math.log(v), 0);
+  return Math.exp(logSum / arr.length);
+}
+
+/** 调和平均数 */
+export function harmonicMean(arr: number[]): number {
+  if (arr.length === 0) return 0;
+  if (arr.some((v) => v === 0)) return NaN;
+  const recipSum = arr.reduce((s, v) => s + 1 / v, 0);
+  return arr.length / recipSum;
+}
+
+/** 截尾均值（默认两端各去 5%） */
+export function trimmedMean(arr: number[], proportion = 0.05): number {
+  const s = sorted(arr);
+  const n = s.length;
+  const cut = Math.floor(n * proportion);
+  const trimmed = s.slice(cut, n - cut);
+  return trimmed.length > 0 ? mean(trimmed) : mean(arr);
+}
+
+/** 均值 95% CI（基于 t 分布近似） */
+export function meanCI(arr: number[], alpha = 0.05): { lower: number; upper: number } {
+  const n = arr.length;
+  if (n < 2) return { lower: NaN, upper: NaN };
+  const m = mean(arr);
+  const se = stdError(arr);
+  // 使用正态近似，n 较大时 t 分布接近正态
+  const z = normInv(1 - alpha / 2);
+  return { lower: m - z * se, upper: m + z * se };
+}
+
+/** 偏度系数 Z 检验（偏度/标准误） */
+export function skewnessZTest(arr: number[]): { skew: number; se: number; z: number; p: number } {
+  const n = arr.length;
+  const sk = skewness(arr);
+  // 偏度系数的标准误 SE_sk = sqrt(6/n) (简化公式)
+  const seSk = Math.sqrt(6 * (n - 1) / ((n + 1) * (n + 3)));
+  const z = sk / seSk;
+  const p = 2 * (1 - normCDF(Math.abs(z)));
+  return { skew: sk, se: seSk, z, p };
+}
+
+/** 峰度系数 Z 检验 */
+export function kurtosisZTest(arr: number[]): { kurt: number; se: number; z: number; p: number } {
+  const n = arr.length;
+  const ku = kurtosis(arr);
+  // 峰度系数的标准误 SE_ku = sqrt(24/n) (简化公式)
+  const seKu = Math.sqrt(24 * n * (n - 1) * (n - 1) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)));
+  const z = ku / seKu;
+  const p = 2 * (1 - normCDF(Math.abs(z)));
+  return { kurt: ku, se: seKu, z, p };
+}
+
+/** 格式化 P 值：极小值显示 < 0.0001 */
+export function fmtP(p: number): string {
+  if (!Number.isFinite(p)) return "-";
+  if (p < 0.0001) return "< 0.0001";
+  return p.toFixed(4);
+}
+
 // ===== 正态分布 =====
 
 /** 标准正态分布 PDF */
@@ -208,6 +273,30 @@ function lnGamma(x: number): number {
 export function chiSquarePValue(chi2: number, df: number): number {
   if (chi2 <= 0 || df <= 0) return 1;
   return 1 - lowerIncompleteGamma(df / 2, chi2 / 2);
+}
+
+/** 卡方分布 CDF: P(χ² ≤ x | df) */
+export function chiSquareCDF(x: number, df: number): number {
+  if (x <= 0 || df <= 0) return 0;
+  return lowerIncompleteGamma(df / 2, x / 2);
+}
+
+/** 卡方分布逆函数 (二分搜索)：给定 p = P(χ² ≤ x | df)，求 x */
+export function chiSquareInv(p: number, df: number): number {
+  if (p <= 0) return 0;
+  if (p >= 1) return Infinity;
+  // 初始猜测
+  let lo = 0, hi = df + 10 * Math.sqrt(2 * df);
+  // 扩大上界直到包含
+  while (chiSquareCDF(hi, df) < p) hi *= 2;
+  // 二分法
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (chiSquareCDF(mid, df) < p) lo = mid;
+    else hi = mid;
+    if (hi - lo < 1e-10) break;
+  }
+  return (lo + hi) / 2;
 }
 
 // ===== t 分布 =====
