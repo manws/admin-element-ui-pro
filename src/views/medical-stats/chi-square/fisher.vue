@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">Fisher 精确检验</h1>
-          <p class="hero-desc">适用于小样本 2×2 表资料，当理论频数 &lt; 5 的格子较多时，应使用 Fisher 精确检验代替 χ² 检验</p>
+          <p class="hero-desc">适用于小样本 2×2 表资料（N &lt; 40 或理论频数 T &lt; 5 的格子较多时），基于超几何分布精确计算在边际固定条件下观测到当前或更极端结果的概率，是 χ² 检验的精确替代方案</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · FISHER</el-tag>
       </div>
@@ -48,7 +48,8 @@
             <el-button type="primary" @click="calculate" class="calc-btn">
               <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
             </el-button>
-            <el-button @click="loadDemo" class="reset-btn">示例数据</el-button>
+            <el-button @click="loadDemo" class="reset-btn">加载示例</el-button>
+            <el-button @click="clearAll" class="reset-btn">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -87,6 +88,11 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Fisher RA. On the interpretation of χ² from contingency tables. J Royal Stat Soc, 1922.</p>
           </div>
         </div>
       </el-col>
@@ -149,6 +155,7 @@ const compareRows = ref<any[]>([]);
 const narrativeHtml = ref("");
 
 function loadDemo() { Object.assign(form, { a: 3, b: 7, c: 8, d: 2 }); calculate(); }
+function clearAll() { Object.assign(form, { a: 0, b: 0, c: 0, d: 0 }); result.value = false; }
 
 function calculate() {
   const { a, b, c, d } = form;
@@ -230,6 +237,9 @@ function calculate() {
 .principle-content { font-size: 12px; line-height: 1.8; color: var(--el-text-color-secondary); }
 .principle-block { margin-bottom: 16px; }
 .principle-block:last-child { margin-bottom: 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .principle-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
 .principle-block p { margin: 3px 0; }
 .condition-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }

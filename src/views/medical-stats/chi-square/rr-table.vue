@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">R×R 列联表（等级资料）</h1>
-          <p class="hero-desc">用于两组有序分类（等级）资料的比较，采用线性趋势卡方检验</p>
+          <p class="hero-desc">用于两组有序分类（等级）资料的比较，采用 Cochran-Armitage 线性趋势卡方检验（χ²_trend），比 Pearson χ² 更敏感地检测有序变量的单调趋势差异</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · R×R TABLE</el-tag>
       </div>
@@ -46,7 +46,8 @@
           </div>
           <div class="action-bar">
             <el-button type="primary" @click="calculate" class="calc-btn"><el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算</el-button>
-            <el-button @click="loadDemo" class="reset-btn">示例数据</el-button>
+            <el-button @click="loadDemo" class="reset-btn">加载示例</el-button>
+            <el-button @click="clearAll" class="reset-btn">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -68,6 +69,11 @@
               <div class="principle-label">说明</div>
               <p>趋势检验比 Pearson χ² 更敏感地检测有序变量的单调趋势。</p>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Cochran WG. Some methods for strengthening the common chi-square tests. Biometrics, 1954.</p>
           </div>
         </div>
       </el-col>
@@ -126,6 +132,7 @@ function rebuildTable() {
   table.value = Array.from({ length: levels.value }, (_, i) => [table.value[i]?.[0] ?? 0, table.value[i]?.[1] ?? 0]);
 }
 
+function clearAll() { table.value = table.value.map(r => r.map(() => 0)); result.value = false; }
 function loadDemo() {
   levels.value = 4;
   table.value = [[10, 20], [15, 25], [30, 15], [45, 10]];
@@ -236,6 +243,9 @@ function calculate() {
 .principle-content { font-size: 12px; line-height: 1.8; color: var(--el-text-color-secondary); }
 .principle-block { margin-bottom: 16px; }
 .principle-block:last-child { margin-bottom: 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .principle-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
 .principle-block p { margin: 3px 0; }
 .formula-box { font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05); color: var(--el-text-color-primary); margin: 6px 0; font-weight: 600; }

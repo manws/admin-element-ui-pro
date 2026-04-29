@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">卡方 P 值查询</h1>
-          <p class="hero-desc">根据卡方统计量和自由度计算对应的 P 值，也可查询常用临界值表</p>
+          <p class="hero-desc">输入卡方统计量 χ² 和自由度 df，即时计算对应的右尾概率 P 值（P = P(X ≥ χ²)），同时提供常用显著性水平（α = 0.05, 0.01, 0.001）下各自由度对应的 χ² 临界值查询表</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · P VALUE</el-tag>
       </div>
@@ -91,6 +91,10 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
           </div>
         </div>
       </el-col>
@@ -243,6 +247,9 @@ watch(activeTab, () => { toPResult.value = null; });
 .principle-content { font-size: 12px; line-height: 1.8; color: var(--el-text-color-secondary); }
 .principle-block { margin-bottom: 16px; }
 .principle-block:last-child { margin-bottom: 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .principle-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
 .principle-block p { margin: 3px 0; }
 .condition-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }

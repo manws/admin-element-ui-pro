@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">配对资料卡方检验 (McNemar)</h1>
-          <p class="hero-desc">用于配对设计两组阳性率比较，检验"不一致对"中两种变化方向是否对称</p>
+          <p class="hero-desc">用于配对设计（如同一样本前后对比、两种检验方法对比）的阳性率比较，基于 McNemar 检验分析"不一致对"中两种变化方向是否对称（H₀: b=c），支持 Yates 连续性校正</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · McNEMAR</el-tag>
       </div>
@@ -49,7 +49,8 @@
             <el-button type="primary" @click="calculate" class="calc-btn">
               <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
             </el-button>
-            <el-button @click="loadDemo" class="reset-btn">示例数据</el-button>
+            <el-button @click="loadDemo" class="reset-btn">加载示例</el-button>
+            <el-button @click="clearAll" class="reset-btn">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -77,6 +78,11 @@
               <div class="principle-label">说明</div>
               <p>仅利用不一致对 (b, c) 进行检验，一致对 (a, d) 不参与统计量计算。</p>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] McNemar Q. Note on the sampling error of the difference between correlated proportions. Psychometrika, 1947.</p>
           </div>
         </div>
       </el-col>
@@ -138,6 +144,7 @@ const detailRows = ref<any[]>([]);
 const narrativeHtml = ref("");
 
 function loadDemo() { Object.assign(form, { a: 50, b: 20, c: 8, d: 22 }); calculate(); }
+function clearAll() { Object.assign(form, { a: 0, b: 0, c: 0, d: 0 }); result.value = false; }
 
 function calculate() {
   const { a, b, c, d } = form;
@@ -231,6 +238,9 @@ function calculate() {
 .principle-content { font-size: 12px; line-height: 1.8; color: var(--el-text-color-secondary); }
 .principle-block { margin-bottom: 16px; }
 .principle-block:last-child { margin-bottom: 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .principle-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
 .principle-block p { margin: 3px 0; }
 .formula-box { font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05); color: var(--el-text-color-primary); margin: 6px 0; font-weight: 600; }

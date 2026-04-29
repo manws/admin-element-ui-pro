@@ -1,51 +1,29 @@
 <template>
   <div class="app-container">
-    <el-card shadow="never" class="mb-4">
-      <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">寿命表法</span><el-tag size="small" effect="plain">LIFE TABLE</el-tag></div></template>
-      <div class="text-sm text-gray mb-4">频数表资料的生存分析。每行：时间区间起点, 期内死亡数, 期内删失数。</div>
-      <el-form label-position="top">
-        <el-form-item label="数据（每行：区间起点,死亡数,删失数）"><el-input v-model="form.rawData" type="textarea" :rows="6" /></el-form-item>
-        <el-form-item label="初始人数"><el-input-number v-model="form.n0" :min="1" style="width:200px" /></el-form-item>
-        <div class="flex gap-2"><el-button type="primary" @click="calculate">计算</el-button><el-button @click="loadDemo">示例</el-button></div>
-      </el-form>
-    </el-card>
-    <template v-if="res">
-      <el-card shadow="never" class="mb-4"><template #header><span class="font-bold">生存曲线</span></template><ECharts :options="chartOpts" height="320px" /></el-card>
-      <el-card shadow="never"><template #header><span class="font-bold">寿命表</span></template>
-        <el-table :data="tableRows" size="small" stripe border>
-          <el-table-column prop="interval" label="区间" width="100" /><el-table-column prop="alive" label="期初存活" width="80" /><el-table-column prop="deaths" label="死亡" width="60" />
-          <el-table-column prop="censored" label="删失" width="60" /><el-table-column prop="nPrime" label="有效n'" width="80" /><el-table-column prop="qi" label="死亡概率q" width="80" /><el-table-column prop="pi" label="生存概率p" width="80" /><el-table-column prop="cumS" label="累积S(t)" width="80" />
-        </el-table>
-      </el-card>
-    </template>
+    <div class="page-hero"><div class="hero-inner"><div class="hero-text"><h1 class="hero-title">寿命表法</h1><p class="hero-desc">频数表资料的生存分析方法，按时间区间计算各期死亡概率、生存概率和累积生存率，绘制生存曲线。适用于大样本分组资料</p></div><el-tag class="hero-tag" effect="dark" round>SURVIVAL · LIFE TABLE</el-tag></div></div>
+    <el-row :gutter="20" class="mb-4 input-row">
+      <el-col :lg="16" :xs="24"><el-card shadow="never" class="input-card"><el-form label-position="top"><el-form-item label="数据（每行：区间起点,死亡数,删失数）"><el-input v-model="form.rawData" type="textarea" :rows="6" /></el-form-item><el-form-item label="初始人数"><el-input-number v-model="form.n0" :min="1" style="width:200px" /></el-form-item></el-form><div class="action-bar"><el-button type="primary" class="calc-btn" @click="calculate"><el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算</el-button><el-button class="reset-btn" @click="loadDemo">加载示例</el-button><el-button class="reset-btn" @click="clearAll">清除</el-button></div></el-card></el-col>
+      <el-col :lg="8" :xs="24"><div class="param-sidebar"><div class="param-sidebar-header"><el-icon class="sidebar-icon"><InfoFilled /></el-icon>检验原理</div><div class="principle-content"><div class="principle-block"><div class="principle-label">有效人数</div><div class="formula-box">n'ᵢ = nᵢ - cᵢ/2</div></div><div class="principle-block"><div class="principle-label">生存概率</div><p>qᵢ = dᵢ/n'ᵢ，pᵢ = 1-qᵢ</p><p>S(t) = Πpᵢ</p></div></div><div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 2012.</p></div></div></el-col>
+    </el-row>
+    <transition name="result-fade"><div v-if="res" class="result-section">
+      <el-row :gutter="20" class="mb-4">
+        <el-col :lg="12" :xs="24" class="mb-4"><el-card shadow="never" class="detail-card"><template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">生存曲线</span></div></template><ECharts :options="chartOpts" height="320px" /></el-card></el-col>
+        <el-col :lg="12" :xs="24" class="mb-4"><el-card shadow="never" class="detail-card"><template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">寿命表</span></div></template><el-table :data="tableRows" size="small" stripe border><el-table-column prop="interval" label="区间" width="90" /><el-table-column prop="alive" label="期初" width="60" /><el-table-column prop="deaths" label="死亡" width="50" /><el-table-column prop="censored" label="删失" width="50" /><el-table-column prop="nPrime" label="n'" width="60" /><el-table-column prop="qi" label="q" width="60" /><el-table-column prop="pi" label="p" width="60" /><el-table-column prop="cumS" label="S(t)" width="70" /></el-table></el-card></el-col>
+      </el-row>
+    </div></transition>
   </div>
 </template>
 <script setup lang="ts">
-import * as S from "../utils/stats";
-defineOptions({ name: "LifeTable" });
-const form = reactive({ rawData: "", n0: 100 }); const res = ref(false); const chartOpts = ref({}); const tableRows = ref<any[]>([]);
+import { InfoFilled, DataAnalysis, TrendCharts, Document } from "@element-plus/icons-vue"; import * as S from "../utils/stats";
+defineOptions({ name: "LifeTable" }); const form = reactive({ rawData: "", n0: 100 }); const res = ref(false); const chartOpts = ref({}); const tableRows = ref<any[]>([]);
 function loadDemo() { form.rawData = "0,5,2\n1,8,3\n2,6,4\n3,4,5\n4,3,6\n5,2,8"; form.n0 = 100; calculate(); }
+function clearAll() { form.rawData = ""; res.value = false; }
 function calculate() {
-  const rows = form.rawData.trim().split("\n").map(l => { const p = S.parseNumbers(l); return { start: p[0], deaths: p[1] || 0, censored: p[2] || 0 }; });
-  if (!rows.length) return;
-  let alive = form.n0; let cumS = 1;
-  const table: any[] = []; const curve: [number, number][] = [[0, 1]];
-  rows.forEach((r, i) => {
-    const nPrime = alive - r.censored / 2;
-    const qi = nPrime > 0 ? r.deaths / nPrime : 0;
-    const pi = 1 - qi;
-    cumS *= pi;
-    const end = rows[i + 1]?.start ?? r.start + 1;
-    table.push({ interval: `[${r.start}, ${end})`, alive, deaths: r.deaths, censored: r.censored, nPrime: S.fmt(nPrime, 1), qi: S.fmt(qi), pi: S.fmt(pi), cumS: S.fmt(cumS) });
-    curve.push([end, +cumS.toFixed(4)]);
-    alive -= r.deaths + r.censored;
-  });
+  const rows = form.rawData.trim().split("\n").map(l => { const p = S.parseNumbers(l); return { start: p[0], deaths: p[1] || 0, censored: p[2] || 0 }; }); if (!rows.length) return;
+  let alive = form.n0; let cumS = 1; const table: any[] = []; const curve: [number, number][] = [[0, 1]];
+  rows.forEach((r, i) => { const nPrime = alive - r.censored / 2; const qi = nPrime > 0 ? r.deaths / nPrime : 0; const pi = 1 - qi; cumS *= pi; const end = rows[i + 1]?.start ?? r.start + 1; table.push({ interval: `[${r.start}, ${end})`, alive, deaths: r.deaths, censored: r.censored, nPrime: S.fmt(nPrime, 1), qi: S.fmt(qi), pi: S.fmt(pi), cumS: S.fmt(cumS) }); curve.push([end, +cumS.toFixed(4)]); alive -= r.deaths + r.censored; });
   res.value = true; tableRows.value = table;
-  chartOpts.value = {
-    tooltip: { trigger: "axis" }, grid: { left: "8%", right: "4%", bottom: "10%", top: "6%" },
-    xAxis: { type: "value", name: "时间" }, yAxis: { type: "value", name: "S(t)", max: 1 },
-    series: [{ type: "line", data: curve, step: "end", lineStyle: { width: 2.5, color: "#67C23A" }, showSymbol: false, areaStyle: { opacity: 0.06 } }],
-  };
+  chartOpts.value = { tooltip: { trigger: "axis" }, grid: { left: "8%", right: "4%", bottom: "10%", top: "6%" }, xAxis: { type: "value", name: "时间" }, yAxis: { type: "value", name: "S(t)", max: 1 }, series: [{ type: "line", data: curve, step: "end", lineStyle: { width: 2.5, color: "#22c55e" }, showSymbol: false, areaStyle: { opacity: 0.06 } }] };
 }
 </script>
-<style scoped>.mc { text-align: center; } .mc.accent { border-top: 3px solid #409EFF; } .mc.success { border-top: 3px solid #67C23A; } .mc.warning { border-top: 3px solid #E6A23C; } .mc.neutral { border-top: 3px solid #909399; } .font-mono { font-family: "JetBrains Mono", monospace; }</style>
+<style scoped>.page-hero{margin-bottom:20px;padding:24px 28px;border-radius:14px;background:linear-gradient(135deg,rgba(var(--el-color-primary-rgb,64,128,255),.08) 0%,rgba(var(--el-color-primary-rgb,64,128,255),.03) 100%);border:1px solid var(--el-border-color-lighter);position:relative;overflow:hidden}.page-hero::before{content:"S";position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:120px;font-weight:900;opacity:.04;color:var(--el-color-primary);font-family:"Georgia",serif;pointer-events:none}.hero-inner{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}.hero-title{font-size:22px;font-weight:800;margin:0 0 6px 0}.hero-desc{font-size:13px;color:var(--el-text-color-secondary);margin:0}.hero-tag{font-size:11px;letter-spacing:1.5px;font-weight:600}.input-row{align-items:stretch}.input-row>.el-col{display:flex;flex-direction:column}.input-card{border-radius:14px;flex:1}.action-bar{display:flex;gap:10px;justify-content:center;margin-top:20px;padding-top:16px;border-top:1px dashed var(--el-border-color-lighter)}.calc-btn{padding:10px 28px;font-weight:600;border-radius:8px}.reset-btn{border-radius:8px}.param-sidebar{flex:1;display:flex;flex-direction:column;padding:22px;border-radius:14px;background:linear-gradient(160deg,rgba(var(--el-color-primary-rgb,64,158,255),.04) 0%,rgba(var(--el-color-primary-rgb,64,158,255),.01) 100%);border:1px solid var(--el-border-color-lighter)}.param-sidebar-header{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--el-border-color-lighter)}.sidebar-icon{font-size:18px;color:var(--el-color-primary)}.principle-content{font-size:12px;line-height:1.8;color:var(--el-text-color-secondary)}.principle-block{margin-bottom:16px}.principle-block:last-child{margin-bottom:0}.principle-label{font-size:12px;font-weight:700;color:var(--el-text-color-primary);margin-bottom:6px;padding-left:8px;border-left:3px solid var(--el-color-primary)}.principle-block p{margin:3px 0}.formula-box{font-family:"JetBrains Mono",monospace;font-size:12px;padding:8px 12px;border-radius:8px;background:rgba(var(--el-color-primary-rgb,64,158,255),.05);margin:6px 0;font-weight:600}.ref-section{margin-top:16px;padding-top:12px;border-top:1px dashed var(--el-border-color-lighter)}.ref-title{font-size:12px;font-weight:700;margin-bottom:8px;padding-left:8px;border-left:3px solid var(--el-color-warning)}.ref-item{font-size:11px;line-height:1.6;color:var(--el-text-color-secondary);margin:2px 0}.result-fade-enter-active{transition:all .5s cubic-bezier(.16,1,.3,1)}.result-fade-leave-active{transition:all .3s ease}.result-fade-enter-from{opacity:0;transform:translateY(24px)}.result-fade-leave-to{opacity:0;transform:translateY(-12px)}.result-section{animation:slideUp .5s cubic-bezier(.16,1,.3,1)}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.card-header-inner{display:flex;align-items:center;gap:8px}.header-icon{font-size:16px;color:var(--el-color-primary)}.detail-card{border-radius:14px}</style>

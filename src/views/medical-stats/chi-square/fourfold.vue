@@ -6,7 +6,7 @@
         <div class="hero-text">
           <h1 class="hero-title">四格表卡方检验</h1>
           <p class="hero-desc">
-            比较两组样本率（构成比）有无差异，适用于两独立样本的四格表资料
+            比较两组独立样本的阳性率（构成比）有无差异，适用于两独立样本的四格表资料。支持三种输入格式（四格表/发生数/发生率），自动判定使用 Pearson χ²、Yates 连续性校正或 Fisher 精确检验
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · FOURFOLD</el-tag>
@@ -56,7 +56,8 @@
                 <el-button type="primary" @click="calcTable" class="calc-btn">
                   <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
                 </el-button>
-                <el-button @click="resetTable" class="reset-btn">重置数据</el-button>
+                <el-button @click="resetTable" class="reset-btn">加载示例</el-button>
+                <el-button @click="clearTable" class="reset-btn">清除</el-button>
               </div>
             </el-tab-pane>
 
@@ -98,6 +99,8 @@
                 <el-button type="primary" @click="calcCount" class="calc-btn">
                   <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
                 </el-button>
+                <el-button @click="loadDemoCount" class="reset-btn">加载示例</el-button>
+                <el-button @click="clearCount" class="reset-btn">清除</el-button>
               </div>
             </el-tab-pane>
 
@@ -142,6 +145,8 @@
                 <el-button type="primary" @click="calcRate" class="calc-btn">
                   <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
                 </el-button>
+                <el-button @click="loadDemoRate" class="reset-btn">加载示例</el-button>
+                <el-button @click="clearRate" class="reset-btn">清除</el-button>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -183,6 +188,11 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Pearson K. On the criterion that a given system of deviations. Phil Mag, 1900.</p>
           </div>
         </div>
       </el-col>
@@ -315,10 +325,13 @@ function calcTable() {
   tblRes.value = r;
   showResult(r, tbl.a, tbl.b, tbl.c, tbl.d);
 }
-function resetTable() { tbl.a = 0; tbl.b = 0; tbl.c = 0; tbl.d = 0; currentResult.value = null; }
+function resetTable() { Object.assign(tbl, { a: 40, b: 60, c: 20, d: 80 }); calcTable(); }
+function clearTable() { tbl.a = 0; tbl.b = 0; tbl.c = 0; tbl.d = 0; currentResult.value = null; }
 
 // Tab 2
 const cnt = reactive({ x1: 30, n1: 100, x2: 45, n2: 100 });
+function loadDemoCount() { Object.assign(cnt, { x1: 30, n1: 100, x2: 45, n2: 100 }); calcCount(); }
+function clearCount() { Object.assign(cnt, { x1: 0, n1: 1, x2: 0, n2: 1 }); currentResult.value = null; }
 function calcCount() {
   const a = cnt.x1, b = cnt.n1 - cnt.x1, c = cnt.x2, d = cnt.n2 - cnt.x2;
   showResult(chi2Calc(a, b, c, d), a, b, c, d);
@@ -326,6 +339,8 @@ function calcCount() {
 
 // Tab 3
 const rate = reactive({ p1: 0.3, n1: 100, p2: 0.45, n2: 100 });
+function loadDemoRate() { Object.assign(rate, { p1: 0.3, n1: 100, p2: 0.45, n2: 100 }); calcRate(); }
+function clearRate() { Object.assign(rate, { p1: 0, n1: 1, p2: 0, n2: 1 }); currentResult.value = null; }
 function calcRate() {
   const a = Math.round(rate.p1 * rate.n1), c = Math.round(rate.p2 * rate.n2);
   const b = rate.n1 - a, d = rate.n2 - c;
@@ -448,6 +463,9 @@ watch(activeTab, () => { currentResult.value = null; });
   border-left: 3px solid var(--el-color-primary);
 }
 .principle-block p { margin: 3px 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .formula-box {
   font-family: "JetBrains Mono", "SF Mono", monospace;
   font-size: 12px;

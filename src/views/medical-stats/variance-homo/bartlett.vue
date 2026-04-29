@@ -1,43 +1,27 @@
 <template>
   <div class="app-container">
-    <el-card shadow="never" class="mb-4">
-      <template #header><div class="flex justify-between items-center"><span class="font-bold text-lg">Bartlett检验</span><el-tag size="small" effect="plain">BARTLETT</el-tag></div></template>
-      <div class="text-sm text-gray mb-4">多样本方差齐性检验（要求正态性）。各组数据每行一组。</div>
-      <el-form label-position="top">
-        <el-form-item label="各组数据（每行一组）"><el-input v-model="form.rawData" type="textarea" :rows="5" /></el-form-item>
-        <div class="flex gap-2"><el-button type="primary" @click="calculate">计算</el-button><el-button @click="loadDemo">示例</el-button></div>
-      </el-form>
-    </el-card>
-    <template v-if="res">
-      <el-row :gutter="16" class="mb-4">
-        <el-col v-for="m in metrics" :key="m.label" :lg="4" :md="6" :xs="12"><el-card shadow="never" class="mc" :class="m.type"><div class="text-xs text-gray mb-1">{{ m.label }}</div><div class="text-xl font-bold font-mono">{{ m.value }}</div></el-card></el-col>
-      </el-row>
-    </template>
+    <div class="page-hero"><div class="hero-inner"><div class="hero-text"><h1 class="hero-title">Bartlett 检验</h1><p class="hero-desc">多样本方差齐性检验（要求各组数据近似正态分布），通过 Bartlett χ² 统计量判断多组总体方差是否相等，是多组方差分析前的前置检验步骤</p></div><el-tag class="hero-tag" effect="dark" round>VARIANCE · BARTLETT</el-tag></div></div>
+    <el-row :gutter="20" class="mb-4 input-row">
+      <el-col :lg="16" :xs="24"><el-card shadow="never" class="input-card"><el-form label-position="top"><el-form-item label="各组数据（每行一组）"><el-input v-model="form.rawData" type="textarea" :rows="5" /></el-form-item></el-form><div class="action-bar"><el-button type="primary" class="calc-btn" @click="calculate"><el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算</el-button><el-button class="reset-btn" @click="loadDemo">加载示例</el-button><el-button class="reset-btn" @click="clearAll">清除</el-button></div></el-card></el-col>
+      <el-col :lg="8" :xs="24"><div class="param-sidebar"><div class="param-sidebar-header"><el-icon class="sidebar-icon"><InfoFilled /></el-icon>检验原理</div><div class="principle-content"><div class="principle-block"><div class="principle-label">假设</div><p>H₀: σ₁² = σ₂² = ... = σₖ²</p></div><div class="principle-block"><div class="principle-label">适用条件</div><p>各组数据近似正态分布；对非正态数据建议使用 Levene 检验</p></div></div><div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 2012.</p></div></div></el-col>
+    </el-row>
+    <transition name="result-fade"><div v-if="res" class="result-section"><div class="metrics-grid mb-5"><div v-for="m in metrics" :key="m.label" class="metric-card" :class="m.type"><div class="metric-indicator" /><div class="metric-label">{{ m.label }}</div><div class="metric-value">{{ m.value }}</div></div></div></div></transition>
   </div>
 </template>
 <script setup lang="ts">
-import * as S from "../utils/stats";
-defineOptions({ name: "VHBartlett" });
-const form = reactive({ rawData: "" });
-const res = ref(false); const metrics = ref<any[]>([]);
+import { InfoFilled, DataAnalysis } from "@element-plus/icons-vue"; import * as S from "../utils/stats";
+defineOptions({ name: "VHBartlett" }); const form = reactive({ rawData: "" }); const res = ref(false); const metrics = ref<any[]>([]);
 function loadDemo() { form.rawData = "72,68,75,80,65,90\n55,58,62,60,57,63\n48,52,45,50,47,53"; calculate(); }
+function clearAll() { form.rawData = ""; res.value = false; }
 function calculate() {
   const groups = form.rawData.trim().split("\n").map(l => S.parseNumbers(l)).filter(g => g.length >= 2);
   const k = groups.length; if (k < 2) return;
-  const ns = groups.map(g => g.length), vs = groups.map(g => S.variance(g));
-  const N = ns.reduce((s, n) => s + n, 0);
+  const ns = groups.map(g => g.length), vs = groups.map(g => S.variance(g)); const N = ns.reduce((s, n) => s + n, 0);
   const sp2 = ns.reduce((s, n, i) => s + (n - 1) * vs[i], 0) / (N - k);
   const A = (N - k) * Math.log(sp2) - ns.reduce((s, n, i) => s + (n - 1) * Math.log(vs[i]), 0);
   const C = 1 + (1 / (3 * (k - 1))) * (ns.reduce((s, n) => s + 1 / (n - 1), 0) - 1 / (N - k));
-  const chi2 = A / C; const df = k - 1;
-  const pVal = S.chiSquarePValue(chi2, df); const sig = pVal < 0.05;
-  res.value = true;
-  metrics.value = [
-    { label: "组数", value: k, type: "accent" }, { label: "合并方差", value: S.fmt(sp2), type: "accent" },
-    { label: "χ²", value: S.fmt(chi2), type: "warning" }, { label: "df", value: df, type: "success" },
-    { label: "P", value: S.fmt(pVal, 6), type: sig ? "warning" : "neutral" },
-    { label: "结论", value: sig ? "方差不齐" : "方差齐", type: sig ? "warning" : "success" },
-  ];
+  const chi2 = A / C; const df = k - 1; const pVal = S.chiSquarePValue(chi2, df); const sig = pVal < 0.05; res.value = true;
+  metrics.value = [{ label: "组数", value: k, type: "accent" }, { label: "合并方差", value: S.fmt(sp2), type: "accent" }, { label: "χ²", value: S.fmt(chi2), type: "warning" }, { label: "df", value: df, type: "success" }, { label: "P", value: S.fmtP(pVal), type: sig ? "warning" : "neutral" }, { label: "结论", value: sig ? "方差不齐" : "方差齐", type: sig ? "warning" : "success" }];
 }
 </script>
-<style scoped>.mc { text-align: center; } .mc.accent { border-top: 3px solid #409EFF; } .mc.success { border-top: 3px solid #67C23A; } .mc.warning { border-top: 3px solid #E6A23C; } .mc.neutral { border-top: 3px solid #909399; } .font-mono { font-family: "JetBrains Mono", monospace; }</style>
+<style scoped>.page-hero{margin-bottom:20px;padding:24px 28px;border-radius:14px;background:linear-gradient(135deg,rgba(var(--el-color-primary-rgb,64,128,255),.08) 0%,rgba(var(--el-color-primary-rgb,64,128,255),.03) 100%);border:1px solid var(--el-border-color-lighter);position:relative;overflow:hidden}.page-hero::before{content:"B";position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:120px;font-weight:900;opacity:.04;color:var(--el-color-primary);font-family:"Georgia",serif;pointer-events:none}.hero-inner{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}.hero-title{font-size:22px;font-weight:800;margin:0 0 6px 0}.hero-desc{font-size:13px;color:var(--el-text-color-secondary);margin:0}.hero-tag{font-size:11px;letter-spacing:1.5px;font-weight:600}.input-row{align-items:stretch}.input-row>.el-col{display:flex;flex-direction:column}.input-card{border-radius:14px;flex:1}.action-bar{display:flex;gap:10px;justify-content:center;margin-top:20px;padding-top:16px;border-top:1px dashed var(--el-border-color-lighter)}.calc-btn{padding:10px 28px;font-weight:600;border-radius:8px}.reset-btn{border-radius:8px}.param-sidebar{flex:1;display:flex;flex-direction:column;padding:22px;border-radius:14px;background:linear-gradient(160deg,rgba(var(--el-color-primary-rgb,64,158,255),.04) 0%,rgba(var(--el-color-primary-rgb,64,158,255),.01) 100%);border:1px solid var(--el-border-color-lighter)}.param-sidebar-header{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--el-border-color-lighter)}.sidebar-icon{font-size:18px;color:var(--el-color-primary)}.principle-content{font-size:12px;line-height:1.8;color:var(--el-text-color-secondary)}.principle-block{margin-bottom:16px}.principle-block:last-child{margin-bottom:0}.principle-label{font-size:12px;font-weight:700;color:var(--el-text-color-primary);margin-bottom:6px;padding-left:8px;border-left:3px solid var(--el-color-primary)}.principle-block p{margin:3px 0}.ref-section{margin-top:16px;padding-top:12px;border-top:1px dashed var(--el-border-color-lighter)}.ref-title{font-size:12px;font-weight:700;margin-bottom:8px;padding-left:8px;border-left:3px solid var(--el-color-warning)}.ref-item{font-size:11px;line-height:1.6;color:var(--el-text-color-secondary);margin:2px 0}.result-fade-enter-active{transition:all .5s cubic-bezier(.16,1,.3,1)}.result-fade-leave-active{transition:all .3s ease}.result-fade-enter-from{opacity:0;transform:translateY(24px)}.result-fade-leave-to{opacity:0;transform:translateY(-12px)}.result-section{animation:slideUp .5s cubic-bezier(.16,1,.3,1)}@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px}.metric-card{position:relative;text-align:center;padding:18px 14px 16px;border-radius:12px;background:var(--el-bg-color);border:1px solid var(--el-border-color-lighter);overflow:hidden;transition:transform .2s,box-shadow .2s}.metric-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.06)}.metric-indicator{position:absolute;top:0;left:0;right:0;height:3px}.metric-card.accent .metric-indicator{background:linear-gradient(90deg,#409eff,#66b1ff)}.metric-card.success .metric-indicator{background:linear-gradient(90deg,#67c23a,#85ce61)}.metric-card.warning .metric-indicator{background:linear-gradient(90deg,#e6a23c,#ebb563)}.metric-card.neutral .metric-indicator{background:linear-gradient(90deg,#909399,#a6a9ad)}.metric-label{font-size:12px;color:var(--el-text-color-secondary);margin-bottom:6px}.metric-value{font-size:20px;font-weight:700;font-family:"JetBrains Mono",monospace;line-height:1.2}</style>

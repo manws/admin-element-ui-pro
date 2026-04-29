@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">R×C 列联表卡方检验</h1>
-          <p class="hero-desc">适用于多组多分类资料的独立性检验，通过 Pearson χ² 统计量判断行列变量是否独立</p>
+          <p class="hero-desc">适用于多组（R 行）多分类（C 列）资料的独立性检验，通过 Pearson χ² 统计量判断行列变量是否独立，同时展示理论频数矩阵和各格贡献值，辅助定位差异来源</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · R×C TABLE</el-tag>
       </div>
@@ -53,7 +53,8 @@
             <el-button type="primary" @click="calculate" class="calc-btn">
               <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
             </el-button>
-            <el-button @click="loadDemo" class="reset-btn">示例数据</el-button>
+            <el-button @click="loadDemo" class="reset-btn">加载示例</el-button>
+            <el-button @click="clearAll" class="reset-btn">清除</el-button>
           </div>
         </el-card>
       </el-col>
@@ -93,6 +94,11 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="ref-section">
+            <div class="ref-title">参考文献</div>
+            <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Pearson K. On the criterion that a given system of deviations. Phil Mag, 1900.</p>
           </div>
         </div>
       </el-col>
@@ -165,6 +171,7 @@ function rowSum(i: number) { return table.value[i]?.reduce((s, v) => s + v, 0) ?
 function colSum(j: number) { return table.value.reduce((s, row) => s + (row[j] ?? 0), 0); }
 const totalN = computed(() => table.value.reduce((s, row) => s + row.reduce((ss, v) => ss + v, 0), 0));
 
+function clearAll() { table.value = table.value.map(r => r.map(() => 0)); result.value = false; }
 function loadDemo() {
   rows.value = 3; cols.value = 3;
   table.value = [[40, 30, 10], [20, 35, 25], [15, 20, 45]];
@@ -266,6 +273,9 @@ function calculate() {
 .principle-content { font-size: 12px; line-height: 1.8; color: var(--el-text-color-secondary); }
 .principle-block { margin-bottom: 16px; }
 .principle-block:last-child { margin-bottom: 0; }
+.ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); }
+.ref-title { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); }
+.ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .principle-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-primary); margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--el-color-primary); }
 .principle-block p { margin: 3px 0; }
 .formula-box { font-family: "JetBrains Mono", "SF Mono", monospace; font-size: 12px; padding: 8px 12px; border-radius: 8px; background: rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.05); color: var(--el-text-color-primary); margin: 6px 0; font-weight: 600; }
