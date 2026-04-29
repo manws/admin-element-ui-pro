@@ -31,13 +31,13 @@
           </div>
 
           <!-- 表格输入模式 -->
-          <div v-if="inputMode === 'table'" class="data-table-area">
-            <div class="data-table-toolbar">
+          <div v-if="inputMode === 'table'" class="spread-area">
+            <div class="spread-toolbar">
               <el-button size="small" @click="addRows(5)">
-                <el-icon class="mr-1"><Plus /></el-icon>添加 5 行
+                <el-icon class="mr-1"><Plus /></el-icon>+5 行
               </el-button>
               <el-button size="small" @click="addRows(10)">
-                <el-icon class="mr-1"><Plus /></el-icon>添加 10 行
+                <el-icon class="mr-1"><Plus /></el-icon>+10 行
               </el-button>
               <el-tooltip content="从剪贴板粘贴：支持 Excel 复制、逗号/空格/换行分隔" placement="top">
                 <el-button size="small" @click="pasteFromClipboard">
@@ -45,21 +45,20 @@
                 </el-button>
               </el-tooltip>
             </div>
-            <div class="data-grid">
-              <div class="data-grid-header">
-                <div class="dg-cell dg-idx-cell">#</div>
-                <div v-for="col in tableCols" :key="col" class="dg-cell dg-head-cell">
-                  X<sub>{{ col }}</sub>
-                </div>
+            <div class="spread-grid">
+              <div class="spread-header">
+                <div class="sp-idx-cell">#</div>
+                <div v-for="col in tableCols" :key="col" class="sp-col-head sp-c1">C{{ col }}</div>
+                <div v-for="col in (6 - tableCols)" :key="'d'+col" class="sp-col-head sp-disabled-head">C{{ tableCols + col }}</div>
               </div>
-              <div class="data-grid-body">
-                <div v-for="(_row, ri) in tableRowCount" :key="ri" class="dg-row" :class="{ 'dg-row-even': ri % 2 === 0 }">
-                  <div class="dg-cell dg-idx-cell dg-row-idx">{{ ri * tableCols + 1 }}</div>
-                  <div v-for="ci in tableCols" :key="ci" class="dg-cell dg-data-cell">
+              <div class="spread-body">
+                <div v-for="(_row, ri) in tableRowCount" :key="ri" class="spread-row" :class="{ 'sp-even': ri % 2 === 0 }">
+                  <div class="sp-idx-cell sp-row-idx">{{ ri * tableCols + 1 }}</div>
+                  <div v-for="ci in tableCols" :key="ci" class="sp-data-cell">
                     <input
                       v-if="ri * tableCols + ci - 1 < tableData.length"
                       v-model="tableData[ri * tableCols + ci - 1]"
-                      class="dg-input"
+                      class="sp-input"
                       type="text"
                       inputmode="decimal"
                       placeholder="—"
@@ -67,8 +66,13 @@
                       @keydown.enter.prevent="handleTab(ri * tableCols + ci - 1)"
                     />
                   </div>
+                  <div v-for="col in (6 - tableCols)" :key="'dis'+col" class="sp-data-cell sp-disabled-cell"></div>
                 </div>
               </div>
+            </div>
+            <div class="spread-legend">
+              <span class="legend-dot c1-dot"></span> C1~C{{ tableCols }} = 数据列
+              <span class="legend-hint">C{{ tableCols + 1 }}~C6 暂未使用</span>
             </div>
           </div>
 
@@ -190,7 +194,7 @@
                 </div></template
               >
               <el-table :data="detailRows" size="small" stripe border>
-                <el-table-column prop="name" label="指标" width="180" />
+                <el-table-column prop="name" label="指标" min-width="180" />
                 <el-table-column prop="value" label="值" min-width="120" />
               </el-table>
             </el-card>
@@ -241,7 +245,7 @@ const narrativeHtml = ref("");
 
 // 表格输入
 const tableCols = 5;
-const tableData = ref<string[]>(Array(20).fill(""));
+const tableData = ref<string[]>(Array(75).fill(""));
 const tableRowCount = computed(() => Math.ceil(tableData.value.length / tableCols));
 const parsedCount = computed(() => {
   if (inputMode.value === "table") {
@@ -257,7 +261,7 @@ function handleTab(idx: number) {
   const next = idx + 1;
   if (next >= tableData.value.length) addRows(1);
   nextTick(() => {
-    const inputs = document.querySelectorAll<HTMLInputElement>(".dg-input");
+    const inputs = document.querySelectorAll<HTMLInputElement>(".sp-input");
     inputs[next]?.focus();
   });
 }
@@ -296,7 +300,7 @@ function loadDemo() {
 }
 
 function clearAll() {
-  tableData.value = Array(20).fill("");
+  tableData.value = Array(75).fill("");
   rawData.value = "";
   hasResult.value = false;
 }
@@ -535,103 +539,34 @@ function calculate() {
   font-family: "JetBrains Mono", monospace;
   font-weight: 700;
 }
-.data-table-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.data-grid {
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--el-bg-color);
-}
-.data-grid-header {
-  display: flex;
-  background: linear-gradient(135deg, #eef1fb 0%, #f6f7fc 100%);
-  border-bottom: 2px solid #d0d7ea;
-}
-.data-grid-header .dg-cell {
-  padding: 11px 6px;
-  font-weight: 700;
-  font-size: 12px;
-  font-family: "JetBrains Mono", monospace;
-  color: var(--el-text-color-primary);
-  text-align: center;
-}
-.data-grid-header .dg-cell sub {
-  font-size: 10px;
-  color: var(--el-text-color-secondary);
-}
-.data-grid-body {
-  max-height: 260px;
-  overflow-y: auto;
-}
-.data-grid-body::-webkit-scrollbar {
-  width: 5px;
-}
-.data-grid-body::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-}
-.dg-row {
-  display: flex;
-  border-bottom: 1px solid var(--el-border-color-extra-light);
-}
-.dg-row:last-child {
-  border-bottom: none;
-}
-.dg-row:hover {
-  background: rgba(69, 88, 208, 0.03);
-}
-.dg-row-even {
-  background: rgba(69, 88, 208, 0.015);
-}
-.dg-cell {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.dg-idx-cell {
-  flex: 0 0 56px;
-  max-width: 56px;
-  font-size: 11px;
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 500;
-  color: var(--el-text-color-placeholder);
-}
-.dg-row-idx {
-  background: rgba(69, 88, 208, 0.02);
-  border-right: 1px solid var(--el-border-color-extra-light);
-}
-.dg-data-cell {
-  padding: 0;
-}
-.dg-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  text-align: center;
-  font-size: 14px;
-  font-family: "JetBrains Mono", "SF Mono", monospace;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  padding: 10px 4px;
-  box-sizing: border-box;
-}
-.dg-input:focus {
-  background: rgba(69, 88, 208, 0.07);
-  box-shadow: inset 0 -2px 0 #4558d0;
-}
-.dg-input::placeholder {
-  color: var(--el-border-color);
-  font-weight: 400;
-  font-size: 13px;
-}
+/* 电子表格（统一 spread-grid 风格） */
+.spread-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.spread-grid { border: 1px solid #c0c4cc; overflow: hidden; }
+.spread-header { display: flex; background: #fff; border-bottom: 1px solid #c0c4cc; }
+.sp-idx-cell { flex: 0 0 48px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: "JetBrains Mono", monospace; color: #606266; background: #f5f7fa; border-right: 1px solid #c0c4cc; }
+.sp-row-idx { font-weight: 600; }
+.sp-col-head { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-family: "JetBrains Mono", monospace; font-weight: 700; color: #303133; padding: 6px 0; border-right: 1px solid #dcdfe6; background: #f5f7fa; }
+.sp-col-head:last-child { border-right: none; }
+.sp-c1 { color: #303133; }
+.sp-disabled-head { color: #c0c4cc; }
+.sp-disabled-cell { flex: 1; background: #fff; border-right: 1px solid #ebeef5; }
+.sp-disabled-cell:last-child { border-right: none; }
+.spread-body { max-height: 400px; overflow-y: auto; scrollbar-width: none; }
+.spread-body::-webkit-scrollbar { display: none; }
+.spread-row { display: flex; border-bottom: 1px solid #ebeef5; }
+.spread-row:last-child { border-bottom: none; }
+.sp-even { background: #fff; }
+.spread-row:nth-child(odd) .sp-idx-cell { background: #fafafa; }
+.spread-row:nth-child(even) .sp-idx-cell { background: #f5f7fa; }
+.sp-data-cell { flex: 1; border-right: 1px solid #ebeef5; padding: 0; }
+.sp-data-cell:last-child { border-right: none; }
+.sp-input { width: 100%; border: none; outline: none; background: transparent; text-align: center; font-size: 13px; font-family: "JetBrains Mono", monospace; font-weight: 500; color: #303133; padding: 7px 2px; box-sizing: border-box; }
+.sp-input:focus { background: #ecf5ff; outline: 1px dashed #409eff; outline-offset: -1px; }
+.sp-input::placeholder { color: #c0c4cc; font-weight: 400; }
+.spread-legend { display: flex; align-items: center; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--el-text-color-secondary); }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.c1-dot { background: #4558d0; }
+.legend-hint { margin-left: auto; color: #c0c4cc; }
 .text-input-area {
   padding: 4px 0 0;
 }
@@ -813,6 +748,16 @@ function calculate() {
 .detail-card {
   border-radius: 14px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.detail-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.detail-card :deep(.el-table) {
+  flex: 1;
 }
 .equal-row {
   align-items: stretch;
@@ -820,9 +765,6 @@ function calculate() {
 .equal-row > .el-col {
   display: flex;
   flex-direction: column;
-}
-.equal-row .detail-card {
-  flex: 1;
 }
 .narrative-body {
   font-size: 14px;

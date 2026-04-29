@@ -13,12 +13,11 @@
     <el-row :gutter="20" class="mb-4 input-row">
       <el-col :lg="16" :xs="24">
         <el-card shadow="never" class="input-card">
-          <div class="level-slider-row">
-            <div class="level-slider-wrap">
-              <div class="level-slider-label">等级数 (R)</div>
-              <el-slider v-model="levels" :min="2" :max="8" :step="1" vertical height="200px" :show-tooltip="true" :marks="sliderMarks" @change="rebuildTable" />
-            </div>
-            <div class="ff-table-area" style="flex:1">
+          <div class="level-control-row">
+            <span class="level-control-label">等级数 (R)</span>
+            <el-input-number v-model="levels" :min="2" :max="8" :step="1" size="default" @change="rebuildTable" style="width: 130px" />
+          </div>
+          <div class="ff-table-area">
               <table class="fourfold-table">
                 <thead>
                   <tr><th class="ft-corner">等级</th><th>组 1</th><th>组 2</th><th class="ft-dim">秩次</th><th class="ft-dim">合计</th></tr>
@@ -43,7 +42,6 @@
                 </tfoot>
               </table>
             </div>
-          </div>
           <div class="action-bar">
             <el-button type="primary" @click="calculate" class="calc-btn"><el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算</el-button>
             <el-button @click="loadDemo" class="reset-btn">加载示例</el-button>
@@ -93,7 +91,7 @@
             <el-card shadow="never" class="detail-card">
               <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">检验结果详表</span></div></template>
               <el-table :data="detailRows" size="small" stripe border>
-                <el-table-column prop="name" label="项目" width="200" />
+                <el-table-column prop="name" label="项目" min-width="200" />
                 <el-table-column prop="value" label="值" min-width="140" />
               </el-table>
             </el-card>
@@ -118,11 +116,6 @@ defineOptions({ name: "RRTable" });
 
 const levels = ref(4);
 const table = ref<number[][]>(Array.from({ length: 4 }, () => [0, 0]));
-const sliderMarks = computed(() => {
-  const m: Record<number, string> = {};
-  for (let i = 2; i <= 8; i++) m[i] = String(i);
-  return m;
-});
 const result = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const detailRows = ref<any[]>([]);
@@ -210,9 +203,8 @@ function calculate() {
 .input-row { align-items: stretch; }
 .input-row > .el-col { display: flex; flex-direction: column; }
 .input-card { border-radius: 14px; flex: 1; }
-.level-slider-row { display: flex; gap: 24px; padding: 16px 0; align-items: flex-start; }
-.level-slider-wrap { display: flex; flex-direction: column; align-items: center; min-width: 60px; padding-top: 8px; }
-.level-slider-label { font-size: 12px; font-weight: 700; color: var(--el-text-color-secondary); margin-bottom: 12px; white-space: nowrap; }
+.level-control-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--el-border-color-lighter); }
+.level-control-label { font-size: 13px; font-weight: 700; color: var(--el-text-color-secondary); white-space: nowrap; }
 .ff-table-area { display: flex; justify-content: center; padding: 0; overflow-x: auto; }
 .fourfold-table { width: 100%; max-width: 650px; border-collapse: collapse; font-size: 14px; }
 .fourfold-table thead { border-top: 2px solid var(--el-text-color-primary); border-bottom: 1px solid var(--el-text-color-primary); }
@@ -268,7 +260,7 @@ function calculate() {
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card, .narrative-card { border-radius: 14px; height: 100%; }
+.detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

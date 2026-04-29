@@ -119,9 +119,9 @@
                 </div>
               </template>
               <el-table :data="compareRows" size="small" stripe border>
-                <el-table-column prop="method" label="检验方法" width="160" />
-                <el-table-column prop="stat" label="统计量" width="120" />
-                <el-table-column prop="pVal" label="P 值" width="120" />
+                <el-table-column prop="method" label="检验方法" min-width="160" />
+                <el-table-column prop="stat" label="统计量" min-width="120" />
+                <el-table-column prop="pVal" label="P 值" min-width="120" />
               </el-table>
             </el-card>
           </el-col>
@@ -267,7 +267,7 @@ function calculate() {
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card, .narrative-card { border-radius: 14px; height: 100%; }
+.detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

@@ -221,7 +221,7 @@
                 </div>
               </template>
               <el-table :data="detailRows" size="small" stripe border class="result-table">
-                <el-table-column prop="name" label="项目" width="180" />
+                <el-table-column prop="name" label="项目" min-width="180" />
                 <el-table-column prop="value" label="值" min-width="140" />
               </el-table>
             </el-card>
@@ -534,7 +534,7 @@ watch(activeTab, () => { currentResult.value = null; });
 /* ========== 详表 & 解读 ========== */
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card, .narrative-card { border-radius: 14px; height: 100%; }
+.detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

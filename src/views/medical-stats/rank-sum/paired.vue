@@ -171,8 +171,8 @@
         </el-row>
 
         <!-- 表格行：秩次表 + 描述统计 -->
-        <el-row :gutter="20" class="mb-4">
-          <el-col :lg="14" :xs="24" class="mb-4">
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header>
                 <div class="card-header-inner">
@@ -181,35 +181,35 @@
                   <el-tag size="small" type="info" class="ml-auto">共 {{ rankTable.length }} 个非零差值</el-tag>
                 </div>
               </template>
-              <el-table :data="rankTable" size="small" stripe border max-height="320">
-                <el-table-column prop="pair" label="#" width="45" align="center" />
-                <el-table-column prop="x1" label="x₁" width="70" align="center">
+              <el-table :data="rankTable" size="small" stripe border>
+                <el-table-column prop="pair" label="#" min-width="30" align="center" />
+                <el-table-column prop="x1" label="x₁" min-width="45" align="center">
                   <template #default="{ row }"><span class="mono-num">{{ row.x1 }}</span></template>
                 </el-table-column>
-                <el-table-column prop="x2" label="x₂" width="70" align="center">
+                <el-table-column prop="x2" label="x₂" min-width="45" align="center">
                   <template #default="{ row }"><span class="mono-num">{{ row.x2 }}</span></template>
                 </el-table-column>
-                <el-table-column prop="diff" label="差值 d" width="80" align="center">
+                <el-table-column prop="diff" label="d" min-width="45" align="center">
                   <template #default="{ row }"><span class="mono-num" :class="{ 'diff-pos': row.rawDiff > 0, 'diff-neg': row.rawDiff < 0 }">{{ row.diff }}</span></template>
                 </el-table-column>
-                <el-table-column prop="absDiff" label="|d|" width="70" align="center">
+                <el-table-column prop="absDiff" label="|d|" min-width="40" align="center">
                   <template #default="{ row }"><span class="mono-num">{{ row.absDiff }}</span></template>
                 </el-table-column>
-                <el-table-column prop="rank" label="秩次" width="70" align="center">
+                <el-table-column prop="rank" label="秩" min-width="35" align="center">
                   <template #default="{ row }"><span class="mono-num">{{ row.rank }}</span></template>
                 </el-table-column>
-                <el-table-column prop="sign" label="符号" width="55" align="center">
+                <el-table-column prop="sign" label="±" min-width="30" align="center">
                   <template #default="{ row }">
                     <span class="sign-badge" :class="row.sign === '+' ? 'sign-pos' : 'sign-neg'">{{ row.sign }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="signedRank" label="带符号秩" width="85" align="center">
+                <el-table-column prop="signedRank" label="符号秩" min-width="50" align="center">
                   <template #default="{ row }"><span class="mono-num" :class="{ 'diff-pos': row.rawDiff > 0, 'diff-neg': row.rawDiff < 0 }">{{ row.signedRank }}</span></template>
                 </el-table-column>
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header>
                 <div class="card-header-inner">
@@ -218,7 +218,7 @@
                 </div>
               </template>
               <el-table :data="descRows" size="small" stripe border>
-                <el-table-column prop="name" label="指标" width="150" />
+                <el-table-column prop="name" label="指标" min-width="120" />
                 <el-table-column prop="value" label="值" min-width="100">
                   <template #default="{ row }"><span class="mono-num">{{ row.value }}</span></template>
                 </el-table-column>
@@ -513,67 +513,69 @@ function calculate() {
 .input-count-badge { font-size: 12px; color: var(--el-text-color-secondary); background: rgba(69, 88, 208, 0.06); padding: 4px 12px; border-radius: 20px; }
 .input-count-badge strong { color: #4558d0; font-family: "JetBrains Mono", monospace; font-weight: 700; }
 
-/* 竖向电子表格 */
-.spread-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+/* 电子表格（参照统计软件风格） */
+.spread-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
 .spread-grid {
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 10px;
+  border: 1px solid #c0c4cc;
   overflow: hidden;
-  background: var(--el-bg-color);
 }
 .spread-header {
   display: flex;
-  background: linear-gradient(135deg, #eef1fb 0%, #f6f7fc 100%);
-  border-bottom: 2px solid #d0d7ea;
+  background: #fff;
+  border-bottom: 1px solid #c0c4cc;
 }
 .sp-idx-cell {
-  flex: 0 0 44px;
+  flex: 0 0 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-family: "JetBrains Mono", monospace;
-  color: var(--el-text-color-placeholder);
-  background: rgba(69, 88, 208, 0.02);
-  border-right: 1px solid var(--el-border-color-lighter);
+  color: #606266;
+  background: #f5f7fa;
+  border-right: 1px solid #c0c4cc;
 }
-.sp-row-idx { font-weight: 500; }
+.sp-row-idx { font-weight: 600; }
 .sp-col-head {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-family: "JetBrains Mono", monospace;
-  font-weight: 800;
-  padding: 10px 0;
-  border-right: 1px solid rgba(0,0,0,0.04);
+  font-weight: 700;
+  color: #303133;
+  padding: 6px 0;
+  border-right: 1px solid #dcdfe6;
+  background: #f5f7fa;
 }
 .sp-col-head:last-child { border-right: none; }
-.sp-c1 { color: #4558d0; }
-.sp-c2 { color: #16a34a; }
-.sp-disabled-head { color: var(--el-text-color-disabled); opacity: 0.5; }
+.sp-c1 { color: #303133; }
+.sp-c2 { color: #303133; }
+.sp-disabled-head { color: #c0c4cc; }
 .sp-disabled-cell {
   flex: 1;
-  background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 6px);
-  border-right: 1px solid var(--el-border-color-extra-light);
+  background: #fff;
+  border-right: 1px solid #ebeef5;
 }
 .sp-disabled-cell:last-child { border-right: none; }
 .spread-body {
-  max-height: 340px;
+  max-height: 400px;
   overflow-y: auto;
 }
-.spread-body::-webkit-scrollbar { width: 5px; }
-.spread-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+.spread-body::-webkit-scrollbar { display: none; }
+.spread-body { scrollbar-width: none; }
 .spread-row {
   display: flex;
-  border-bottom: 1px solid var(--el-border-color-extra-light);
+  border-bottom: 1px solid #ebeef5;
 }
 .spread-row:last-child { border-bottom: none; }
-.sp-even { background: rgba(69, 88, 208, 0.012); }
+.sp-even { background: #fff; }
+.spread-row:nth-child(odd) .sp-idx-cell { background: #fafafa; }
+.spread-row:nth-child(even) .sp-idx-cell { background: #f5f7fa; }
 .sp-data-cell {
   flex: 1;
-  border-right: 1px solid var(--el-border-color-extra-light);
+  border-right: 1px solid #ebeef5;
   padding: 0;
 }
 .sp-data-cell:last-child { border-right: none; }
@@ -583,18 +585,17 @@ function calculate() {
   outline: none;
   background: transparent;
   text-align: center;
-  font-size: 14px;
+  font-size: 13px;
   font-family: "JetBrains Mono", monospace;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-  padding: 9px 4px;
+  font-weight: 500;
+  color: #303133;
+  padding: 7px 2px;
   box-sizing: border-box;
 }
 .sp-input:focus {
-  background: rgba(69, 88, 208, 0.06);
-  box-shadow: inset 0 -2px 0 #4558d0;
-  position: relative;
-  z-index: 1;
+  background: #ecf5ff;
+  outline: 1px dashed #409eff;
+  outline-offset: -1px;
 }
 /* 图例 */
 .spread-legend {
@@ -661,8 +662,11 @@ function calculate() {
 /* === Cards === */
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: #4558d0; }
-.detail-card { border-radius: 14px; height: 100%; }
+.detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .ml-auto { margin-left: auto; }
+.equal-row { align-items: stretch; }
+.equal-row > .el-col { display: flex; flex-direction: column; }
+.equal-row .detail-card { flex: 1; }
 
 /* === Table enhancements === */
 .mono-num { font-family: "JetBrains Mono", "SF Mono", monospace; font-weight: 600; font-size: 13px; }

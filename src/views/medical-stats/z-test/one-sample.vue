@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="page-hero"><div class="hero-inner"><div class="hero-text">
       <h1 class="hero-title">单样本 Z 检验</h1>
-      <p class="hero-desc">适用于总体标准差 σ 已知的情况，通过 Z 统计量检验样本均数与已知总体均数 μ₀ 之间是否存在统计学差异，支持双侧/左侧/右侧检验，同时计算 95% 置信区间</p>
+      <p class="hero-desc"><strong>适用场景：</strong>总体标准差 σ 已知时的均数假设检验（如已知历史参考值的质控样品检验、大样本率的假设检验）、标准化检测指标与参考值对比。通过 Z 统计量检验样本均数与已知总体均数 μ₀ 之间是否存在统计学差异（H₀: μ = μ₀），支持双侧/单侧检验，同时计算 95% 置信区间</p>
     </div><el-tag class="hero-tag" effect="dark" round>Z-TEST · ONE-SAMPLE</el-tag></div></div>
 
     <el-row :gutter="20" class="mb-4 input-row">
@@ -34,7 +34,7 @@
             <div class="principle-block"><div class="principle-label">检验统计量</div><div class="formula-box">Z = (x̄ − μ₀) / (σ / √n)</div></div>
             <div class="principle-block"><div class="principle-label">适用条件</div><p>总体标准差 σ 已知，或大样本（n ≥ 30）时可用样本标准差替代</p></div>
           </div>
-          <div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p></div>
+          <div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p><p class="ref-item">[2] Rosner B. Fundamentals of Biostatistics. 8th ed, Cengage, 2015.</p><p class="ref-item">[3] Altman DG. Practical Statistics for Medical Research. Chapman & Hall, 1991.</p></div>
         </div>
       </el-col>
     </el-row>
@@ -67,7 +67,11 @@ function calculate() {
     { label: "结论 (α=0.05)", value: sig ? "拒绝H₀" : "不拒绝H₀", type: sig ? "warning" : "neutral" },
   ];
   const tailText = tail === "two" ? "双侧" : "单侧";
-  narrativeHtml.value = `<p>样本量 n = ${n}，x̄ = <strong>${S.fmt(xbar)}</strong>，μ₀ = ${mu0}，σ = ${sigma}，SE = ${S.fmt(se)}。</p><p>Z = <strong>${S.fmt(z)}</strong>，P(${tailText}) = <strong>${S.fmtP(pVal)}</strong>。${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>。`}</p><p>95% CI: [${S.fmt(ciL)}, ${S.fmt(ciU)}]。</p>`;
+  narrativeHtml.value = `<p>样本量 n = <strong>${n}</strong>，样本均数 x̄ = <strong>${S.fmt(xbar)}</strong>。总体参数：μ₀ = ${mu0}，σ = ${sigma}。</p>` +
+    `<p>标准误 SE = σ/√n = ${sigma}/√${n} = <strong>${S.fmt(se)}</strong>。</p>` +
+    `<p>Z = (x̄ − μ₀)/SE = (${S.fmt(xbar)} − ${mu0})/${S.fmt(se)} = <strong>${S.fmt(z)}</strong>。</p>` +
+    `<p>P 值（${tailText}）= <strong>${S.fmtP(pVal)}</strong>。${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，样本均数与总体均数 μ₀ = ${mu0} 的差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为样本均数与总体均数有差异。`}</p>` +
+    `<p>总体均数 μ 的 95% 置信区间：[<strong>${S.fmt(ciL, 2)}</strong>, <strong>${S.fmt(ciU, 2)}</strong>]。${mu0 >= ciL && mu0 <= ciU ? "μ₀ 在区间内，与不拒绝 H₀ 结论一致。" : "μ₀ 不在区间内，与拒绝 H₀ 结论一致。"}</p>`;
 }
 onMounted(calculate);
 </script>
@@ -85,7 +89,7 @@ onMounted(calculate);
 .ref-section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--el-border-color-lighter); } .ref-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--el-color-warning); } .ref-item { font-size: 11px; line-height: 1.6; color: var(--el-text-color-secondary); margin: 2px 0; }
 .result-fade-enter-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); } .result-fade-leave-active { transition: all 0.3s ease; } .result-fade-enter-from { opacity: 0; transform: translateY(24px); } .result-fade-leave-to { opacity: 0; transform: translateY(-12px); } .result-section { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); } @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; } .metric-card { position: relative; text-align: center; padding: 18px 14px 16px; border-radius: 12px; background: var(--el-bg-color); border: 1px solid var(--el-border-color-lighter); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; } .metric-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); } .metric-indicator { position: absolute; top: 0; left: 0; right: 0; height: 3px; } .metric-card.accent .metric-indicator { background: linear-gradient(90deg, #409eff, #66b1ff); } .metric-card.success .metric-indicator { background: linear-gradient(90deg, #67c23a, #85ce61); } .metric-card.warning .metric-indicator { background: linear-gradient(90deg, #e6a23c, #ebb563); } .metric-card.neutral .metric-indicator { background: linear-gradient(90deg, #909399, #a6a9ad); } .metric-label { font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 6px; } .metric-value { font-size: 20px; font-weight: 700; font-family: "JetBrains Mono", monospace; line-height: 1.2; } .metric-value.small { font-size: 13px; }
-.card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); } .detail-card { border-radius: 14px; }
+.card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); } .detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); } .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; } .narrative-body :deep(p) { margin: 8px 0; }
 </style>
 <style lang="scss">

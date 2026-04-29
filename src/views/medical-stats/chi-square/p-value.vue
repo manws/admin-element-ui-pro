@@ -44,14 +44,14 @@
               <template #label>
                 <span class="tab-label"><el-icon><Grid /></el-icon>临界值表</span>
               </template>
-              <el-table :data="criticalRows" size="small" stripe border class="mt-2" max-height="460">
-                <el-table-column prop="df" label="df" width="70" />
-                <el-table-column prop="a10" label="α=0.10" width="90" />
-                <el-table-column prop="a05" label="α=0.05" width="90" />
-                <el-table-column prop="a025" label="α=0.025" width="90" />
-                <el-table-column prop="a01" label="α=0.01" width="90" />
-                <el-table-column prop="a005" label="α=0.005" width="90" />
-                <el-table-column prop="a001" label="α=0.001" width="90" />
+              <el-table :data="criticalRows" size="small" stripe border class="mt-2">
+                <el-table-column prop="df" label="df" min-width="70" />
+                <el-table-column prop="a10" label="α=0.10" min-width="90" />
+                <el-table-column prop="a05" label="α=0.05" min-width="90" />
+                <el-table-column prop="a025" label="α=0.025" min-width="90" />
+                <el-table-column prop="a01" label="α=0.01" min-width="90" />
+                <el-table-column prop="a005" label="α=0.005" min-width="90" />
+                <el-table-column prop="a001" label="α=0.001" min-width="90" />
               </el-table>
             </el-tab-pane>
           </el-tabs>
@@ -121,7 +121,7 @@
                 </div>
               </template>
               <el-table :data="detailRows" size="small" stripe border>
-                <el-table-column prop="name" label="项目" width="180" />
+                <el-table-column prop="name" label="项目" min-width="180" />
                 <el-table-column prop="value" label="值" min-width="140" />
               </el-table>
             </el-card>
@@ -277,7 +277,7 @@ watch(activeTab, () => { toPResult.value = null; });
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card, .narrative-card { border-radius: 14px; height: 100%; }
+.detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

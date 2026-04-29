@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">单样本 t 检验（原始资料）</h1>
-          <p class="hero-desc">输入一组原始定量数据和已知总体均数 μ₀，系统自动计算样本统计量（均值、标准差、标准误），进行单样本 t 检验，判断样本均数与总体均数之间是否存在统计学差异，同时绘制数据分布直方图</p>
+          <p class="hero-desc"><strong>适用场景：</strong>有一组原始定量数据需与已知总体均数比较（如一批血样检测值与正常参考值对比、新设备测量值与标准值比较）。输入原始数据和已知总体均数 μ₀，系统自动计算样本统计量并进行单样本 t 检验，同时绘制数据分布直方图</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>T-TEST · ONE-SAMPLE RAW</el-tag>
       </div>
@@ -67,7 +67,7 @@
           <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">检验结果详表</span></div></template>
-              <el-table :data="testRows" size="small" stripe border><el-table-column prop="name" label="项目" width="180" /><el-table-column prop="value" label="值" /></el-table>
+              <el-table :data="testRows" size="small" stripe border><el-table-column prop="name" label="项目" min-width="180" /><el-table-column prop="value" label="值" /></el-table>
             </el-card>
           </el-col>
           <el-col :lg="12" :xs="24" class="mb-4">
@@ -188,7 +188,7 @@ function calculate() {
 .metric-value { font-size: 20px; font-weight: 700; font-family: "JetBrains Mono", "SF Mono", monospace; color: var(--el-text-color-primary); line-height: 1.2; }
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card { border-radius: 14px; height: 100%; }
+.detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

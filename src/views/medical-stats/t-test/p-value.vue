@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">t 检验 P 值查询</h1>
-          <p class="hero-desc">输入 t 统计量和自由度，即时计算双侧和单侧 P 值，同时提供 t 分布临界值查询表，覆盖常用自由度（1~120）和显著性水平（0.20~0.001）</p>
+          <p class="hero-desc"><strong>适用场景：</strong>已有 t 统计量需要快速查 P 值（如阅读文献时验证结论、手工计算后查临界值、教学演示）。输入 t 统计量和自由度，即时计算双侧和单侧 P 值，同时提供 t 分布临界值查询表</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>T-TEST · P VALUE</el-tag>
       </div>
@@ -29,15 +29,15 @@
               </div>
             </el-tab-pane>
             <el-tab-pane label="t 临界值表" name="critical">
-              <el-table :data="critRows" size="small" stripe border max-height="500" class="mt-4">
-                <el-table-column prop="df" label="df" width="60" fixed />
-                <el-table-column prop="a20" label="t₀.₂₀" width="80" />
-                <el-table-column prop="a10" label="t₀.₁₀" width="80" />
-                <el-table-column prop="a05" label="t₀.₀₅" width="80" />
-                <el-table-column prop="a025" label="t₀.₀₂₅" width="80" />
-                <el-table-column prop="a01" label="t₀.₀₁" width="80" />
-                <el-table-column prop="a005" label="t₀.₀₀₅" width="80" />
-                <el-table-column prop="a001" label="t₀.₀₀₁" width="80" />
+              <el-table :data="critRows" size="small" stripe border class="mt-4">
+                <el-table-column prop="df" label="df" min-width="60" fixed />
+                <el-table-column prop="a20" label="t₀.₂₀" min-width="80" />
+                <el-table-column prop="a10" label="t₀.₁₀" min-width="80" />
+                <el-table-column prop="a05" label="t₀.₀₅" min-width="80" />
+                <el-table-column prop="a025" label="t₀.₀₂₅" min-width="80" />
+                <el-table-column prop="a01" label="t₀.₀₁" min-width="80" />
+                <el-table-column prop="a005" label="t₀.₀₀₅" min-width="80" />
+                <el-table-column prop="a001" label="t₀.₀₀₁" min-width="80" />
               </el-table>
             </el-tab-pane>
           </el-tabs>

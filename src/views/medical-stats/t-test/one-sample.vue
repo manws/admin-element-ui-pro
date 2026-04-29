@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">单样本 t 检验</h1>
-          <p class="hero-desc">主要用于样本含量较小、总体标准差 σ 未知的正态分布资料，输入样本统计量（均数、标准差、样本量）和已知总体均数 μ₀，通过 t 统计量检验样本均数与总体均数之间是否存在统计学差异，同时计算置信区间和效应量 Cohen's d</p>
+          <p class="hero-desc"><strong>适用场景：</strong>小样本(n&lt;30)总体σ未知时的均数假设检验（如临床检验结果与标准值对比、新方法测定值与参考值比较）。输入样本统计量（均数、标准差、样本量）和已知总体均数 μ₀，通过 t 统计量检验样本均数与总体均数之间是否存在统计学差异，同时计算置信区间和效应量 Cohen's d</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>T-TEST · ONE-SAMPLE</el-tag>
       </div>
@@ -85,7 +85,7 @@
             <el-card shadow="never" class="detail-card">
               <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">检验结果详表</span></div></template>
               <el-table :data="detailRows" size="small" stripe border>
-                <el-table-column prop="name" label="项目" width="180" />
+                <el-table-column prop="name" label="项目" min-width="180" />
                 <el-table-column prop="value" label="值" min-width="140" />
               </el-table>
             </el-card>
@@ -268,7 +268,7 @@ onMounted(calculate);
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card { border-radius: 14px; height: 100%; }
+.detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

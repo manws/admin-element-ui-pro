@@ -859,6 +859,17 @@ watch(activeTab, () => {
 }
 .detail-card {
   border-radius: 14px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.detail-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.detail-card :deep(.el-table) {
+  flex: 1;
 }
 .narrative-body {
   font-size: 14px;

@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">独立样本 t 检验</h1>
-          <p class="hero-desc">用于比较两组独立样本的均数差异。先通过 F 检验判断方差齐性，自动选择等方差 t 检验或 Welch 校正 t 检验（方差不齐时），同时展示两组箱线图对比和方差齐性检验结果</p>
+          <p class="hero-desc"><strong>适用场景：</strong>两组独立样本均数差异比较（如药物组vs对照组、男vs女生理指标差异、两种治疗方案疗效对比）。先通过 F 检验判断方差齐性，自动选择等方差 t 检验或 Welch 校正 t 检验（方差不齐时），同时展示两组箱线图对比和方差齐性检验结果</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>T-TEST · INDEPENDENT</el-tag>
       </div>
@@ -49,7 +49,7 @@
         <el-row :gutter="20" class="mb-4">
           <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card"><template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">检验结果对照表</span></div></template>
-              <el-table :data="testRows" size="small" stripe border><el-table-column prop="name" label="项目" width="120" /><el-table-column prop="equal" label="等方差 t" /><el-table-column prop="welch" label="Welch t" /></el-table>
+              <el-table :data="testRows" size="small" stripe border><el-table-column prop="name" label="项目" min-width="120" /><el-table-column prop="equal" label="等方差 t" /><el-table-column prop="welch" label="Welch t" /></el-table>
             </el-card>
           </el-col>
           <el-col :lg="12" :xs="24" class="mb-4">
@@ -155,7 +155,7 @@ function calculate() {
 .metric-value { font-size: 20px; font-weight: 700; font-family: "JetBrains Mono", "SF Mono", monospace; color: var(--el-text-color-primary); line-height: 1.2; }
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); }
-.detail-card { border-radius: 14px; }
+.detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }
