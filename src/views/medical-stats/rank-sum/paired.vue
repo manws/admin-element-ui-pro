@@ -20,20 +20,69 @@
     <el-row :gutter="20" class="mb-4 input-row">
       <el-col :lg="16" :xs="24">
         <el-card shadow="never" class="input-card">
-          <el-form label-position="top">
-            <el-row :gutter="16">
-              <el-col :span="12">
-                <el-form-item label="组1数据（处理前 / 对照组）">
-                  <el-input v-model="form.data1" type="textarea" :rows="4" placeholder="78, 64, 75, 45, 82, 67, 53, 71, 60, 88" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="组2数据（处理后 / 实验组，与组1配对）">
-                  <el-input v-model="form.data2" type="textarea" :rows="4" placeholder="72, 58, 70, 42, 78, 62, 50, 65, 55, 80" />
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-form>
+          <!-- 模式切换 + 计数 -->
+          <div class="input-mode-bar">
+            <el-radio-group v-model="inputMode" size="small">
+              <el-radio-button value="table"><el-icon class="mr-1"><Grid /></el-icon>表格输入</el-radio-button>
+              <el-radio-button value="text"><el-icon class="mr-1"><EditPen /></el-icon>文本输入</el-radio-button>
+            </el-radio-group>
+            <span class="input-count-badge" v-if="pairCount > 0">已输入 <strong>{{ pairCount }}</strong> 对</span>
+          </div>
+
+          <!-- 表格输入模式 -->
+          <div v-if="inputMode === 'table'" class="spread-area">
+            <div class="spread-toolbar">
+              <el-button size="small" @click="addRows(5)"><el-icon class="mr-1"><Plus /></el-icon>+5 行</el-button>
+              <el-button size="small" @click="addRows(10)"><el-icon class="mr-1"><Plus /></el-icon>+10 行</el-button>
+              <el-tooltip content="从剪贴板粘贴：每行一对配对数据，C1和C2用逗号/Tab分隔" placement="top">
+                <el-button size="small" @click="pastePairs"><el-icon class="mr-1"><DocumentCopy /></el-icon>粘贴导入</el-button>
+              </el-tooltip>
+            </div>
+            <div class="spread-grid">
+              <!-- 固定表头 -->
+              <div class="spread-header">
+                <div class="sp-idx-cell"></div>
+                <div v-for="c in totalCols" :key="c" class="sp-col-head" :class="{ 'sp-c1': c === 1, 'sp-c2': c === 2, 'sp-disabled-head': c > 2 }">C{{ c }}</div>
+              </div>
+              <!-- 数据行 -->
+              <div class="spread-body">
+                <div v-for="i in rowCount" :key="i" class="spread-row" :class="{ 'sp-even': i % 2 === 0 }">
+                  <div class="sp-idx-cell sp-row-idx">{{ i }}</div>
+                  <!-- C1 可输入 -->
+                  <div class="sp-data-cell">
+                    <input v-model="tableX1[i-1]" class="sp-input" type="text" inputmode="decimal"
+                      @keydown.tab.prevent="focusCell(i-1, 1)" @keydown.enter.prevent="focusCell(i, 0)"
+                      :ref="el => setCellRef(el, i-1, 0)" />
+                  </div>
+                  <!-- C2 可输入 -->
+                  <div class="sp-data-cell">
+                    <input v-model="tableX2[i-1]" class="sp-input" type="text" inputmode="decimal"
+                      @keydown.tab.prevent="focusCell(i, 0)" @keydown.enter.prevent="focusCell(i, 0)"
+                      :ref="el => setCellRef(el, i-1, 1)" />
+                  </div>
+                  <!-- C3~C6 禁用列 -->
+                  <div v-for="c in (totalCols - 2)" :key="'d'+c" class="sp-data-cell sp-disabled-cell"></div>
+                </div>
+              </div>
+            </div>
+            <div class="spread-legend">
+              <span class="legend-dot c1-dot"></span> C1 = 组1（处理前/对照）
+              <span class="legend-dot c2-dot"></span> C2 = 组2（处理后/实验）
+              <span class="legend-hint">C3~C{{ totalCols }} 暂未使用</span>
+            </div>
+          </div>
+
+          <!-- 文本输入模式 -->
+          <div v-else>
+            <div class="input-tip">
+              <el-icon class="tip-icon"><Warning /></el-icon>
+              <span>两组数据必须一一配对，数量相同。支持逗号、空格或换行分隔。</span>
+            </div>
+            <el-form label-position="top"><el-row :gutter="16">
+              <el-col :span="12"><el-form-item label="组1数据"><el-input v-model="form.data1" type="textarea" :rows="5" placeholder="78, 64, 75, 45, 82, 67, 53, 71, 60, 88" /></el-form-item></el-col>
+              <el-col :span="12"><el-form-item label="组2数据（配对）"><el-input v-model="form.data2" type="textarea" :rows="5" placeholder="72, 58, 70, 42, 78, 62, 50, 65, 55, 80" /></el-form-item></el-col>
+            </el-row></el-form>
+          </div>
           <div class="action-bar">
             <el-button type="primary" class="calc-btn" @click="calculate">
               <el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算
@@ -196,12 +245,14 @@
 <script setup lang="ts">
 import {
   InfoFilled, DataAnalysis, Document, Histogram,
-  TrendCharts, DataLine, ChatLineSquare,
+  TrendCharts, DataLine, ChatLineSquare, Warning,
+  Grid, EditPen, Plus, DocumentCopy,
 } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "RSPaired" });
 
+const inputMode = ref<"table" | "text">("table");
 const form = reactive({ data1: "", data2: "" });
 const res = ref(false);
 const metrics = ref<any[]>([]);
@@ -211,21 +262,80 @@ const diffHistOpts = ref({});
 const pairLineOpts = ref({});
 const narrative = ref("");
 
+// 表格输入（竖向电子表格：C1列=组1, C2列=组2, C3~C6禁用）
+const totalCols = 6;
+const tableX1 = ref<string[]>(Array(15).fill(""));
+const tableX2 = ref<string[]>(Array(15).fill(""));
+const rowCount = computed(() => tableX1.value.length);
+const pairCount = computed(() => {
+  if (inputMode.value === "table") {
+    return tableX1.value.filter((v, i) => v.trim() && tableX2.value[i]?.trim() && Number.isFinite(Number(v)) && Number.isFinite(Number(tableX2.value[i]))).length;
+  }
+  const d1 = S.parseNumbers(form.data1), d2 = S.parseNumbers(form.data2);
+  return Math.min(d1.length, d2.length);
+});
+
+// 单元格ref: row-col (col: 0=C1, 1=C2)
+const cellRefs: Record<string, HTMLInputElement | null> = {};
+function setCellRef(el: any, row: number, col: number) { if (el) cellRefs[`${row}-${col}`] = el; }
+function focusCell(row: number, col: number) {
+  if (row >= tableX1.value.length) addRows(5);
+  nextTick(() => cellRefs[`${row}-${col}`]?.focus());
+}
+
+function addRows(count: number) {
+  for (let i = 0; i < count; i++) { tableX1.value.push(""); tableX2.value.push(""); }
+}
+
+async function pastePairs() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const lines = text.trim().split(/\n/).map(l => l.split(/[,\t，]+/).map(s => s.trim())).filter(l => l.length >= 2);
+    if (lines.length === 0) { ElMessage.warning("剪贴板中未找到配对数据（每行一对，逗号/Tab分隔）"); return; }
+    while (tableX1.value.length < lines.length + 3) addRows(5);
+    tableX1.value.fill(""); tableX2.value.fill("");
+    lines.forEach((l, i) => { tableX1.value[i] = l[0]; tableX2.value[i] = l[1]; });
+    ElMessage.success(`已导入 ${lines.length} 对数据`);
+  } catch { ElMessage.error("无法读取剪贴板"); }
+}
+
+function getDataPairs(): { d1: number[]; d2: number[] } {
+  if (inputMode.value === "table") {
+    const d1: number[] = [], d2: number[] = [];
+    tableX1.value.forEach((v, i) => {
+      const a = Number(v), b = Number(tableX2.value[i]);
+      if (Number.isFinite(a) && Number.isFinite(b)) { d1.push(a); d2.push(b); }
+    });
+    return { d1, d2 };
+  }
+  return { d1: S.parseNumbers(form.data1), d2: S.parseNumbers(form.data2) };
+}
+
 function loadDemo() {
-  form.data1 = "78, 64, 75, 45, 82, 67, 53, 71, 60, 88";
-  form.data2 = "72, 58, 70, 42, 78, 62, 50, 65, 55, 80";
+  const x1 = ["78","64","75","45","82","67","53","71","60","88"];
+  const x2 = ["72","58","70","42","78","62","50","65","55","80"];
+  if (inputMode.value === "table") {
+    tableX1.value = Array(15).fill("");
+    tableX2.value = Array(15).fill("");
+    x1.forEach((v, i) => tableX1.value[i] = v);
+    x2.forEach((v, i) => tableX2.value[i] = v);
+  } else {
+    form.data1 = x1.join(", ");
+    form.data2 = x2.join(", ");
+  }
   calculate();
 }
 
 function clearAll() {
+  tableX1.value = Array(15).fill("");
+  tableX2.value = Array(15).fill("");
   form.data1 = "";
   form.data2 = "";
   res.value = false;
 }
 
 function calculate() {
-  const d1 = S.parseNumbers(form.data1);
-  const d2 = S.parseNumbers(form.data2);
+  const { d1, d2 } = getDataPairs();
   const n = Math.min(d1.length, d2.length);
   if (n < 5) { ElMessage.warning("至少需要 5 对配对数据"); return; }
 
@@ -397,6 +507,118 @@ function calculate() {
 .input-row { align-items: stretch; }
 .input-row > .el-col { display: flex; flex-direction: column; }
 .input-card { border-radius: 14px; flex: 1; }
+
+/* 模式切换栏 */
+.input-mode-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--el-border-color-lighter); }
+.input-count-badge { font-size: 12px; color: var(--el-text-color-secondary); background: rgba(69, 88, 208, 0.06); padding: 4px 12px; border-radius: 20px; }
+.input-count-badge strong { color: #4558d0; font-family: "JetBrains Mono", monospace; font-weight: 700; }
+
+/* 竖向电子表格 */
+.spread-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.spread-grid {
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--el-bg-color);
+}
+.spread-header {
+  display: flex;
+  background: linear-gradient(135deg, #eef1fb 0%, #f6f7fc 100%);
+  border-bottom: 2px solid #d0d7ea;
+}
+.sp-idx-cell {
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--el-text-color-placeholder);
+  background: rgba(69, 88, 208, 0.02);
+  border-right: 1px solid var(--el-border-color-lighter);
+}
+.sp-row-idx { font-weight: 500; }
+.sp-col-head {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  padding: 10px 0;
+  border-right: 1px solid rgba(0,0,0,0.04);
+}
+.sp-col-head:last-child { border-right: none; }
+.sp-c1 { color: #4558d0; }
+.sp-c2 { color: #16a34a; }
+.sp-disabled-head { color: var(--el-text-color-disabled); opacity: 0.5; }
+.sp-disabled-cell {
+  flex: 1;
+  background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 6px);
+  border-right: 1px solid var(--el-border-color-extra-light);
+}
+.sp-disabled-cell:last-child { border-right: none; }
+.spread-body {
+  max-height: 340px;
+  overflow-y: auto;
+}
+.spread-body::-webkit-scrollbar { width: 5px; }
+.spread-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
+.spread-row {
+  display: flex;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+.spread-row:last-child { border-bottom: none; }
+.sp-even { background: rgba(69, 88, 208, 0.012); }
+.sp-data-cell {
+  flex: 1;
+  border-right: 1px solid var(--el-border-color-extra-light);
+  padding: 0;
+}
+.sp-data-cell:last-child { border-right: none; }
+.sp-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: center;
+  font-size: 14px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  padding: 9px 4px;
+  box-sizing: border-box;
+}
+.sp-input:focus {
+  background: rgba(69, 88, 208, 0.06);
+  box-shadow: inset 0 -2px 0 #4558d0;
+  position: relative;
+  z-index: 1;
+}
+/* 图例 */
+.spread-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+}
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.c1-dot { background: #4558d0; }
+.c2-dot { background: #16a34a; }
+.legend-hint { color: var(--el-text-color-disabled); font-style: italic; margin-left: auto; }
+
+/* 格式提示（文本模式） */
+.input-tip { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--el-text-color-secondary); background: rgba(69, 88, 208, 0.04); padding: 8px 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(69, 88, 208, 0.08); }
+.tip-icon { font-size: 14px; color: #4558d0; flex-shrink: 0; }
 .action-bar { display: flex; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--el-border-color-lighter); }
 .calc-btn { padding: 10px 28px; font-weight: 600; border-radius: 8px; }
 .reset-btn { border-radius: 8px; }
