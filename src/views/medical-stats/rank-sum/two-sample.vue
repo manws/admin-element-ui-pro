@@ -18,7 +18,7 @@
             <el-radio-button value="table"><el-icon class="mr-1"><Grid /></el-icon>表格输入</el-radio-button>
             <el-radio-button value="text"><el-icon class="mr-1"><EditPen /></el-icon>文本输入</el-radio-button>
           </el-radio-group>
-          <span class="input-count-badge" v-if="pairCount > 0">C1: <strong>{{ countC1 }}</strong> 个 · C2: <strong>{{ countC2 }}</strong> 个</span>
+          <span class="input-count-badge" v-if="pairCount">C1: <strong>{{ countC1 }}</strong> 个 · C2: <strong>{{ countC2 }}</strong> 个</span>
         </div>
         <!-- 表格模式 -->
         <div v-if="inputMode === 'table'" class="spread-area">

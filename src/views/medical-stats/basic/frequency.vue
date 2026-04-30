@@ -71,8 +71,8 @@
               </div>
             </div>
             <div class="spread-legend">
-              <span class="legend-dot c1-dot"></span> C1~C{{ tableCols }} = 数据列
-              <span class="legend-hint">C{{ tableCols + 1 }}~C6 暂未使用</span>
+              <span class="legend-dot c1-dot"></span> C1 = 数据列
+              <span class="legend-hint">C2~C6 暂未使用</span>
             </div>
           </div>
 
@@ -133,6 +133,7 @@
           <div class="ref-section">
             <div class="ref-title">参考文献</div>
             <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
+            <p class="ref-item">[2] Sturges HA. The choice of a class interval. JASA, 1926, 21(153): 65-66.</p>
           </div>
         </div>
       </el-col>
@@ -190,7 +191,7 @@
             </el-card>
           </el-col>
           <el-col :lg="12" :xs="24" class="mb-4">
-            <el-card shadow="never" class="detail-card">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header
                 ><div class="card-header-inner">
                   <el-icon class="header-icon"><ChatLineSquare /></el-icon
@@ -232,7 +233,7 @@ const cumOpts = ref({});
 const narrativeHtml = ref("");
 
 // 表格输入
-const tableCols = 5;
+const tableCols = 1;
 const tableData = ref<string[]>(Array(75).fill(""));
 const tableRowCount = computed(() => Math.ceil(tableData.value.length / tableCols));
 const parsedCount = computed(() => {
@@ -649,6 +650,7 @@ function calculate() {
   display: flex;
   flex-direction: column;
 }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body {
   font-size: 14px;
   line-height: 1.85;

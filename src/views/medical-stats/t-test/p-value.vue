@@ -55,7 +55,7 @@
               <p>P < 0.01 → 高度显著</p>
             </div>
           </div>
-          <div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p></div>
+          <div class="ref-section"><div class="ref-title">参考文献</div><p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p><p class="ref-item">[2] Student. The probable error of a mean. Biometrika, 1908, 6(1): 1-25.</p><p class="ref-item">[3] Fisher RA. Statistical Methods for Research Workers. Oliver & Boyd, 1925.</p></div>
         </div>
       </el-col>
     </el-row>
@@ -67,13 +67,28 @@
             <div class="metric-indicator" /><div class="metric-label">{{ m.label }}</div><div class="metric-value">{{ m.value }}</div>
           </div>
         </div>
+
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">t 分布曲线 (df={{ toP.df }})</span></div></template>
+              <ECharts :options="tCurveOpts" height="280px" />
+            </el-card>
+          </el-col>
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card narrative-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template>
+              <div class="narrative-body" v-html="narrativeHtml" />
+            </el-card>
+          </el-col>
+        </el-row>
       </div>
     </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, TrendCharts, ChatLineSquare } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 defineOptions({ name: "TPValue" });
 
@@ -81,6 +96,8 @@ const activeTab = ref("toP");
 const toP = reactive({ t: 2.5, df: 20 });
 const toPResult = ref(false);
 const toPMetrics = ref<any[]>([]);
+const tCurveOpts = ref({});
+const narrativeHtml = ref("");
 
 function calcToP() {
   const pTwo = S.tTestPValue(toP.t, toP.df);
@@ -92,6 +109,59 @@ function calcToP() {
     { label: "α=0.05", value: pTwo < 0.05 ? "P<0.05 显著" : "P≥0.05", type: pTwo < 0.05 ? "warning" : "neutral" },
     { label: "α=0.01", value: pTwo < 0.01 ? "P<0.01 高度显著" : "P≥0.01", type: pTwo < 0.01 ? "warning" : "neutral" },
   ];
+
+  // t 分布曲线
+  const df = toP.df, tVal = Math.abs(toP.t);
+  const curveData: [number, number][] = [];
+  for (let x = -4.5; x <= 4.5; x += 0.1) {
+    const coef = 1 / (Math.sqrt(df) * beta(0.5, df / 2));
+    const y = coef * Math.pow(1 + x * x / df, -(df + 1) / 2);
+    curveData.push([+x.toFixed(2), +y.toFixed(5)]);
+  }
+  // 阴影区域数据
+  const shadedLeft: [number, number][] = [];
+  const shadedRight: [number, number][] = [];
+  for (let x = -4.5; x <= -tVal; x += 0.05) {
+    const coef = 1 / (Math.sqrt(df) * beta(0.5, df / 2));
+    const y = coef * Math.pow(1 + x * x / df, -(df + 1) / 2);
+    shadedLeft.push([+x.toFixed(2), +y.toFixed(5)]);
+  }
+  for (let x = tVal; x <= 4.5; x += 0.05) {
+    const coef = 1 / (Math.sqrt(df) * beta(0.5, df / 2));
+    const y = coef * Math.pow(1 + x * x / df, -(df + 1) / 2);
+    shadedRight.push([+x.toFixed(2), +y.toFixed(5)]);
+  }
+
+  tCurveOpts.value = {
+    tooltip: { trigger: "axis" },
+    grid: { left: "8%", right: "4%", bottom: "12%", top: "8%" },
+    xAxis: { type: "value", name: "t", min: -4.5, max: 4.5 },
+    yAxis: { type: "value", show: false },
+    series: [
+      { type: "line", data: curveData, smooth: true, lineStyle: { color: "#4558d0", width: 2 }, showSymbol: false, areaStyle: { opacity: 0 } },
+      { type: "line", data: shadedLeft, smooth: true, lineStyle: { width: 0 }, showSymbol: false, areaStyle: { color: "rgba(239,68,68,0.3)" } },
+      { type: "line", data: shadedRight, smooth: true, lineStyle: { width: 0 }, showSymbol: false, areaStyle: { color: "rgba(239,68,68,0.3)" } },
+    ],
+  };
+
+  // narrative
+  const sig05 = pTwo < 0.05, sig01 = pTwo < 0.01;
+  narrativeHtml.value = `<p>输入 t = <strong>${S.fmt(toP.t, 4)}</strong>，自由度 df = <strong>${toP.df}</strong>。</p>` +
+    `<p>双侧 P 值 = <strong>${S.fmtP(pTwo)}</strong>，单侧 P 值 = <strong>${S.fmtP(pOne)}</strong>。</p>` +
+    `<p>图中红色阴影区域表示双侧检验的拒绝域（|t| ≥ ${S.fmt(tVal, 4)} 的概率面积）。</p>` +
+    `<p>${sig01 ? "P < 0.01，在 α = 0.01 水平上<strong>高度显著</strong>。" : sig05 ? "P < 0.05，在 α = 0.05 水平上<strong>显著</strong>，但 P ≥ 0.01。" : "P ≥ 0.05，在 α = 0.05 水平上<strong>不显著</strong>。"}</p>` +
+    `<p><em>t 分布随 df 增大趋近标准正态分布。df = ${toP.df} 时，t₀.₀₂₅ ≈ ${S.fmt(tInv(0.025, toP.df), 3)}。</em></p>`;
+}
+
+// Beta function approximation for t-distribution PDF
+function beta(a: number, b: number): number {
+  return Math.exp(lgamma(a) + lgamma(b) - lgamma(a + b));
+}
+function lgamma(x: number): number {
+  const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x, tmp = x + 5.5; tmp -= (x + 0.5) * Math.log(tmp); let ser = 1.000000000190015;
+  for (let j = 0; j < 6; j++) ser += c[j] / ++y;
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
 }
 
 function tInv(p: number, df: number): number {
@@ -150,6 +220,12 @@ const critRows = computed(() => {
 .metric-card.neutral .metric-indicator { background: linear-gradient(90deg, #909399, #a6a9ad); }
 .metric-label { font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 6px; }
 .metric-value { font-size: 20px; font-weight: 700; font-family: "JetBrains Mono", "SF Mono", monospace; color: var(--el-text-color-primary); line-height: 1.2; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
+.card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); }
+.detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; }
+.detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.narrative-body { font-size: 14px; line-height: 1.85; } .narrative-body :deep(strong) { font-weight: 700; } .narrative-body :deep(p) { margin: 8px 0; } .narrative-body :deep(em) { color: var(--el-text-color-secondary); }
 </style>
 
 <style lang="scss">

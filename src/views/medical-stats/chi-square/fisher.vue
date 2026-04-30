@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">Fisher 精确检验</h1>
-          <p class="hero-desc">适用于小样本 2×2 表资料（N &lt; 40 或理论频数 T &lt; 5 的格子较多时），基于超几何分布精确计算在边际固定条件下观测到当前或更极端结果的概率，是 χ² 检验的精确替代方案</p>
+          <p class="hero-desc"><strong>适用场景：</strong>小样本 2×2 表资料（N &lt; 40 或理论频数 T &lt; 5 的格子较多时），基于超几何分布精确计算在边际固定条件下观测到当前或更极端结果的概率，是 χ² 检验的精确替代方案</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · FISHER</el-tag>
       </div>
@@ -110,14 +110,24 @@
         </div>
 
         <el-row :gutter="20" class="mb-4">
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
-              <template #header>
-                <div class="card-header-inner">
-                  <el-icon class="header-icon"><Document /></el-icon>
-                  <span class="font-bold">方法对比</span>
-                </div>
-              </template>
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">两组阳性率对比</span></div></template>
+              <ECharts :options="barChartOpts" height="220px" />
+            </el-card>
+          </el-col>
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><Histogram /></el-icon><span class="font-bold">频数分布</span></div></template>
+              <ECharts :options="freqChartOpts" height="220px" />
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">方法对比</span></div></template>
               <el-table :data="compareRows" size="small" stripe border>
                 <el-table-column prop="method" label="检验方法" min-width="160" />
                 <el-table-column prop="stat" label="统计量" min-width="120" />
@@ -125,8 +135,8 @@
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="14" :xs="24" class="mb-4">
-            <el-card shadow="never" class="narrative-card">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header>
                 <div class="card-header-inner">
                   <el-icon class="header-icon"><ChatLineSquare /></el-icon>
@@ -143,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis, Document, ChatLineSquare } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, Document, ChatLineSquare, TrendCharts, Histogram } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "FisherTest" });
@@ -153,6 +163,8 @@ const result = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const compareRows = ref<any[]>([]);
 const narrativeHtml = ref("");
+const barChartOpts = ref({});
+const freqChartOpts = ref({});
 
 function loadDemo() { Object.assign(form, { a: 3, b: 7, c: 8, d: 2 }); calculate(); }
 function clearAll() { Object.assign(form, { a: 0, b: 0, c: 0, d: 0 }); result.value = false; }
@@ -195,6 +207,26 @@ function calculate() {
     }</p>
     <p class="text-xs text-gray-400 mt-3 pt-3 border-t border-dashed border-gray-200">注：Fisher 精确检验不依赖大样本近似，适用于任何样本量，尤其在小样本时优于 χ² 检验。</p>
   `;
+
+  // 图表
+  barChartOpts.value = {
+    tooltip: { trigger: "axis" },
+    grid: { left: "12%", right: "4%", bottom: "12%", top: "8%" },
+    xAxis: { type: "category", data: ["组1", "组2"] },
+    yAxis: { type: "value", name: "阳性率", max: 1, axisLabel: { formatter: (v: number) => (v * 100) + "%" } },
+    series: [{ type: "bar", data: [+p1.toFixed(4), +p2.toFixed(4)], itemStyle: { color: (p: any) => p.dataIndex === 0 ? "#4558d0" : "#22c55e", borderRadius: [4, 4, 0, 0] }, barWidth: "35%" }],
+  };
+  freqChartOpts.value = {
+    tooltip: { trigger: "axis" },
+    legend: { data: ["阳性", "阴性"], bottom: 0 },
+    grid: { left: "12%", right: "4%", bottom: "16%", top: "8%" },
+    xAxis: { type: "category", data: ["组1", "组2"] },
+    yAxis: { type: "value", name: "频数" },
+    series: [
+      { name: "阳性", type: "bar", stack: "t", data: [a, c], itemStyle: { color: "#4558d0" } },
+      { name: "阴性", type: "bar", stack: "t", data: [b, d], itemStyle: { color: "#c0c4cc" } },
+    ],
+  };
 }
 </script>
 
@@ -268,6 +300,8 @@ function calculate() {
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

@@ -13,16 +13,57 @@
     <el-row :gutter="20" class="mb-4 input-row">
       <el-col :lg="16" :xs="24">
         <el-card shadow="never" class="input-card">
+          <div class="input-mode-bar">
+            <el-radio-group v-model="inputMode" size="small">
+              <el-radio-button value="table"><el-icon class="mr-1"><Grid /></el-icon>表格输入</el-radio-button>
+              <el-radio-button value="text"><el-icon class="mr-1"><EditPen /></el-icon>文本输入</el-radio-button>
+            </el-radio-group>
+            <span class="input-count-badge" v-if="dataCount > 0">已输入 <strong>{{ dataCount }}</strong> 个数据</span>
+          </div>
+
           <el-form label-position="top">
             <el-row :gutter="16">
               <el-col :span="8"><el-form-item label="总体均数 (μ₀)"><el-input-number v-model="form.mu0" :step="1" style="width:100%" /></el-form-item></el-col>
               <el-col :span="8"><el-form-item label="检验方向"><el-radio-group v-model="form.tail" size="small"><el-radio-button value="two">双侧</el-radio-button><el-radio-button value="left">左侧</el-radio-button><el-radio-button value="right">右侧</el-radio-button></el-radio-group></el-form-item></el-col>
               <el-col :span="8"><el-form-item label="显著性水平"><el-select v-model="form.alpha" size="small" style="width:100%"><el-option :value="0.05" label="0.05" /><el-option :value="0.01" label="0.01" /></el-select></el-form-item></el-col>
             </el-row>
-            <el-form-item label="原始数据（逗号、空格或换行分隔）">
-              <el-input v-model="form.rawData" type="textarea" :rows="4" placeholder="例如：128, 135, 122, 130, 126, 140, 118, 132, 125, 137" />
-            </el-form-item>
           </el-form>
+
+          <div v-if="inputMode === 'table'" class="spread-area">
+            <div class="spread-toolbar">
+              <el-button size="small" @click="addRows(5)"><el-icon class="mr-1"><Plus /></el-icon>+5 行</el-button>
+              <el-button size="small" @click="addRows(10)"><el-icon class="mr-1"><Plus /></el-icon>+10 行</el-button>
+              <el-tooltip content="粘贴一列数据" placement="top">
+                <el-button size="small" @click="pasteData"><el-icon class="mr-1"><DocumentCopy /></el-icon>粘贴导入</el-button>
+              </el-tooltip>
+            </div>
+            <div class="spread-grid">
+              <div class="spread-header">
+                <div class="sp-idx-cell"></div>
+                <div v-for="c in totalCols" :key="c" class="sp-col-head" :class="{ 'sp-c1': c === 1, 'sp-disabled-head': c > 1 }">C{{ c }}</div>
+              </div>
+              <div class="spread-body">
+                <div v-for="i in rowCount" :key="i" class="spread-row" :class="{ 'sp-even': i % 2 === 0 }">
+                  <div class="sp-idx-cell sp-row-idx">{{ i }}</div>
+                  <div class="sp-data-cell"><input v-model="tableC1[i-1]" class="sp-input" type="text" inputmode="decimal" @keydown.enter.prevent="focusCell(i, 0)" :ref="el => setCellRef(el, i-1, 0)" /></div>
+                  <div v-for="c in (totalCols - 1)" :key="'d'+c" class="sp-data-cell sp-disabled-cell"></div>
+                </div>
+              </div>
+            </div>
+            <div class="spread-legend">
+              <span class="legend-dot c1-dot"></span> C1 = 原始数据
+              <span class="legend-hint">C2~C{{ totalCols }} 暂未使用</span>
+            </div>
+          </div>
+
+          <div v-else>
+            <el-form label-position="top">
+              <el-form-item label="原始数据（逗号、空格或换行分隔）">
+                <el-input v-model="form.rawData" type="textarea" :rows="4" placeholder="例如：128, 135, 122, 130, 126, 140, 118, 132, 125, 137" />
+              </el-form-item>
+            </el-form>
+          </div>
+
           <div class="action-bar">
             <el-button type="primary" class="calc-btn" @click="calculate"><el-icon class="mr-1"><DataAnalysis /></el-icon>开始计算</el-button>
             <el-button class="reset-btn" @click="loadDemo">加载示例</el-button>
@@ -44,10 +85,11 @@
               <p>t 统计量、P 值、置信区间、Cohen's d、数据分布直方图</p>
             </div>
           </div>
-          <div class="ref-section">
+            <div class="ref-section">
             <div class="ref-title">参考文献</div>
             <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
-            <p class="ref-item">[2] Student. The probable error of a mean. Biometrika, 1908.</p>
+            <p class="ref-item">[2] Student. The probable error of a mean. Biometrika, 1908, 6(1): 1-25.</p>
+            <p class="ref-item">[3] Cohen J. Statistical Power Analysis for the Behavioral Sciences. 2nd ed, Lawrence Erlbaum, 1988.</p>
           </div>
         </div>
       </el-col>
@@ -78,7 +120,7 @@
           </el-col>
         </el-row>
 
-        <el-card shadow="never" class="detail-card mb-4">
+        <el-card shadow="never" class="detail-card narrative-card mb-4">
           <template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template>
           <div class="narrative-body" v-html="narrativeHtml" />
         </el-card>
@@ -88,12 +130,27 @@
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis, Document, Histogram, ChatLineSquare } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, Document, Histogram, ChatLineSquare, Grid, EditPen, Plus, DocumentCopy } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "TOneSampleRaw" });
 
+const inputMode = ref<"table" | "text">("table");
 const form = reactive({ mu0: 120, rawData: "", tail: "two" as string, alpha: 0.05 });
+const totalCols = 6;
+const tableC1 = ref<string[]>(Array(20).fill(""));
+const rowCount = computed(() => tableC1.value.length);
+const dataCount = computed(() => tableC1.value.filter(v => v.trim() && !isNaN(parseFloat(v))).length);
+
+const cellRefs: Record<string, HTMLInputElement | null> = {};
+function setCellRef(el: any, row: number, _col: number) { cellRefs[`${row}-0`] = el as HTMLInputElement; }
+function focusCell(row: number, _col: number) { if (row >= rowCount.value) addRows(5); setTimeout(() => cellRefs[`${row}-0`]?.focus(), 0); }
+function addRows(n: number) { for (let i = 0; i < n; i++) tableC1.value.push(""); }
+async function pasteData() {
+  try { const text = await navigator.clipboard.readText(); const nums = text.replace(/[\n\r\t]+/g, ",").split(",").map(s => s.trim()).filter(s => s); nums.forEach((v, i) => { if (i < tableC1.value.length) tableC1.value[i] = v; }); } catch { ElMessage.info("请允许剪贴板访问"); }
+}
+
 const result = ref(false);
 const metrics = ref<any[]>([]);
 const testRows = ref<any[]>([]);
@@ -101,8 +158,15 @@ const histOpts = ref({});
 const narrativeHtml = ref("");
 
 const demoData = "128, 135, 122, 130, 126, 140, 118, 132, 125, 137, 121, 133, 127, 136, 124, 131, 129, 138, 123, 134";
-function loadDemo() { form.rawData = demoData; form.mu0 = 125; calculate(); }
-function clearAll() { form.rawData = ""; result.value = false; }
+function loadDemo() {
+  if (inputMode.value === "table") {
+    const nums = S.parseNumbers(demoData);
+    tableC1.value = Array(20).fill("");
+    nums.forEach((v, i) => tableC1.value[i] = String(v));
+  } else { form.rawData = demoData; }
+  form.mu0 = 125; calculate();
+}
+function clearAll() { tableC1.value = Array(20).fill(""); form.rawData = ""; result.value = false; }
 
 function tInv(p: number, df: number): number {
   let lo = 0, hi = 20;
@@ -111,7 +175,12 @@ function tInv(p: number, df: number): number {
 }
 
 function calculate() {
-  const data = S.parseNumbers(form.rawData);
+  let data: number[];
+  if (inputMode.value === "table") {
+    data = tableC1.value.map(v => parseFloat(v)).filter(v => !isNaN(v));
+  } else {
+    data = S.parseNumbers(form.rawData);
+  }
   if (data.length < 2) { ElMessage.warning("请输入至少 2 个数值"); return; }
 
   const n = data.length, xbar = S.mean(data), s = S.stdDev(data), se = s / Math.sqrt(n);
@@ -159,6 +228,28 @@ function calculate() {
 .hero-tag { font-size: 11px; letter-spacing: 1.5px; font-weight: 600; }
 .input-row { align-items: stretch; } .input-row > .el-col { display: flex; flex-direction: column; }
 .input-card { border-radius: 14px; flex: 1; }
+.input-mode-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.input-count-badge { font-size: 12px; color: var(--el-text-color-secondary); }
+.spread-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.spread-grid { border: 1px solid #c0c4cc; overflow: hidden; }
+.spread-header { display: flex; background: #fff; border-bottom: 1px solid #c0c4cc; }
+.sp-idx-cell { flex: 0 0 48px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: "JetBrains Mono", monospace; color: #606266; background: #f5f7fa; border-right: 1px solid #c0c4cc; }
+.sp-row-idx { font-weight: 600; }
+.sp-col-head { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13px; font-family: "JetBrains Mono", monospace; font-weight: 700; color: #303133; padding: 6px 0; border-right: 1px solid #dcdfe6; background: #f5f7fa; }
+.sp-col-head:last-child { border-right: none; }
+.sp-c1 { color: #303133; } .sp-disabled-head { color: #c0c4cc; }
+.sp-disabled-cell { flex: 1; background: #fff; border-right: 1px solid #ebeef5; } .sp-disabled-cell:last-child { border-right: none; }
+.spread-body { max-height: 400px; overflow-y: auto; scrollbar-width: none; } .spread-body::-webkit-scrollbar { display: none; }
+.spread-row { display: flex; border-bottom: 1px solid #ebeef5; } .spread-row:last-child { border-bottom: none; }
+.sp-even { background: #fff; }
+.spread-row:nth-child(odd) .sp-idx-cell { background: #fafafa; } .spread-row:nth-child(even) .sp-idx-cell { background: #f5f7fa; }
+.sp-data-cell { flex: 1; border-right: 1px solid #ebeef5; padding: 0; } .sp-data-cell:last-child { border-right: none; }
+.sp-input { width: 100%; border: none; outline: none; background: transparent; text-align: center; font-size: 13px; font-family: "JetBrains Mono", monospace; font-weight: 500; color: #303133; padding: 7px 2px; box-sizing: border-box; }
+.sp-input:focus { background: #ecf5ff; outline: 1px dashed #409eff; outline-offset: -1px; }
+.spread-legend { display: flex; align-items: center; gap: 16px; margin-top: 10px; font-size: 11px; color: var(--el-text-color-secondary); }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.c1-dot { background: #4558d0; }
+.legend-hint { margin-left: auto; color: #c0c4cc; }
 .action-bar { display: flex; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--el-border-color-lighter); }
 .calc-btn { padding: 10px 28px; font-weight: 600; border-radius: 8px; } .reset-btn { border-radius: 8px; }
 .param-sidebar { flex: 1; display: flex; flex-direction: column; padding: 22px; border-radius: 14px; background: linear-gradient(160deg, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.04) 0%, rgba(var(--el-color-primary-rgb, 64, 158, 255), 0.01) 100%); border: 1px solid var(--el-border-color-lighter); }
@@ -189,6 +280,7 @@ function calculate() {
 .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

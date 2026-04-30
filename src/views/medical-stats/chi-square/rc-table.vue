@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">R×C 列联表卡方检验</h1>
-          <p class="hero-desc">适用于多组（R 行）多分类（C 列）资料的独立性检验，通过 Pearson χ² 统计量判断行列变量是否独立，同时展示理论频数矩阵和各格贡献值，辅助定位差异来源</p>
+          <p class="hero-desc"><strong>适用场景：</strong>多组（R 行）多分类（C 列）资料的独立性检验（如多种治疗方案×多种疗效等级、多地区×多疾病分型），通过 Pearson χ² 统计量判断行列变量是否独立，同时展示理论频数矩阵和各格贡献值</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · R×C TABLE</el-tag>
       </div>
@@ -116,14 +116,18 @@
         </div>
 
         <el-row :gutter="20" class="mb-4">
+          <el-col :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">各行频率分布对比</span></div></template>
+              <ECharts :options="freqChartOpts" height="240px" />
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20" class="mb-4 equal-row">
           <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
-              <template #header>
-                <div class="card-header-inner">
-                  <el-icon class="header-icon"><Document /></el-icon>
-                  <span class="font-bold">理论频数表</span>
-                </div>
-              </template>
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">理论频数表</span></div></template>
               <el-table :data="expectedRows" size="small" stripe border>
                 <el-table-column v-for="j in cols" :key="j" :label="'列' + j" :prop="'c' + (j - 1)" min-width="100" />
               </el-table>
@@ -131,7 +135,7 @@
             </el-card>
           </el-col>
           <el-col :lg="12" :xs="24" class="mb-4">
-            <el-card shadow="never" class="narrative-card">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header>
                 <div class="card-header-inner">
                   <el-icon class="header-icon"><ChatLineSquare /></el-icon>
@@ -148,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis, Document, ChatLineSquare } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, Document, ChatLineSquare, TrendCharts } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "RCTable" });
@@ -160,6 +164,7 @@ const result = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const expectedRows = ref<any[]>([]);
 const narrativeHtml = ref("");
+const freqChartOpts = ref({});
 
 function rebuildTable() {
   table.value = Array.from({ length: rows.value }, (_, i) =>
@@ -229,6 +234,21 @@ function calculate() {
       : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为行列变量之间存在关联。`
     }</p>
   `;
+
+  // 各行频率分布对比图（分组柱状图）
+  const colors = ["#4558d0", "#22c55e", "#e6a23c", "#8b91a8", "#f56c6c", "#9b59b6"];
+  freqChartOpts.value = {
+    tooltip: { trigger: "axis" },
+    legend: { data: Array.from({ length: c }, (_, j) => `列${j + 1}`), bottom: 0, textStyle: { fontSize: 10 } },
+    grid: { left: "8%", right: "4%", bottom: "16%", top: "8%" },
+    xAxis: { type: "category", data: Array.from({ length: r }, (_, i) => `行${i + 1}`) },
+    yAxis: { type: "value", name: "频数" },
+    series: Array.from({ length: c }, (_, j) => ({
+      name: `列${j + 1}`, type: "bar",
+      data: table.value.map(row => row[j]),
+      itemStyle: { color: colors[j % colors.length] },
+    })),
+  };
 }
 </script>
 
@@ -305,6 +325,8 @@ function calculate() {
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

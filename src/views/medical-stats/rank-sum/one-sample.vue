@@ -281,7 +281,7 @@ function calculate() {
   dotOpts.value = { tooltip: { trigger: "axis" }, grid: { left: "8%", right: "4%", bottom: "10%", top: "8%" },
     xAxis: { type: "category", data: data.map((_, i) => `${i + 1}`), name: "序号" }, yAxis: { type: "value" },
     series: [
-      { name: "数据", type: "scatter", data: data, symbolSize: 8, itemStyle: { color: "#4558d0" } },
+      { name: "数据", type: "scatter", data: data.map((v, i) => [i, v]), symbolSize: 8, itemStyle: { color: "#4558d0" } },
       { name: `M₀=${form.m0}`, type: "line", data: data.map(() => form.m0), lineStyle: { color: "#e6a23c", width: 2, type: "dashed" }, showSymbol: false },
     ] };
 

@@ -5,7 +5,7 @@
         <div class="hero-text">
           <h1 class="hero-title">二项分布</h1>
           <p class="hero-desc">
-            适用于二分类资料（阳性/阴性、有效/无效）的统计分析：计算二项分布精确概率 P(X=k)，采用 Wilson 法估计总体率的置信区间，通过 Z 检验比较样本率与已知总体率的差异，以及两独立样本阳性率的比较（H₀: p₁=p₂）
+            <strong>适用场景：</strong>二分类资料（阳性/阴性、有效/无效）的统计分析：计算二项分布精确概率 P(X=k)，采用 Wilson 法估计总体率的置信区间，通过 Z 检验比较样本率与已知总体率的差异，以及两独立样本阳性率的比较（H₀: p₁=p₂）
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · BINOMIAL</el-tag>
@@ -358,7 +358,7 @@
           </el-col>
         </el-row>
 
-        <el-card v-if="narrativeHtml" shadow="never" class="detail-card mb-4">
+        <el-card v-if="narrativeHtml" shadow="never" class="detail-card narrative-card mb-4">
           <template #header
             ><div class="card-header-inner">
               <el-icon class="header-icon"><ChatLineSquare /></el-icon
@@ -871,6 +871,7 @@ watch(activeTab, () => {
 .detail-card :deep(.el-table) {
   flex: 1;
 }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body {
   font-size: 14px;
   line-height: 1.85;

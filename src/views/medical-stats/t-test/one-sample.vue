@@ -64,7 +64,8 @@
           <div class="ref-section">
             <div class="ref-title">参考文献</div>
             <p class="ref-item">[1] 方积乾.《卫生统计学》第7版, 人民卫生出版社, 2012.</p>
-            <p class="ref-item">[2] Student. The probable error of a mean. Biometrika, 1908.</p>
+            <p class="ref-item">[2] Student. The probable error of a mean. Biometrika, 1908, 6(1): 1-25.</p>
+            <p class="ref-item">[3] Cohen J. Statistical Power Analysis for the Behavioral Sciences. 2nd ed, Lawrence Erlbaum, 1988.</p>
           </div>
         </div>
       </el-col>
@@ -98,7 +99,7 @@
           </el-col>
         </el-row>
 
-        <el-card shadow="never" class="detail-card mb-4">
+        <el-card shadow="never" class="detail-card narrative-card mb-4">
           <template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template>
           <div class="narrative-body" v-html="narrativeHtml" />
         </el-card>
@@ -269,6 +270,7 @@ onMounted(calculate);
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

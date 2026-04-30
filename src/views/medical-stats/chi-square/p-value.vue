@@ -5,7 +5,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">卡方 P 值查询</h1>
-          <p class="hero-desc">输入卡方统计量 χ² 和自由度 df，即时计算对应的右尾概率 P 值（P = P(X ≥ χ²)），同时提供常用显著性水平（α = 0.05, 0.01, 0.001）下各自由度对应的 χ² 临界值查询表</p>
+          <p class="hero-desc"><strong>适用场景：</strong>已有卡方统计量需快速查 P 值（如文献验证、手工计算核查、教学演示）。输入卡方统计量 χ² 和自由度 df，即时计算对应的右尾概率 P 值（P = P(X ≥ χ²)），同时提供常用显著性水平下各自由度对应的 χ² 临界值查询表</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · P VALUE</el-tag>
       </div>
@@ -112,7 +112,16 @@
         </div>
 
         <el-row :gutter="20" class="mb-4">
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">χ² 分布曲线 (df={{ toP.df }})</span></div></template>
+              <ECharts :options="chi2CurveOpts" height="220px" />
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header>
                 <div class="card-header-inner">
@@ -126,8 +135,8 @@
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="14" :xs="24" class="mb-4">
-            <el-card shadow="never" class="narrative-card">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header>
                 <div class="card-header-inner">
                   <el-icon class="header-icon"><ChatLineSquare /></el-icon>
@@ -144,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { Search, Grid, InfoFilled, DataAnalysis, Document, ChatLineSquare } from "@element-plus/icons-vue";
+import { Search, Grid, InfoFilled, DataAnalysis, Document, ChatLineSquare, TrendCharts } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "ChiPValue" });
@@ -156,6 +165,7 @@ const toPResult = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const detailRows = ref<any[]>([]);
 const narrativeHtml = ref("");
+const chi2CurveOpts = ref({});
 
 function calcToP() {
   const pVal = S.chiSquarePValue(toP.chi2, toP.df);
@@ -192,6 +202,35 @@ function calcToP() {
     <p>当前 χ² = ${S.fmt(toP.chi2, 4)} ${toP.chi2 >= crit05 ? '≥' : '<'} ${S.fmt(crit05, 4)}（α=0.05 临界值），${sig05 ? '<strong>在 0.05 水平上显著</strong>' : '在 0.05 水平上不显著'}。</p>
     <p>${sig01 ? `同时 χ² ≥ ${S.fmt(crit01, 4)}（α=0.01 临界值），<strong>在 0.01 水平上也显著</strong>。` : `但 χ² < ${S.fmt(crit01, 4)}（α=0.01 临界值），在 0.01 水平上不显著。`}</p>
   `;
+
+  // χ²分布曲线（简化PDF近似）
+  const df = toP.df, chi2Val = toP.chi2;
+  const maxX = Math.max(df * 2.5, chi2Val * 1.5, 10);
+  const curveData: [number, number][] = [];
+  const shadedData: [number, number][] = [];
+  for (let x = 0.1; x <= maxX; x += maxX / 100) {
+    const logPdf = (df / 2 - 1) * Math.log(x) - x / 2 - (df / 2) * Math.log(2) - lgamma(df / 2);
+    const y = Math.exp(logPdf);
+    curveData.push([+x.toFixed(2), +y.toFixed(6)]);
+    if (x >= chi2Val) shadedData.push([+x.toFixed(2), +y.toFixed(6)]);
+  }
+  chi2CurveOpts.value = {
+    tooltip: { trigger: "axis" },
+    grid: { left: "8%", right: "4%", bottom: "12%", top: "8%" },
+    xAxis: { type: "value", name: "χ²", min: 0 },
+    yAxis: { type: "value", show: false },
+    series: [
+      { type: "line", data: curveData, smooth: true, lineStyle: { color: "#4558d0", width: 2 }, showSymbol: false },
+      { type: "line", data: shadedData, smooth: true, lineStyle: { width: 0 }, showSymbol: false, areaStyle: { color: "rgba(239,68,68,0.3)" } },
+    ],
+  };
+}
+
+function lgamma(x: number): number {
+  const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x, tmp = x + 5.5; tmp -= (x + 0.5) * Math.log(tmp); let ser = 1.000000000190015;
+  for (let j = 0; j < 6; j++) ser += c[j] / ++y;
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
 }
 
 function chiSquareInv(p: number, df: number): number {
@@ -278,6 +317,8 @@ watch(activeTab, () => { toPResult.value = null; });
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

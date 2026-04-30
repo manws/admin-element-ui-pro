@@ -6,7 +6,7 @@
         <div class="hero-text">
           <h1 class="hero-title">四格表卡方检验</h1>
           <p class="hero-desc">
-            比较两组独立样本的阳性率（构成比）有无差异，适用于两独立样本的四格表资料。支持三种输入格式（四格表/发生数/发生率），自动判定使用 Pearson χ²、Yates 连续性校正或 Fisher 精确检验
+            <strong>适用场景：</strong>比较两组独立样本的阳性率（构成比）有无差异，适用于两独立样本的四格表资料（如药物组vs对照组有效率比较、暴露vs非暴露发病率比较）。支持三种输入格式（四格表/发生数/发生率），自动判定使用 Pearson χ²、Yates 连续性校正或 Fisher 精确检验
           </p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · FOURFOLD</el-tag>
@@ -210,9 +210,25 @@
           </div>
         </div>
 
-        <!-- 详表 + 解读 -->
+        <!-- 图表 -->
         <el-row :gutter="20" class="mb-4">
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">两组阳性率对比</span></div></template>
+              <ECharts :options="barChartOpts" height="240px" />
+            </el-card>
+          </el-col>
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><Histogram /></el-icon><span class="font-bold">四格表频数对比</span></div></template>
+              <ECharts :options="freqChartOpts" height="240px" />
+            </el-card>
+          </el-col>
+        </el-row>
+
+        <!-- 详表 + 解读 -->
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header>
                 <div class="card-header-inner">
@@ -226,8 +242,8 @@
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="14" :xs="24" class="mb-4">
-            <el-card shadow="never" class="narrative-card">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header>
                 <div class="card-header-inner">
                   <el-icon class="header-icon"><ChatLineSquare /></el-icon>
@@ -255,6 +271,8 @@ const activeTab = ref("table");
 const currentResult = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const detailRows = ref<any[]>([]);
+const barChartOpts = ref({});
+const freqChartOpts = ref({});
 const narrativeHtml = ref("");
 
 function showResult(r: any, a: number, b: number, c: number, d: number) {
@@ -297,6 +315,29 @@ function showResult(r: any, a: number, b: number, c: number, d: number) {
     }</p>
     <p class="text-xs text-gray-400 mt-3 pt-3 border-t border-dashed border-gray-200">注：当理论频数 T < 5 时建议使用 Fisher 精确检验；当 1 ≤ T < 5 且 N ≥ 40 时建议使用 Yates 校正。</p>
   `;
+
+  // 图表：两组阳性率对比
+  const p1Val = a / (a + b || 1), p2Val = c / (c + d || 1);
+  barChartOpts.value = {
+    tooltip: { trigger: "axis", formatter: (p: any) => `${p[0].name}: ${(p[0].value * 100).toFixed(1)}%` },
+    grid: { left: "12%", right: "4%", bottom: "12%", top: "8%" },
+    xAxis: { type: "category", data: ["组1", "组2"] },
+    yAxis: { type: "value", name: "阳性率", max: 1, axisLabel: { formatter: (v: number) => (v * 100) + "%" } },
+    series: [{ type: "bar", data: [+p1Val.toFixed(4), +p2Val.toFixed(4)], itemStyle: { color: (p: any) => p.dataIndex === 0 ? "#4558d0" : "#22c55e", borderRadius: [4, 4, 0, 0] }, barWidth: "35%" }],
+  };
+
+  // 图表：四格表频数堆叠对比
+  freqChartOpts.value = {
+    tooltip: { trigger: "axis" },
+    legend: { data: ["阳性", "阴性"], bottom: 0 },
+    grid: { left: "12%", right: "4%", bottom: "16%", top: "8%" },
+    xAxis: { type: "category", data: ["组1", "组2"] },
+    yAxis: { type: "value", name: "频数" },
+    series: [
+      { name: "阳性", type: "bar", stack: "total", data: [a, c], itemStyle: { color: "#4558d0" } },
+      { name: "阴性", type: "bar", stack: "total", data: [b, d], itemStyle: { color: "#c0c4cc" } },
+    ],
+  };
 }
 
 // ---- 计算核心 ----
@@ -535,6 +576,8 @@ watch(activeTab, () => { currentResult.value = null; });
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }

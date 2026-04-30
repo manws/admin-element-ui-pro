@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">Poisson 分布</h1>
-          <p class="hero-desc">适用于稀有事件计数资料（发病率、事故率等）的统计分析：计算 Poisson 分布精确概率 P(X=k)，基于卡方分布精确法估计总体均数/率的置信区间，通过 u 检验比较样本率与总体均数的差异，以及两独立样本率的比较（H₀: λ₁=λ₂）</p>
+          <p class="hero-desc"><strong>适用场景：</strong>稀有事件计数资料（发病率、事故率等）的统计分析：计算 Poisson 分布精确概率 P(X=k)，基于卡方分布精确法估计总体均数/率的置信区间，通过 u 检验比较样本率与总体均数的差异，以及两独立样本率的比较（H₀: λ₁=λ₂）</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>BASIC · POISSON</el-tag>
       </div>
@@ -333,7 +333,7 @@
           </el-col>
         </el-row>
 
-        <el-card v-if="narrativeHtml" shadow="never" class="detail-card mb-4">
+        <el-card v-if="narrativeHtml" shadow="never" class="detail-card narrative-card mb-4">
           <template #header
             ><div class="card-header-inner">
               <el-icon class="header-icon"><ChatLineSquare /></el-icon
@@ -843,6 +843,7 @@ watch(activeTab, () => {
 .detail-card :deep(.el-table) {
   flex: 1;
 }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body {
   font-size: 14px;
   line-height: 1.85;

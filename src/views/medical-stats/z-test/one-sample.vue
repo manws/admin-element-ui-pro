@@ -41,16 +41,18 @@
 
     <transition name="result-fade"><div v-if="res" class="result-section">
       <div class="metrics-grid mb-5"><div v-for="m in metrics" :key="m.label" class="metric-card" :class="m.type"><div class="metric-indicator" /><div class="metric-label">{{ m.label }}</div><div class="metric-value" :class="{ small: String(m.value).length > 12 }">{{ m.value }}</div></div></div>
-      <el-card shadow="never" class="detail-card mb-4"><template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template><div class="narrative-body" v-html="narrativeHtml" /></el-card>
+      <el-card shadow="never" class="detail-card mb-4"><template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">正态分布曲线</span></div></template><ECharts :options="zCurveOpts" height="220px" /></el-card>
+      <el-card shadow="never" class="detail-card narrative-card mb-4"><template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template><div class="narrative-body" v-html="narrativeHtml" /></el-card>
     </div></transition>
   </div>
 </template>
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis, ChatLineSquare } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, ChatLineSquare, TrendCharts } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 defineOptions({ name: "ZOneSample" });
 const form = reactive({ mu0: 120, sigma: 15, n: 36, xbar: 126, tail: "two" as string });
 const res = ref(false); const metrics = ref<any[]>([]); const narrativeHtml = ref("");
+const zCurveOpts = ref({});
 function loadDemo() { Object.assign(form, { mu0: 120, sigma: 15, n: 36, xbar: 126, tail: "two" }); calculate(); }
 function clearAll() { res.value = false; }
 function calculate() {
@@ -72,6 +74,11 @@ function calculate() {
     `<p>Z = (x̄ − μ₀)/SE = (${S.fmt(xbar)} − ${mu0})/${S.fmt(se)} = <strong>${S.fmt(z)}</strong>。</p>` +
     `<p>P 值（${tailText}）= <strong>${S.fmtP(pVal)}</strong>。${sig ? `P < 0.05，<strong>拒绝 H₀</strong>，样本均数与总体均数 μ₀ = ${mu0} 的差异有统计学意义。` : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为样本均数与总体均数有差异。`}</p>` +
     `<p>总体均数 μ 的 95% 置信区间：[<strong>${S.fmt(ciL, 2)}</strong>, <strong>${S.fmt(ciU, 2)}</strong>]。${mu0 >= ciL && mu0 <= ciU ? "μ₀ 在区间内，与不拒绝 H₀ 结论一致。" : "μ₀ 不在区间内，与拒绝 H₀ 结论一致。"}</p>`;
+  // 正态分布曲线
+  const zVal = Math.abs(z);
+  const curveData: [number, number][] = []; const shadedL: [number, number][] = []; const shadedR: [number, number][] = [];
+  for (let x = -4; x <= 4; x += 0.08) { const y = Math.exp(-x * x / 2) / Math.sqrt(2 * Math.PI); curveData.push([+x.toFixed(2), +y.toFixed(5)]); if (x <= -zVal) shadedL.push([+x.toFixed(2), +y.toFixed(5)]); if (x >= zVal) shadedR.push([+x.toFixed(2), +y.toFixed(5)]); }
+  zCurveOpts.value = { tooltip: { trigger: "axis" }, grid: { left: "6%", right: "4%", bottom: "12%", top: "8%" }, xAxis: { type: "value", min: -4, max: 4, name: "Z" }, yAxis: { type: "value", show: false }, series: [ { type: "line", data: curveData, smooth: true, lineStyle: { color: "#4558d0", width: 2 }, showSymbol: false }, { type: "line", data: shadedL, smooth: true, lineStyle: { width: 0 }, showSymbol: false, areaStyle: { color: "rgba(239,68,68,0.3)" } }, { type: "line", data: shadedR, smooth: true, lineStyle: { width: 0 }, showSymbol: false, areaStyle: { color: "rgba(239,68,68,0.3)" } } ] };
 }
 onMounted(calculate);
 </script>
@@ -90,6 +97,7 @@ onMounted(calculate);
 .result-fade-enter-active { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); } .result-fade-leave-active { transition: all 0.3s ease; } .result-fade-enter-from { opacity: 0; transform: translateY(24px); } .result-fade-leave-to { opacity: 0; transform: translateY(-12px); } .result-section { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); } @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; } .metric-card { position: relative; text-align: center; padding: 18px 14px 16px; border-radius: 12px; background: var(--el-bg-color); border: 1px solid var(--el-border-color-lighter); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; } .metric-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); } .metric-indicator { position: absolute; top: 0; left: 0; right: 0; height: 3px; } .metric-card.accent .metric-indicator { background: linear-gradient(90deg, #409eff, #66b1ff); } .metric-card.success .metric-indicator { background: linear-gradient(90deg, #67c23a, #85ce61); } .metric-card.warning .metric-indicator { background: linear-gradient(90deg, #e6a23c, #ebb563); } .metric-card.neutral .metric-indicator { background: linear-gradient(90deg, #909399, #a6a9ad); } .metric-label { font-size: 12px; color: var(--el-text-color-secondary); margin-bottom: 6px; } .metric-value { font-size: 20px; font-weight: 700; font-family: "JetBrains Mono", monospace; line-height: 1.2; } .metric-value.small { font-size: 13px; }
 .card-header-inner { display: flex; align-items: center; gap: 8px; } .header-icon { font-size: 16px; color: var(--el-color-primary); } .detail-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); } .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; } .narrative-body :deep(p) { margin: 8px 0; }
 </style>
 <style lang="scss">

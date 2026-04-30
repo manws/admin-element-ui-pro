@@ -4,7 +4,7 @@
       <div class="hero-inner">
         <div class="hero-text">
           <h1 class="hero-title">R×R 列联表（等级资料）</h1>
-          <p class="hero-desc">用于两组有序分类（等级）资料的比较，采用 Cochran-Armitage 线性趋势卡方检验（χ²_trend），比 Pearson χ² 更敏感地检测有序变量的单调趋势差异</p>
+          <p class="hero-desc"><strong>适用场景：</strong>两组有序分类（等级）资料的比较（如药物剂量等级与疗效等级的关联、暴露程度与发病严重程度的趋势），采用 Cochran-Armitage 线性趋势卡方检验（χ²_trend），比 Pearson χ² 更敏感地检测有序变量的单调趋势差异</p>
         </div>
         <el-tag class="hero-tag" effect="dark" round>CHI-SQUARE · R×R TABLE</el-tag>
       </div>
@@ -87,7 +87,15 @@
           </div>
         </div>
         <el-row :gutter="20" class="mb-4">
-          <el-col :lg="10" :xs="24" class="mb-4">
+          <el-col :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card">
+              <template #header><div class="card-header-inner"><el-icon class="header-icon"><TrendCharts /></el-icon><span class="font-bold">两组等级分布对比</span></div></template>
+              <ECharts :options="trendChartOpts" height="240px" />
+            </el-card>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20" class="mb-4 equal-row">
+          <el-col :lg="12" :xs="24" class="mb-4">
             <el-card shadow="never" class="detail-card">
               <template #header><div class="card-header-inner"><el-icon class="header-icon"><Document /></el-icon><span class="font-bold">检验结果详表</span></div></template>
               <el-table :data="detailRows" size="small" stripe border>
@@ -96,8 +104,8 @@
               </el-table>
             </el-card>
           </el-col>
-          <el-col :lg="14" :xs="24" class="mb-4">
-            <el-card shadow="never" class="narrative-card">
+          <el-col :lg="12" :xs="24" class="mb-4">
+            <el-card shadow="never" class="detail-card narrative-card">
               <template #header><div class="card-header-inner"><el-icon class="header-icon"><ChatLineSquare /></el-icon><span class="font-bold">结果解读</span></div></template>
               <div class="narrative-body" v-html="narrativeHtml" />
             </el-card>
@@ -109,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, DataAnalysis, Document, ChatLineSquare } from "@element-plus/icons-vue";
+import { InfoFilled, DataAnalysis, Document, ChatLineSquare, TrendCharts } from "@element-plus/icons-vue";
 import * as S from "../utils/stats";
 
 defineOptions({ name: "RRTable" });
@@ -120,6 +128,7 @@ const result = ref<any>(null);
 const resultMetrics = ref<any[]>([]);
 const detailRows = ref<any[]>([]);
 const narrativeHtml = ref("");
+const trendChartOpts = ref({});
 
 function rebuildTable() {
   table.value = Array.from({ length: levels.value }, (_, i) => [table.value[i]?.[0] ?? 0, table.value[i]?.[1] ?? 0]);
@@ -190,6 +199,20 @@ function calculate() {
       : `P ≥ 0.05，<strong>不拒绝 H₀</strong>，尚不能认为两组等级分布存在线性趋势差异。`
     }</p>
   `;
+
+  // 两组等级分布对比图
+  const labels = Array.from({ length: r }, (_, i) => `等级${i + 1}`);
+  trendChartOpts.value = {
+    tooltip: { trigger: "axis" },
+    legend: { data: ["组1", "组2"], bottom: 0 },
+    grid: { left: "8%", right: "4%", bottom: "14%", top: "8%" },
+    xAxis: { type: "category", data: labels },
+    yAxis: { type: "value", name: "频数" },
+    series: [
+      { name: "组1", type: "bar", data: table.value.map(row => row[0]), itemStyle: { color: "#4558d0" } },
+      { name: "组2", type: "bar", data: table.value.map(row => row[1]), itemStyle: { color: "#22c55e" } },
+    ],
+  };
 }
 </script>
 
@@ -261,6 +284,8 @@ function calculate() {
 .card-header-inner { display: flex; align-items: center; gap: 8px; }
 .header-icon { font-size: 16px; color: var(--el-color-primary); }
 .detail-card, .narrative-card { border-radius: 14px; height: 100%; display: flex; flex-direction: column; } .detail-card :deep(.el-card__body), .narrative-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; } .detail-card :deep(.el-table) { flex: 1; }
+.narrative-card { border-left: 4px solid #4558d0; }
+.equal-row { align-items: stretch; } .equal-row > .el-col { display: flex; flex-direction: column; }
 .narrative-body { font-size: 14px; line-height: 1.85; color: var(--el-text-color-regular); }
 .narrative-body :deep(strong) { color: var(--el-text-color-primary); font-weight: 700; }
 .narrative-body :deep(p) { margin: 8px 0; }
