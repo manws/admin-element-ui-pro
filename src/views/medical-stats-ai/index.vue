@@ -68,7 +68,10 @@
           @keydown.enter.exact.prevent="handleSend"
           @input="autoResize"
         />
-        <button class="ai-send-btn" :class="{ active: inputText.trim() }" :disabled="!inputText.trim() || isLoading" @click="handleSend">
+        <button v-if="isLoading" class="ai-stop-btn" @click="handleStop">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+        </button>
+        <button v-else class="ai-send-btn" :class="{ active: inputText.trim() }" :disabled="!inputText.trim()" @click="handleSend">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
         </button>
       </div>
@@ -78,6 +81,16 @@
 </template>
 
 <script setup lang="ts">
+import { streamChat, type ChatMessage as APIChatMessage } from "@/api/ai-chat";
+
+declare global {
+  interface Window {
+    katex: {
+      renderToString: (tex: string, options?: Record<string, unknown>) => string;
+    };
+  }
+}
+
 defineOptions({ name: "MedicalStatsAI" });
 
 interface ChatMessage {
@@ -90,6 +103,7 @@ const inputText = ref("");
 const isLoading = ref(false);
 const chatBodyRef = ref<HTMLElement>();
 const inputRef = ref<HTMLTextAreaElement>();
+let abortController: AbortController | null = null;
 
 const quickPrompts = [
   "两独立样本 t 检验需要多大样本量？",
@@ -99,42 +113,6 @@ const quickPrompts = [
   "最小化随机和分层随机有什么区别？",
   "LogRank 检验的适用条件是什么？",
 ];
-
-// 模拟 AI 回复
-const mockReplies: Record<string, string> = {
-  "两独立样本 t 检验需要多大样本量？": `<p>两独立样本 t 检验的样本量取决于以下关键参数：</p>
-<ul>
-<li><strong>显著性水平 α</strong>：通常取 0.05（双侧）</li>
-<li><strong>把握度 (1-β)</strong>：通常取 80% 或 90%</li>
-<li><strong>效应量 (Cohen's d)</strong>：d = |μ₁ - μ₂| / σ</li>
-<li><strong>分配比例</strong>：常见 1:1</li>
-</ul>
-<p>基本公式为：<strong>n = (Zα/2 + Zβ)² × (1 + 1/k) / d²</strong></p>
-<p>例如：α=0.05, Power=80%, d=0.5 (中等效应), 1:1 分配时，每组约需 <strong>64 例</strong>，考虑 10% 脱落率后共需约 <strong>143 例</strong>。</p>
-<p>建议使用本平台的「样本量计算 → 两独立样本均值比较」模块进行精确计算。</p>`,
-
-  "什么时候用分层区组随机？": `<p>分层区组随机适合以下场景：</p>
-<ul>
-<li><strong>样本量中小</strong>（120-300 例），简单随机无法保证过程平衡</li>
-<li>有 <strong>2-4 个关键基线因素</strong>（如性别、年龄、中心）需要同时控制</li>
-<li><strong>多中心研究</strong>，需要在每个中心内维持分组均衡</li>
-<li>需要在入组过程中<strong>阶段性保持 A/B 组人数接近</strong></li>
-</ul>
-<p><strong>不适合的情况：</strong>分层因素超过 4-5 个时，层数会指数级增长导致很多层样本量过少，此时建议考虑最小化随机。</p>
-<p>可以使用本平台的「随机分组 → 随机选择」模块，通过问答方式帮助你做出合适的选择。</p>`,
-};
-
-function getDefaultReply(question: string): string {
-  return `<p>感谢你的提问！关于「<strong>${question}</strong>」：</p>
-<p>这是一个很好的医学统计问题。在实际应用中，需要综合考虑以下几个方面：</p>
-<ul>
-<li>研究设计的具体类型和目的</li>
-<li>样本量的可行性与预算约束</li>
-<li>关键协变量的数量和分布</li>
-<li>统计检验的功效要求</li>
-</ul>
-<p>建议你可以在本平台的相关模块中进行具体的参数配置和模拟，获得更精确的分析结果。如有更具体的问题，欢迎继续提问。</p>`;
-}
 
 function scrollToBottom() {
   nextTick(() => {
@@ -161,23 +139,143 @@ function copyText(html: string) {
   navigator.clipboard.writeText(text);
 }
 
+/** 渲染 LaTeX 公式为 HTML（使用 KaTeX） */
+function renderLatex(text: string): string {
+  // 块级公式 \[ ... \] 或 $$ ... $$
+  text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_match, formula) => {
+    try {
+      return `<span class="katex-display">${window.katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false })}</span>`;
+    } catch {
+      return `<code class="latex-error">${formula}</code>`;
+    }
+  });
+  text = text.replace(/\$\$([\s\S]*?)\$\$/g, (_match, formula) => {
+    try {
+      return `<span class="katex-display">${window.katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false })}</span>`;
+    } catch {
+      return `<code class="latex-error">${formula}</code>`;
+    }
+  });
+
+  // 行内公式 \( ... \) 或 $ ... $（不贪婪，单行内）
+  text = text.replace(/\\\((.*?)\\\)/g, (_match, formula) => {
+    try {
+      return window.katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false });
+    } catch {
+      return `<code class="latex-error">${formula}</code>`;
+    }
+  });
+  text = text.replace(/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/g, (_match, formula) => {
+    try {
+      return window.katex.renderToString(formula.trim(), { displayMode: false, throwOnError: false });
+    } catch {
+      return `<code class="latex-error">${formula}</code>`;
+    }
+  });
+
+  return text;
+}
+
+/** 简单 Markdown → HTML（标题、加粗、列表、段落、代码块、LaTeX） */
+function markdownToHtml(md: string): string {
+  // 先处理 LaTeX 公式（在其他 markdown 处理之前）
+  let html = window.katex ? renderLatex(md) : md;
+
+  html = html
+    // 代码块
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="lang-$1">$2</code></pre>')
+    // 行内代码
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    // 标题 h1-h5
+    .replace(/^#{5}\s+(.+)$/gm, "<h5>$1</h5>")
+    .replace(/^#{4}\s+(.+)$/gm, "<h4>$1</h4>")
+    .replace(/^#{3}\s+(.+)$/gm, "<h3>$1</h3>")
+    .replace(/^#{2}\s+(.+)$/gm, "<h2>$1</h2>")
+    .replace(/^#\s+(.+)$/gm, "<h1>$1</h1>")
+    // 加粗（** 和 __ 两种语法）
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__(.+?)__/g, "<strong>$1</strong>")
+    // 斜体
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/_(.+?)_/g, "<em>$1</em>")
+    // 无序列表
+    .replace(/^[-*]\s+(.+)$/gm, "<li>$1</li>")
+    // 有序列表
+    .replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>");
+
+  // 把连续 <li> 包裹成 <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>");
+  // 段落（非标签开头的行）
+  html = html
+    .split("\n\n")
+    .map((block) => {
+      block = block.trim();
+      if (!block) return "";
+      if (block.startsWith("<")) return block;
+      return `<p>${block.replace(/\n/g, "<br>")}</p>`;
+    })
+    .join("");
+
+  return html;
+}
+
+function handleStop() {
+  if (abortController) {
+    abortController.abort();
+    abortController = null;
+    isLoading.value = false;
+  }
+}
+
 async function handleSend() {
   const text = inputText.value.trim();
   if (!text || isLoading.value) return;
 
   messages.value.push({ role: "user", content: text });
   inputText.value = "";
-  if (inputRef.value) { inputRef.value.style.height = "auto"; }
+  if (inputRef.value) {
+    inputRef.value.style.height = "auto";
+  }
   isLoading.value = true;
+  abortController = new AbortController();
   scrollToBottom();
 
-  // 模拟延迟
-  await new Promise((r) => setTimeout(r, 800 + Math.random() * 1200));
+  // 构建发给 API 的消息（只发 user/assistant 历史）
+  const apiMessages: APIChatMessage[] = messages.value.map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.role === "user" ? m.content : "", // assistant 的 html 不发回去，避免干扰
+  })).filter(m => m.content);
 
-  const reply = mockReplies[text] || getDefaultReply(text);
-  messages.value.push({ role: "assistant", content: reply });
-  isLoading.value = false;
-  scrollToBottom();
+  // 添加 assistant 占位
+  const assistantIdx = messages.value.length;
+  messages.value.push({ role: "assistant", content: "" });
+
+  let rawContent = "";
+
+  await streamChat(
+    apiMessages,
+    // onChunk：逐步追加内容
+    (chunk: string) => {
+      rawContent += chunk;
+      messages.value[assistantIdx].content = markdownToHtml(rawContent);
+      scrollToBottom();
+    },
+    // onDone
+    () => {
+      messages.value[assistantIdx].content = markdownToHtml(rawContent);
+      isLoading.value = false;
+      abortController = null;
+      scrollToBottom();
+    },
+    // onError
+    (err: Error) => {
+      messages.value[assistantIdx].content = `<p style="color: #e53e3e;">请求失败：${err.message}</p><p>请检查 <code>src/api/ai-chat.ts</code> 中的 API Key 配置是否正确。</p>`;
+      isLoading.value = false;
+      abortController = null;
+      scrollToBottom();
+    },
+    abortController.signal,
+  );
 }
 </script>
 
@@ -350,9 +448,22 @@ async function handleSend() {
 
 .ai-msg-text :deep(p) { margin: 0 0 8px; }
 .ai-msg-text :deep(p:last-child) { margin: 0; }
+.ai-msg-text :deep(h1),
+.ai-msg-text :deep(h2),
+.ai-msg-text :deep(h3),
+.ai-msg-text :deep(h4),
+.ai-msg-text :deep(h5) { margin: 16px 0 8px; color: var(--el-text-color-primary); }
+.ai-msg-text :deep(h1) { font-size: 20px; }
+.ai-msg-text :deep(h2) { font-size: 18px; }
+.ai-msg-text :deep(h3) { font-size: 16px; font-weight: 700; }
+.ai-msg-text :deep(h4) { font-size: 15px; font-weight: 600; }
+.ai-msg-text :deep(h5) { font-size: 14px; font-weight: 600; }
 .ai-msg-text :deep(ul) { padding-left: 18px; margin: 8px 0; }
 .ai-msg-text :deep(li) { margin: 4px 0; }
 .ai-msg-text :deep(strong) { color: var(--el-color-primary); font-weight: 600; }
+.ai-msg-text :deep(.katex-display) { display: block; margin: 12px 0; text-align: center; overflow-x: auto; }
+.ai-msg-text :deep(.katex) { font-size: 1.05em; }
+.ai-msg-text :deep(.latex-error) { color: #e53e3e; background: rgba(229, 62, 62, 0.06); padding: 2px 6px; border-radius: 4px; }
 
 .ai-msg-actions {
   display: flex;
@@ -471,6 +582,33 @@ async function handleSend() {
 
 .ai-send-btn.active:hover {
   transform: scale(1.05);
+}
+
+.ai-stop-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #e53e3e, #f56565);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(229, 62, 62, 0.25);
+  animation: pulseStop 1.5s ease-in-out infinite;
+}
+
+.ai-stop-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #c53030, #e53e3e);
+}
+
+@keyframes pulseStop {
+  0%, 100% { box-shadow: 0 4px 14px rgba(229, 62, 62, 0.25); }
+  50% { box-shadow: 0 4px 20px rgba(229, 62, 62, 0.4); }
 }
 
 .ai-input-hint {
