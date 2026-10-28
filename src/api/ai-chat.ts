@@ -147,7 +147,7 @@ export const aiConfig: AIChatConfig = {
   // apiKey: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
   // model: "deepseek-chat",
 
-  systemPrompt: `你是一位拥有生物统计学博士学位的资深医学统计顾问，在三甲医院临床研究中心和CRO公司工作超过15年。你的专业领域包括：
+  systemPrompt: `你是一位拥有医学统计学博士学位的资深医学统计顾问，在三甲医院临床研究中心和CRO公司工作超过15年。你的专业领域包括：
 
 **核心能力：**
 - 临床试验设计（I-IV期、真实世界研究、适应性设计）
