@@ -7,8 +7,8 @@ import { ApiCodeEnum } from "@/enums/api";
 import { AuthStorage, redirectToLogin } from "@/utils/auth";
 import type { HttpResponse } from "@/types/api/common";
 
-/** Token 在请求头中的字段名（与后端约定） */
-const TOKEN_HEADER = "sn-score-token";
+/** Token 在请求头中的字段名（与后端约定，可通过环境变量覆盖） */
+const TOKEN_HEADER = import.meta.env.VITE_APP_TOKEN_HEADER || "Authorization";
 
 // HTTP 请求实例
 const http = axios.create({

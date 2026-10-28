@@ -54,53 +54,9 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   // ============================================
-  // 业务路由（isRemoteRoute=false 时随 constantRoutes 一起加载）
+  // 业务路由在此处按需添加（isRemoteRoute=false 时随 constantRoutes 一起加载；
+  // isRemoteRoute=true 时由后端菜单动态生成）
   // ============================================
-  {
-    path: "/sample-calc",
-    component: Layout,
-    redirect: "/sample-calc/two-means",
-    name: "SampleCalc",
-    meta: { title: "样本量计算", icon: "el-icon-DataAnalysis", alwaysShow: true },
-    children: [
-      {
-        path: "two-means",
-        component: () => import("@/views/sample-calc/two-means.vue"),
-        name: "TwoMeans",
-        meta: { title: "两独立样本均值比较", keepAlive: true },
-      },
-      {
-        path: "two-proportions",
-        component: () => import("@/views/sample-calc/two-proportions.vue"),
-        name: "TwoProportions",
-        meta: { title: "两独立样本率比较", keepAlive: true },
-      },
-      {
-        path: "logrank",
-        component: () => import("@/views/sample-calc/logrank.vue"),
-        name: "LogRank",
-        meta: { title: "生存分析LogRank检验", keepAlive: true },
-      },
-      {
-        path: "non-inferiority",
-        component: () => import("@/views/sample-calc/non-inferiority.vue"),
-        name: "NonInferiority",
-        meta: { title: "非劣效性设计两样本率", keepAlive: true },
-      },
-      {
-        path: "diagnostic",
-        component: () => import("@/views/sample-calc/diagnostic.vue"),
-        name: "Diagnostic",
-        meta: { title: "诊断试验灵敏度与特异度", keepAlive: true },
-      },
-      {
-        path: "paired",
-        component: () => import("@/views/sample-calc/paired.vue"),
-        name: "Paired",
-        meta: { title: "配对设计均数/率", keepAlive: true },
-      },
-    ],
-  },
 ];
 
 /**

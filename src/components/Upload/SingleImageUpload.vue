@@ -152,7 +152,7 @@ function handleUpload(options: UploadRequestOptions) {
  * 预览图片
  */
 function handlePreview() {
-  console.log("预览图片,停止冒泡");
+  // 预览图片，阻止事件冒泡
 }
 
 /**
@@ -176,7 +176,6 @@ const onSuccess = (fileInfo: FileInfo) => {
  * 上传失败回调
  */
 const onError = (error: any) => {
-  console.log("onError");
   ElMessage.error("上传失败: " + error.message);
 };
 </script>

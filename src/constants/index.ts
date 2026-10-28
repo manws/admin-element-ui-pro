@@ -28,6 +28,7 @@ export const ROLE_ROOT = "ROOT";
 export const STORAGE_KEYS = {
   // ===== 认证相关 =====
   ACCESS_TOKEN: `${APP_PREFIX}:auth:access_token`,
+  USER_INFO: `${APP_PREFIX}:auth:user_info`,
 
   // ===== UI 设置 =====
   SHOW_TAGS_VIEW: `${APP_PREFIX}:ui:show_tags_view`,

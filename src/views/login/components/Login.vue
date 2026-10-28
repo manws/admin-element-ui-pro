@@ -49,7 +49,7 @@ import type { FormInstance } from "element-plus";
 import type { LoginRequest } from "@/types/api/auth";
 import router from "@/router";
 import { useUserStore } from "@/store";
-import md5 from "js-md5";
+import { md5 } from "js-md5";
 
 const { t } = useI18n();
 const userStore = useUserStore();
@@ -101,7 +101,8 @@ async function handleLoginSubmit() {
   loading.value = true;
   try {
     const loginOn = Math.floor(Date.now() / 1000);
-    const sign = `userCode=${loginFormData.value.userCode}&&userPwd=${loginFormData.value.userPwd}&&loginOn=${loginOn}&&key=xhedc_jiangbo_wangshuang_123!@#`;
+    const signKey = import.meta.env.VITE_APP_SIGN_KEY ?? "";
+    const sign = `userCode=${loginFormData.value.userCode}&&userPwd=${loginFormData.value.userPwd}&&loginOn=${loginOn}&&key=${signKey}`;
 
     const param: LoginRequest = {
       userCode: loginFormData.value.userCode,

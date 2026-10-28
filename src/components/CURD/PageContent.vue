@@ -602,7 +602,7 @@ function handleExports() {
           (buffer) => {
             saveXlsx(buffer, filename as string);
           },
-          (error) => console.log(error)
+          (error) => ElMessage.error("导出失败: " + (error?.message ?? error))
         );
       });
     } else {
@@ -616,7 +616,7 @@ function handleExports() {
       (buffer) => {
         saveXlsx(buffer, filename as string);
       },
-      (error) => console.log(error)
+      (error) => ElMessage.error("导出失败: " + (error?.message ?? error))
     );
   }
 }
@@ -750,7 +750,7 @@ function handleImports() {
             handleRefresh(true);
           });
         },
-        (error) => console.log(error)
+        (error) => ElMessage.error("导入失败: " + (error?.message ?? error))
       );
     } else {
       ElMessage.error("读取文件失败");

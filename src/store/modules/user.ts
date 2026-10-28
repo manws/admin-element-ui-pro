@@ -4,15 +4,15 @@ import AuthAPI from "@/api/auth";
 import type { LoginRequest, UserInfo } from "@/types/api/auth";
 
 import { AuthStorage } from "@/utils/auth";
+import { Storage } from "@/utils/storage";
+import { STORAGE_KEYS } from "@/constants";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { useTagsViewStore } from "@/store";
 
 export const useUserStore = defineStore("user", () => {
   // 用户信息
   const userInfo = ref<UserInfo>(
-    localStorage.getItem("User")
-      ? JSON.parse(localStorage.getItem("User")!)
-      : ({} as UserInfo),
+    Storage.get<UserInfo>(STORAGE_KEYS.USER_INFO, {} as UserInfo),
   );
 
   /**
@@ -20,14 +20,13 @@ export const useUserStore = defineStore("user", () => {
    */
   async function login(loginRequest: LoginRequest): Promise<UserInfo> {
     const response = await AuthAPI.login(loginRequest);
-    console.log("[store-user]", JSON.stringify(response));
     const { code, message, result } = response.data;
 
     if (code === 200) {
       const user = result?.userInfo;
       if (user) {
         userInfo.value = user;
-        localStorage.setItem("User", JSON.stringify(user));
+        Storage.set(STORAGE_KEYS.USER_INFO, user);
         return user;
       }
       throw new Error("登录失败：未获取到用户信息");
@@ -39,11 +38,10 @@ export const useUserStore = defineStore("user", () => {
    * 获取用户信息（从本地缓存读取）
    */
   function getUserInfo(): UserInfo {
-    const cached = localStorage.getItem("User");
+    const cached = Storage.get<UserInfo | null>(STORAGE_KEYS.USER_INFO, null);
     if (cached) {
-      const data = JSON.parse(cached);
-      Object.assign(userInfo.value, data);
-      return data;
+      Object.assign(userInfo.value, cached);
+      return cached;
     }
     return userInfo.value;
   }
@@ -75,7 +73,7 @@ export const useUserStore = defineStore("user", () => {
   function resetUserState(): void {
     AuthStorage.clearAuth();
     userInfo.value = {} as UserInfo;
-    localStorage.removeItem("User");
+    Storage.remove(STORAGE_KEYS.USER_INFO);
   }
 
   return {

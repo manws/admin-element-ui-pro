@@ -26,10 +26,16 @@ export interface UserInfo {
   userCode: string;
   /** 用户名称 */
   userName: string;
+  /** 用户昵称 */
+  nickname?: string;
   /** 手机号 */
   phone: string;
   /** 邮箱 */
   email: string;
   /** 头像 */
   avatar?: string;
+  /** 角色标识集合 */
+  roles?: string[];
+  /** 按钮权限标识集合 */
+  perms?: string[];
 }
