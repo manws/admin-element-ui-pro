@@ -1,77 +1,91 @@
 <template>
-  <div class="auth-panel-form">
-    <h3 class="auth-panel-form__title" text-center>
-      {{ verifyStep === 1 ? t("login.login") : "双因素认证" }}
-    </h3>
-
+  <div class="login-form">
     <!-- 第一步：账号密码 -->
-    <el-form
-      v-if="verifyStep === 1"
-      ref="loginFormRef"
-      :model="loginFormData"
-      :rules="loginRules"
-      size="large"
-      :validate-on-rule-change="false"
-    >
-      <el-form-item prop="userCode">
-        <el-input v-model.trim="loginFormData.userCode" :placeholder="t('login.username')">
-          <template #prefix>
-            <el-icon><User /></el-icon>
-          </template>
-        </el-input>
-      </el-form-item>
+    <template v-if="verifyStep === 1">
+      <div class="login-form__heading">
+        <h2 class="login-form__title">{{ t("login.login") }}</h2>
+        <p class="login-form__subtitle">{{ t("login.subtitle") }}</p>
+      </div>
 
-      <el-tooltip :visible="isCapsLock" :content="t('login.capsLock')" placement="right">
-        <el-form-item prop="userPwd">
-          <el-input
-            v-model.trim="loginFormData.userPwd"
-            :placeholder="t('login.password')"
-            type="password"
-            show-password
-            @keyup="checkCapsLock"
-            @keyup.enter="handleLoginSubmit"
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
-      </el-tooltip>
+      <el-form
+        ref="loginFormRef"
+        class="login-form__body"
+        :model="loginFormData"
+        :rules="loginRules"
+        size="large"
+        :validate-on-rule-change="false"
+      >
+        <div class="field-group">
+          <label class="field-label" for="login-user-code">{{ t("login.account") }}</label>
+          <el-form-item class="field-control" prop="userCode">
+            <el-input
+              id="login-user-code"
+              v-model.trim="loginFormData.userCode"
+              :placeholder="t('login.accountPlaceholder')"
+              autocomplete="username"
+              @keyup.enter="handleLoginSubmit"
+            />
+          </el-form-item>
+        </div>
 
-      <el-form-item>
-        <el-button :loading="loading" type="primary" class="w-full" @click="handleLoginSubmit">
+        <div class="field-group">
+          <label class="field-label" for="login-user-pwd">{{ t("login.password") }}</label>
+          <el-tooltip :visible="isCapsLock" :content="t('login.capsLock')" placement="right">
+            <el-form-item class="field-control" prop="userPwd">
+              <el-input
+                id="login-user-pwd"
+                v-model.trim="loginFormData.userPwd"
+                :placeholder="t('login.passwordPlaceholder')"
+                type="password"
+                show-password
+                autocomplete="current-password"
+                @keyup="checkCapsLock"
+                @keyup.enter="handleLoginSubmit"
+              />
+            </el-form-item>
+          </el-tooltip>
+        </div>
+
+        <el-button :loading="loading" type="primary" @click="handleLoginSubmit">
           {{ t("login.login") }}
         </el-button>
-      </el-form-item>
-    </el-form>
+
+        <p class="login-form__help">{{ t("login.help") }}</p>
+      </el-form>
+    </template>
 
     <!-- 第二步：双因素验证 -->
-    <div v-else class="verify-step">
-      <el-alert type="info" :closable="false" show-icon class="mb-3" title="已开启双因素认证">
-        <p class="m-0 text-xs">
+    <template v-else>
+      <div class="login-form__heading">
+        <h2 class="login-form__title">{{ t("login.twoFactor") }}</h2>
+        <p class="login-form__subtitle">
           验证码已发送至 {{ maskedPhone }}（Mock 环境验证码：<b>123456</b>）
         </p>
-      </el-alert>
-
-      <el-input
-        v-model.trim="verifyCode"
-        size="large"
-        maxlength="6"
-        placeholder="请输入 6 位验证码"
-        @keyup.enter="handleVerify"
-      >
-        <template #prefix>
-          <el-icon><Key /></el-icon>
-        </template>
-      </el-input>
-
-      <div class="flex gap-2 mt-4">
-        <el-button class="flex-1" @click="backToStep1">返回</el-button>
-        <el-button :loading="loading" type="primary" class="flex-1" @click="handleVerify">
-          验证并登录
-        </el-button>
       </div>
-    </div>
+
+      <div class="login-form__body">
+        <div class="field-group">
+          <label class="field-label" for="login-verify-code">{{ t("login.verifyCode") }}</label>
+          <el-input
+            id="login-verify-code"
+            v-model.trim="verifyCode"
+            maxlength="6"
+            :placeholder="t('login.verifyCodePlaceholder')"
+            autocomplete="one-time-code"
+            @keyup.enter="handleVerify"
+          />
+        </div>
+
+        <div class="login-form__actions">
+          <el-button class="login-form__ghost" @click="backToStep1">
+            {{ t("login.back") }}
+          </el-button>
+          <el-button :loading="loading" type="primary" @click="handleVerify">
+            {{ t("login.verifyAndLogin") }}
+          </el-button>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -111,9 +125,7 @@ const maskedPhone = computed(() => {
 
 const loginRules = computed(() => {
   return {
-    userCode: [
-      { required: true, trigger: "blur", message: t("login.message.username.required") },
-    ],
+    userCode: [{ required: true, trigger: "blur", message: t("login.message.username.required") }],
     userPwd: [
       { required: true, trigger: "blur", message: t("login.message.password.required") },
       { min: 6, message: t("login.message.password.min"), trigger: "blur" },
@@ -207,21 +219,104 @@ function toOtherForm(type: "register" | "resetPwd") {
 </script>
 
 <style lang="scss" scoped>
-.auth-panel-form {
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.auth-panel-form__title {
-  margin: 0 0 0.5rem;
-  font-size: 1.125rem;
+.login-form__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.login-form__title {
+  width: 100%;
+  margin: 0;
+  font-size: 24px;
   font-weight: 600;
+  line-height: normal;
+  color: var(--brand-text);
+  text-align: left;
 }
 
-.verify-step {
-  .el-input {
-    width: 100%;
+.login-form__subtitle {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-text-sub);
+  text-align: left;
+
+  b {
+    font-weight: 600;
+    color: var(--brand-text);
   }
+}
+
+.login-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.login-form__help {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--brand-text-sub);
+  text-align: center;
+}
+
+.login-form__actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.login-form__actions .login-form__ghost {
+  color: var(--brand-text);
+  background-color: var(--brand-mint);
+
+  &:hover,
+  &:focus {
+    color: var(--brand-text);
+    background-color: var(--brand-border);
+  }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.field-label {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+  color: var(--brand-text);
+  text-align: left;
+}
+
+/* 标签与输入框已由 .field-group 的 gap 控制间距 */
+.field-control {
+  width: 100%;
+  margin-bottom: 0;
 }
 </style>

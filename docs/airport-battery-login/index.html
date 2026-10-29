@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>机场电池监测平台 · 登录</title>
+<style>
+  :root {
+    --primary: #087f5b;
+    --primary-dark: #066045;
+    --mint: #eaf6f0;
+    --border: #d3e8dd;
+    --text-primary: #174d3a;
+    --text-secondary: #426454;
+    --text-on-primary: #ffffff;
+    --surface: #ffffff;
+    --page: #ffffff;
+    --radius-sm: 11px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --space-2: 8px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-12: 48px;
+    --font: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #f5f5f3;
+    font-family: var(--font);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .viewport {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .screen {
+    position: relative;
+    width: 1600px;
+    height: 1000px;
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    background: var(--page);
+    overflow: hidden;
+    transform-origin: center center;
+  }
+
+  /* 左侧：机场地勤视觉区 */
+  .visual-panel {
+    width: 896px;
+    flex: none;
+    padding: var(--space-12);
+    background: var(--mint);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  .product-name {
+    width: 100%;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: normal;
+    color: var(--text-primary);
+    text-align: left;
+  }
+
+  .visual-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    align-items: flex-start;
+  }
+
+  .visual-headline {
+    width: 100%;
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: normal;
+    color: var(--text-primary);
+    text-align: left;
+  }
+
+  .visual-desc {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .scene-photo {
+    width: 100%;
+    height: 560px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--border);
+  }
+
+  .scene-photo img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .photo-caption {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .product-footer {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  /* 右侧：白色凭据登录区 */
+  .credential-panel {
+    flex: 1;
+    padding: 96px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .login-heading {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+
+  .login-title {
+    width: 100%;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: normal;
+    color: var(--text-primary);
+    text-align: left;
+  }
+
+  .login-subtitle {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .field-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+
+  .field-label {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: normal;
+    color: var(--text-primary);
+    text-align: left;
+  }
+
+  .field-input {
+    width: 100%;
+    height: 52px;
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+
+  .field-input::placeholder { color: var(--text-secondary); }
+
+  .field-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(8, 127, 91, .12);
+  }
+
+  .login-submit {
+    width: 100%;
+    height: 52px;
+    padding: var(--space-4) 60px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    color: var(--text-on-primary);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s ease, transform .12s ease;
+  }
+
+  .login-submit:hover { background: var(--primary-dark); }
+  .login-submit:active { transform: translateY(1px); }
+
+  .login-help {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class="viewport">
+    <main class="screen">
+      <section class="visual-panel">
+        <h1 class="product-name">机场电池监测平台</h1>
+        <div class="visual-group">
+          <p class="visual-headline">让每一次地勤作业，电力可见</p>
+          <p class="visual-desc">面向机场电动地勤设备的电池监测与能源管理</p>
+          <div class="scene-photo">
+            <img src="assets/images/275_16-20261030_000325649.png" alt="机场机坪与电动地勤充电场景">
+          </div>
+          <p class="photo-caption">从机坪到充电位，连接每一段地勤用电场景。</p>
+        </div>
+        <p class="product-footer">机场地勤设备 · 电池监测 · 能源管理</p>
+      </section>
+
+      <section class="credential-panel">
+        <form class="login-form" onsubmit="return false;">
+          <div class="login-heading">
+            <h2 class="login-title">登录</h2>
+            <p class="login-subtitle">使用您的账号进入机场电池监测平台</p>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="account">账号</label>
+            <input class="field-input" id="account" type="text" placeholder="请输入账号" autocomplete="username">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="password">密码</label>
+            <input class="field-input" id="password" type="password" placeholder="请输入密码" autocomplete="current-password">
+          </div>
+
+          <button class="login-submit" type="submit">登录</button>
+          <p class="login-help">联系管理员获取账号</p>
+        </form>
+      </section>
+    </main>
+  </div>
+
+<script>
+  (function () {
+    var screen = document.querySelector('.screen');
+    var DESIGN_W = 1600;
+    var DESIGN_H = 1000;
+
+    function scaleScreen() {
+      var scale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+      screen.style.transform = 'scale(' + scale + ')';
+    }
+
+    scaleScreen();
+    window.addEventListener('resize', scaleScreen);
+  })();
+</script>
+</body>
+</html>

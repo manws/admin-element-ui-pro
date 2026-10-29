@@ -11,7 +11,17 @@
     "auto": "跟随系统",
     "username": "用户名",
     "password": "密码",
-    "login": "登 录",
+    "login": "登录",
+    "account": "账号",
+    "accountPlaceholder": "请输入账号",
+    "passwordPlaceholder": "请输入密码",
+    "subtitle": "使用您的账号进入机场电池监测平台",
+    "help": "联系管理员获取账号",
+    "twoFactor": "双因素认证",
+    "verifyCode": "验证码",
+    "verifyCodePlaceholder": "请输入 6 位验证码",
+    "back": "返回",
+    "verifyAndLogin": "验证并登录",
     "captchaCode": "验证码",
     "capsLock": "大写锁定已打开",
     "rememberMe": "记住我",
@@ -39,7 +49,14 @@
     "haveAccount": "已有账号？",
     "noAccount": "您没有账号？",
     "quickFill": "快速填写",
-    "reg": "注 册"
+    "reg": "注 册",
+    "brand": {
+      "name": "机场电池监测平台",
+      "headline": "让每一次地勤作业，电力可见",
+      "description": "面向机场电动地勤设备的电池监测与能源管理",
+      "caption": "从机坪到充电位，连接每一段地勤用电场景。",
+      "footer": "机场地勤设备 · 电池监测 · 能源管理"
+    }
   },
   "navbar": {
     "dashboard": "首页",

@@ -12,6 +12,16 @@
     "username": "Username",
     "password": "Password",
     "login": "Login",
+    "account": "Account",
+    "accountPlaceholder": "Please enter your account",
+    "passwordPlaceholder": "Please enter your password",
+    "subtitle": "Sign in with your account to access the Airport Battery Monitoring Platform",
+    "help": "Contact your administrator for an account",
+    "twoFactor": "Two-Factor Authentication",
+    "verifyCode": "Verification Code",
+    "verifyCodePlaceholder": "Please enter the 6-digit code",
+    "back": "Back",
+    "verifyAndLogin": "Verify & Sign In",
     "captchaCode": "Verify Code",
     "capsLock": "Caps Lock is On",
     "rememberMe": "Remember Me",
@@ -39,7 +49,14 @@
     "haveAccount": "Already have an account?",
     "noAccount": "Don't have an account?",
     "quickFill": "Quick fill",
-    "reg": "Register"
+    "reg": "Register",
+    "brand": {
+      "name": "Airport Battery Monitoring Platform",
+      "headline": "Make the power of every ground operation visible",
+      "description": "Battery monitoring and energy management for airport electric ground support equipment",
+      "caption": "From the apron to the charging bay, covering every ground power scenario.",
+      "footer": "Ground Support Equipment · Battery Monitoring · Energy Management"
+    }
   },
   "navbar": {
     "dashboard": "Dashboard",
