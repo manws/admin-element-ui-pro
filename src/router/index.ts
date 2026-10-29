@@ -365,6 +365,37 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
+  // 模型与量表
+  {
+    path: "/model-scale",
+    component: Layout,
+    redirect: "/model-scale/model-info",
+    name: "ModelScale",
+    meta: { title: "模型与量表", icon: "el-icon-Collection" },
+    children: [
+      {
+        path: "model-info",
+        component: () => import("@/views/model-scale/model-info.vue"),
+        name: "ModelInfo",
+        meta: { title: "模型信息", keepAlive: true },
+      },
+      {
+        // 模型评估详情页：不在侧边栏显示，由模型信息页点击卡片进入，
+        // activeMenu 保证侧边栏仍高亮「模型信息」
+        path: "model-info/:code",
+        component: () => import("@/views/model-scale/model-evaluation.vue"),
+        name: "ModelEvaluation",
+        meta: { title: "模型评估", hidden: true, activeMenu: "/model-scale/model-info" },
+      },
+      {
+        path: "scale-info",
+        component: () => import("@/views/model-scale/scale-info.vue"),
+        name: "ScaleInfo",
+        meta: { title: "量表信息", keepAlive: true },
+      },
+    ],
+  },
+
   // 医学统计AI
   {
     path: "/medical-stats-ai",

@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from "vue-router";
 import NProgress from "@/plugins/nprogress";
 import router from "@/router";
+import { appConfig } from "@/settings";
 import { usePermissionStore, useUserStore } from "@/store";
 
 /**
@@ -76,7 +77,13 @@ export function setupPermissionGuard() {
     }
   });
 
-  router.afterEach(() => {
+  router.afterEach((to) => {
     NProgress.done();
+
+    // 浏览器标签页标题：基础标题 + 当前路由名
+    const base = (appConfig.title as string) || "宣海科技";
+    const routeTitle = (to.meta.title as string) || "";
+    document.title =
+      routeTitle && routeTitle !== "dashboard" ? `${base}-${routeTitle}` : base;
   });
 }

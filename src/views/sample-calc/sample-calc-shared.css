@@ -63,6 +63,8 @@
 .sc-mc-green { background: linear-gradient(135deg, #16a34a, #4ade80); box-shadow: 0 6px 20px rgba(22,163,74,0.22); }
 .sc-mc-amber { background: linear-gradient(135deg, #e67e22, #f0b44a); box-shadow: 0 6px 20px rgba(230,126,34,0.22); }
 .sc-mc-neutral { background: linear-gradient(135deg, #5b6178, #8b91a8); box-shadow: 0 6px 20px rgba(91,97,120,0.22); }
+/* 高风险：新增色，供模型评估等需要"危险"语义的指标卡使用 */
+.sc-mc-danger { background: linear-gradient(135deg, #dc2626, #f87171); box-shadow: 0 6px 20px rgba(220,38,38,0.24); }
 
 /* ===== 参数标签条（tag 行的节律）===== */
 .sc-tag-row {
