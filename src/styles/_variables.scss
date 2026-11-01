@@ -78,6 +78,15 @@ html.sidebar-color-blue:not(.dark) {
   --shell-slash: #a9b4c5;
   --shell-tabs: #edf1f6;
   --shell-tab-active: #dfeafe;
+
+  // 内容页（总览落地后）。壳层导航不用这些色。
+  --shell-line: #e6ebf2;
+  --shell-groove: #e7edf5;
+  --shell-carbon: #0f6b56;
+  --shell-fault: #c2410c;
+  --shell-warn: #a16207;
+  --shell-apron: #c4a035;
+  --shell-readout: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
 }
 
 // 暗黑主题

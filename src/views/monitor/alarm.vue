@@ -1,22 +1,28 @@
 <template>
-  <div class="alarm-page">
-    <section class="metric-row">
-      <article class="metric-card">
-        <p class="metric-label">告警次数</p>
-        <p class="metric-value">{{ alarmStats.total }}</p>
-      </article>
-      <article class="metric-card">
-        <p class="metric-label">严重 / 重点车辆</p>
-        <p class="metric-value is-accent">{{ alarmStats.severe }}</p>
-      </article>
-      <article class="metric-card">
-        <p class="metric-label">重要</p>
-        <p class="metric-value">{{ alarmStats.important }}</p>
-      </article>
-      <article class="metric-card is-soft">
-        <p class="metric-label">一般</p>
-        <p class="metric-value">{{ alarmStats.normal }}</p>
-      </article>
+  <div class="alarm-page board-page">
+    <section class="apron" aria-label="告警级别分布">
+      <header class="apron-head">
+        <div>
+          <p class="kicker">告警</p>
+          <h2>级别分布</h2>
+        </div>
+        <p class="roster">
+          <span class="kicker">告警次数</span>
+          <span class="readout">{{ alarmStats.total.toLocaleString() }}</span>
+        </p>
+      </header>
+      <div class="tracks">
+        <div v-for="item in alarmTracks" :key="item.key" class="track" :class="[item.tone, { 'has-value': item.value > 0 }]">
+          <div class="track-head">
+            <span class="track-label">{{ item.label }}</span>
+            <span class="track-value">{{ item.value.toLocaleString() }}</span>
+          </div>
+          <div class="track-bar" aria-hidden="true">
+            <span class="track-fill" :style="{ width: `${item.width}%` }" />
+          </div>
+          <p class="track-note">占告警 {{ item.shareLabel }}</p>
+        </div>
+      </div>
     </section>
 
     <section class="panel">
@@ -56,10 +62,10 @@
             <el-table-column prop="faultCode" label="故障码" width="90" />
             <el-table-column prop="faultReason" label="故障原因" min-width="160" />
             <el-table-column prop="alarmWay" label="告警方式" width="110" />
-            <el-table-column label="级别" width="140">
+            <el-table-column label="级别" width="160">
               <template #default="{ row }">
-                {{ levelLabel(row.level) }}
-                <span v-if="row.level === 1" class="key-mark">重点车辆告警</span>
+                <span class="lamp" :class="levelTone(row.level)">{{ levelLabel(row.level) }}</span>
+                <span v-if="row.level === 1" class="key-mark">重点车辆</span>
               </template>
             </el-table-column>
             <el-table-column prop="faultDate" label="故障日期" width="110" />
@@ -161,7 +167,7 @@
 <script setup lang="ts">
 defineOptions({ name: "MonitorAlarm" });
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import MonitorAPI from "@/api/monitor";
 import { FAULT_TYPES } from "@/constants/monitor";
@@ -208,6 +214,32 @@ const queryParams = ref({
 function levelLabel(level: number) {
   return levelConfig.value.find((item) => item.value === level)?.label ?? String(level);
 }
+
+function levelTone(level: number) {
+  if (level === 1) return "is-fault";
+  if (level === 2) return "is-warn";
+  return "";
+}
+
+const alarmTracks = computed(() => {
+  const total = alarmStats.value.total;
+  const build = (key: string, label: string, value: number, tone: string) => {
+    const share = total ? Math.min(100, (value / total) * 100) : 0;
+    return {
+      key,
+      label,
+      value,
+      tone,
+      width: share > 0 ? Math.max(share, 2) : 0,
+      shareLabel: share > 0 && share < 1 ? "<1%" : `${Math.round(share)}%`,
+    };
+  };
+  return [
+    build("severe", "严重", alarmStats.value.severe, "is-fault"),
+    build("important", "重要", alarmStats.value.important, "is-warn"),
+    build("normal", "一般", alarmStats.value.normal, "is-ink"),
+  ];
+});
 
 async function loadAlarms() {
   loading.value = true;
@@ -282,57 +314,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.alarm-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-}
-
-.metric-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.metric-card,
-.panel {
-  background: #fff;
-  border-radius: 16px;
-}
-
-.metric-card {
-  height: 100px;
-  padding: 18px;
-
-  &.is-soft {
-    background: #eaf1fe;
-  }
-}
-
-.metric-label {
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: #66758b;
-}
-
-.metric-value {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 34px;
-  letter-spacing: 0;
-  color: #1b2b43;
-
-  &.is-accent {
-    color: #2563eb;
-  }
-}
-
-.panel {
-  padding: 24px;
-}
-
 .query-form {
   margin-bottom: 8px;
 }
@@ -340,7 +321,7 @@ onMounted(async () => {
 .hint {
   margin: 0 0 16px;
   font-size: 13px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 }
 
 .mb-16 {
@@ -353,18 +334,10 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
-.text-btn {
-  padding: 0;
-  font-size: 13px;
-  color: #2563eb;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-}
-
 .key-mark {
   margin-left: 8px;
-  color: #e3828b;
+  font-size: 12px;
+  color: var(--shell-fault, #c2410c);
 }
 
 .raw-message {
@@ -372,8 +345,9 @@ onMounted(async () => {
   margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: #1b2b43;
-  background: #f4f6fa;
+  color: var(--shell-text, #1b2b43);
+  word-break: break-all;
+  background: var(--shell-bg, #f4f6fa);
   border-radius: 16px;
 }
 
@@ -384,6 +358,6 @@ onMounted(async () => {
   align-items: center;
   margin-bottom: 12px;
   font-size: 13px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 }
 </style>

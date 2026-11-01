@@ -13,6 +13,7 @@
 @use "./variables" as *;
 @use "./vendors";
 @use "./layouts";
+@use "@/styles/_board.scss";
 
 // ============================================
 // 2. 基础重置

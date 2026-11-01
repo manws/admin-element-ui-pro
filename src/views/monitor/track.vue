@@ -1,5 +1,5 @@
 <template>
-  <div class="track-page">
+  <div class="track-page board-page">
     <section class="panel filter-panel">
       <span>选择车辆</span>
       <el-select v-model="vehicleId" style="width: 240px" filterable @change="loadDetail">
@@ -18,22 +18,25 @@
 
     <section class="chart-row">
       <article class="panel">
+        <p class="kicker">轨迹</p>
         <h3>历史轨迹</h3>
         <div class="legend">
-          <span><i class="dot is-online" />正常行驶</span>
-          <span><i class="dot is-charging" />充电段</span>
-          <span><i class="dot is-alarm" />告警段</span>
-          <span><i class="dot is-offline" />离线断点</span>
+          <span><i class="status-dot is-online" />正常行驶</span>
+          <span><i class="status-dot is-charging" />充电段</span>
+          <span><i class="status-dot is-alarm" />告警段</span>
+          <span><i class="status-dot is-offline" />离线断点</span>
         </div>
         <ECharts :options="trackOption" height="320px" />
       </article>
       <article class="panel">
+        <p class="kicker">电池</p>
         <h3 class="is-sub">电池曲线</h3>
         <ECharts :options="batteryOption" height="360px" />
       </article>
     </section>
 
     <section class="panel">
+      <p class="kicker">回放</p>
       <h3>回放控制</h3>
       <div class="player">
         <el-button type="primary" @click="togglePlay">{{ playing ? "暂停" : "播放" }}</el-button>
@@ -200,64 +203,51 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 .track-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
   font-size: 13px;
-  color: #1b2b43;
-}
-
-.panel {
-  padding: 24px;
-  background: #fff;
-  border-radius: 16px;
-
-  h3 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 500;
-
-    &.is-sub {
-      font-size: 14px;
-    }
-  }
-
-  h4 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  p {
-    margin: 0 0 8px;
-    color: #66758b;
-  }
 }
 
 .filter-panel,
 .player {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: center;
 }
 
 .player-slider {
   flex: 1;
+  min-width: 160px;
 }
 
 .chart-row {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 20px;
+}
+
+.panel h3.is-sub {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.panel h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.panel p {
+  margin: 0 0 8px;
+  color: var(--shell-muted, #66758b);
 }
 
 .legend {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 
   span {
     display: inline-flex;
@@ -266,29 +256,17 @@ onMounted(async () => {
   }
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-
-  &.is-online {
-    background: #79bd85;
-  }
-  &.is-charging {
-    background: #6ea4ff;
-  }
-  &.is-alarm {
-    background: #e3828b;
-  }
-  &.is-offline {
-    background: #7e8b9f;
-  }
-}
-
 .link-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   margin-top: 24px;
+}
+
+@media (max-width: 860px) {
+  .chart-row,
+  .link-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

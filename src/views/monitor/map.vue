@@ -1,29 +1,26 @@
 <template>
-  <div class="monitor-page">
+  <div class="monitor-page board-page">
     <section class="metric-row">
-      <article
-        v-for="(item, index) in statPanels"
-        :key="item.label"
-        class="metric-card"
-        :class="{ 'is-soft': index === statPanels.length - 1 }"
-      >
+      <article v-for="item in statPanels" :key="item.label" class="metric">
         <p class="metric-label">{{ item.label }}</p>
         <p class="metric-value" :class="{ 'is-accent': item.accent }">{{ item.value }}</p>
       </article>
     </section>
 
     <section class="chart-row">
-      <article class="chart-card chart-card--scatter">
+      <article class="panel chart-card chart-card--scatter">
+        <p class="kicker">位置</p>
         <h3>全场车辆位置分布</h3>
         <div class="map-legend">
-          <span><i class="dot dot--online" />在线</span>
-          <span><i class="dot dot--charging" />充电中</span>
-          <span><i class="dot dot--alarm" />告警</span>
-          <span><i class="dot dot--offline" />离线</span>
+          <span><i class="status-dot is-online" />在线</span>
+          <span><i class="status-dot is-charging" />充电中</span>
+          <span><i class="status-dot is-alarm" />告警</span>
+          <span><i class="status-dot is-offline" />离线</span>
         </div>
         <ECharts class="chart-fill" :options="mapOption" height="100%" @chart-click="handleVehicleClick" />
       </article>
-      <article class="chart-card chart-card--bar">
+      <article class="panel chart-card chart-card--bar">
+        <p class="kicker">里程</p>
         <h3 class="is-sub">按车辆类型统计行驶里程（万 km）</h3>
         <ECharts :options="categoryMileageOption" height="100%" />
       </article>
@@ -155,54 +152,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.monitor-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-}
-
-.metric-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.metric-card,
-.chart-card {
-  background: #fff;
-  border-radius: 16px;
-}
-
-.metric-card {
-  height: 100px;
-  padding: 18px;
-
-  &.is-soft {
-    background: #eaf1fe;
-  }
-}
-
-.metric-label {
-  margin: 0 0 8px;
-  font-size: 13px;
-  line-height: 20px;
-  color: #66758b;
-}
-
-.metric-value {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 34px;
-  letter-spacing: 0;
-  color: #1b2b43;
-
-  &.is-accent {
-    color: #2563eb;
-  }
-}
-
 .chart-row {
   display: grid;
   grid-template-columns: minmax(0, 630fr) minmax(0, 386fr);
@@ -213,16 +162,13 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   height: 448px;
-  padding: 24px;
 
   h3 {
-    margin: 0 0 8px;
-    font-size: 16px;
-    font-weight: 500;
-    color: #1b2b43;
+    margin-bottom: 8px;
 
     &.is-sub {
       font-size: 14px;
+      font-weight: 500;
     }
   }
 }
@@ -239,7 +185,7 @@ onMounted(async () => {
   gap: 16px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 
   span {
     display: inline-flex;
@@ -248,27 +194,18 @@ onMounted(async () => {
   }
 }
 
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-
-  &--online {
-    background: #79bd85;
-  }
-  &--charging {
-    background: #6ea4ff;
-  }
-  &--alarm {
-    background: #e3828b;
-  }
-  &--offline {
-    background: #7e8b9f;
-  }
-}
-
 .detail-btn {
   width: 100%;
   margin-top: 16px;
+}
+
+@media (max-width: 860px) {
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    height: 360px;
+  }
 }
 </style>

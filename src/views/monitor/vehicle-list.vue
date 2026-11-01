@@ -1,10 +1,29 @@
 <template>
-  <div class="p-4 space-y-4">
-    <div class="fleet-count">
-      已监控 {{ summary.monitored }} 辆
-      <span>在线 {{ summary.online }}</span>
-      <span>离线 {{ summary.offline }}</span>
-    </div>
+  <div class="board-page">
+    <section class="apron" aria-label="监控车辆">
+      <header class="apron-head">
+        <div>
+          <p class="kicker">车辆列表</p>
+          <h2>监控范围</h2>
+        </div>
+        <p class="roster">
+          <span class="kicker">已监控</span>
+          <span class="readout">{{ summary.monitored.toLocaleString() }}</span>
+        </p>
+      </header>
+      <div class="tracks is-two">
+        <div v-for="item in fleetTracks" :key="item.key" class="track" :class="item.tone">
+          <div class="track-head">
+            <span class="track-label">{{ item.label }}</span>
+            <span class="track-value">{{ item.value.toLocaleString() }}</span>
+          </div>
+          <div class="track-bar" aria-hidden="true">
+            <span class="track-fill" :style="{ width: `${item.width}%` }" />
+          </div>
+          <p class="track-note">占监控 {{ item.shareLabel }}</p>
+        </div>
+      </div>
+    </section>
     <PageSearch
       ref="searchRef"
       :search-config="searchConfig"
@@ -13,7 +32,10 @@
     />
     <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
       <template #alarmFlag="{ row }">
-        <span :class="row.alarmFlag ? 'is-alarm' : 'is-ok'">{{ row.alarmFlag ? "告警" : "正常" }}</span>
+        <span class="status-text">
+          <i v-if="row.alarmFlag" class="status-dot is-alarm" />
+          {{ row.alarmFlag ? "告警" : "正常" }}
+        </span>
       </template>
       <template #online="{ row }">
         <span class="status-text">
@@ -34,12 +56,31 @@ defineOptions({ name: "MonitorVehicleList" });
 import usePage from "@/components/CURD/usePage";
 import type { IContentConfig, IOperateData, ISearchConfig } from "@/components/CURD/types";
 import MonitorAPI from "@/api/monitor";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { COMPANIES, ONLINE_STATUS, VEHICLE_BRANDS } from "@/constants/monitor";
 
 const router = useRouter();
 const summary = ref({ monitored: 0, online: 0, offline: 0 });
+
+const fleetTracks = computed(() => {
+  const total = summary.value.monitored;
+  const build = (key: string, label: string, value: number, tone: string) => {
+    const share = total ? Math.min(100, (value / total) * 100) : 0;
+    return {
+      key,
+      label,
+      value,
+      tone,
+      width: share > 0 ? Math.max(share, 2) : 0,
+      shareLabel: share > 0 && share < 1 ? "<1%" : `${Math.round(share)}%`,
+    };
+  };
+  return [
+    build("online", "在线", summary.value.online, "is-charge"),
+    build("offline", "离线", summary.value.offline, "is-ink"),
+  ];
+});
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick } = usePage();
 
@@ -116,44 +157,3 @@ function handleOperateClick(data: IOperateData) {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.fleet-count {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: #66758b;
-
-  span {
-    color: #1b2b43;
-  }
-}
-
-.status-text {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.status-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-
-  &.is-online {
-    background: #79bd85;
-  }
-
-  &.is-offline {
-    background: #7e8b9f;
-  }
-}
-
-.is-alarm {
-  color: #e3828b;
-}
-
-.is-ok {
-  color: #66758b;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="heat-page">
+  <div class="heat-page board-page">
     <section class="panel filter-panel">
       <span class="filter-label">统计周期</span>
       <el-radio-group v-model="period" @change="onPeriodChange">
@@ -22,6 +22,7 @@
     </section>
 
     <section class="panel">
+      <p class="kicker">充电桩</p>
       <h3>全场充电桩使用热力图</h3>
       <ECharts :options="heatmapOption" height="520px" />
     </section>
@@ -67,7 +68,7 @@ const heatmapOption = computed(() => {
       bottom: 0,
       text: ["高", "低"],
       textStyle: { color: "#66758B", fontSize: 12 },
-      inRange: { color: ["#EAF1FE", "#DFEAFE", "#AFC9FF", "#6EA4FF", "#2563EB"] },
+      inRange: { color: ["#E7EDF5", "#C5D7F8", "#7AA4F0", "#3B74E8", "#1B2B43"] },
     },
     series: [{ type: "heatmap", data: heatmapData.value.map((p) => [p.x, p.y, p.value]) }],
   };
@@ -91,26 +92,6 @@ onMounted(loadHeatmap);
 </script>
 
 <style lang="scss" scoped>
-.heat-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-}
-
-.panel {
-  padding: 24px;
-  background: #fff;
-  border-radius: 16px;
-
-  h3 {
-    margin: 0 0 16px;
-    font-size: 16px;
-    font-weight: 500;
-    color: #1b2b43;
-  }
-}
-
 .filter-panel {
   display: flex;
   flex-wrap: wrap;
@@ -121,6 +102,6 @@ onMounted(loadHeatmap);
 .filter-label,
 .filter-hint {
   font-size: 13px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 }
 </style>

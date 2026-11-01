@@ -1,16 +1,21 @@
 <template>
-  <div class="detail-page">
-    <el-card shadow="never">
+  <div class="detail-page board-page">
+    <section class="panel">
       <div class="detail-head">
         <div>
+          <p class="kicker">车辆</p>
           <p class="detail-title">
             {{ detail?.plateNumber }}
             <span class="status-text">
               <i class="status-dot" :class="detail?.online ? 'is-online' : 'is-offline'" />
               {{ detail?.online ? "在线" : "离线" }}
             </span>
-            <span v-if="detail?.alarmFlag" class="status-text is-alarm">告警</span>
-            <span v-if="detail?.charging" class="status-text is-charging">充电中</span>
+            <span v-if="detail?.alarmFlag" class="status-text">
+              <i class="status-dot is-alarm" />告警
+            </span>
+            <span v-if="detail?.charging" class="status-text">
+              <i class="status-dot is-charging" />充电中
+            </span>
           </p>
           <p class="detail-sub">
             {{ detail?.selfNumber }} · {{ detail?.make }} / {{ detail?.brand }} {{ detail?.model }} · {{ detail?.company }}
@@ -38,7 +43,9 @@
             <el-descriptions-item label="出厂时间">{{ detail?.factoryTime }}</el-descriptions-item>
             <el-descriptions-item label="是否监控">{{ detail?.monitorFlag ? "是" : "否" }}</el-descriptions-item>
             <el-descriptions-item label="是否可用">{{ detail?.available ? "是" : "否" }}</el-descriptions-item>
-            <el-descriptions-item label="安全评分">{{ detail?.safetyScore }} 分</el-descriptions-item>
+            <el-descriptions-item label="安全评分">
+              <span class="readout score" :style="{ color: scoreColor }">{{ detail?.safetyScore ?? 0 }}</span>
+            </el-descriptions-item>
           </el-descriptions>
         </el-tab-pane>
 
@@ -99,7 +106,9 @@
             <el-table-column prop="faultTime" label="告警时间" width="180" />
             <el-table-column label="告警等级" width="100">
               <template #default="{ row }">
-                <span :class="{ 'is-alarm': row.level === 1 }">{{ ALARM_LEVEL_MAP[row.level]?.label }}</span>
+                <span class="lamp" :class="row.level === 1 ? 'is-fault' : row.level === 2 ? 'is-warn' : ''">
+                  {{ ALARM_LEVEL_MAP[row.level]?.label }}
+                </span>
               </template>
             </el-table-column>
             <el-table-column prop="content" label="告警内容" />
@@ -131,7 +140,7 @@
           </el-table>
         </el-tab-pane>
       </el-tabs>
-    </el-card>
+    </section>
   </div>
 </template>
 
@@ -149,6 +158,13 @@ const router = useRouter();
 
 const detail = ref<VehicleDetail>();
 const activeTab = ref("base");
+
+const scoreColor = computed(() => {
+  const score = detail.value?.safetyScore ?? 0;
+  if (score >= 90) return "var(--shell-carbon, #0f6b56)";
+  if (score >= 80) return "var(--shell-blue, #2563eb)";
+  return "var(--shell-fault, #c2410c)";
+});
 
 const batteryCurveOption = computed(() => {
   const d = detail.value;
@@ -220,58 +236,33 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.detail-page {
-  padding: 24px;
-}
-
 .detail-head {
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
 .detail-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  color: #1b2b43;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+  color: var(--shell-text, #1b2b43);
 }
 
 .detail-sub {
   margin: 8px 0 0;
   font-size: 13px;
-  color: #66758b;
+  color: var(--shell-muted, #66758b);
 }
 
-.status-text {
-  margin-left: 12px;
-  font-size: 13px;
-  font-weight: 400;
-  color: #66758b;
-}
-
-.status-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
-  border-radius: 50%;
-
-  &.is-online {
-    background: #79bd85;
-  }
-
-  &.is-offline {
-    background: #7e8b9f;
-  }
-}
-
-.is-alarm {
-  color: #e3828b;
-}
-
-.is-charging {
-  color: #6ea4ff;
+.score {
+  font-size: 16px;
 }
 </style>

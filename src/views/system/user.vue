@@ -9,7 +9,10 @@
         <span>{{ row.superUser ? "超级用户" : "普通用户" }}</span>
       </template>
       <template #online="{ row }">
-        <span>{{ row.online ? "在线" : "离线" }}</span>
+        <span class="status-text">
+          <i class="status-dot" :class="row.online ? 'is-online' : 'is-offline'" />
+          {{ row.online ? "在线" : "离线" }}
+        </span>
       </template>
     </PageContent>
     <PageModal ref="addModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />

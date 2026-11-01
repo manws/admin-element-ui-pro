@@ -1,22 +1,28 @@
 <template>
-  <div class="report-page">
-    <section class="metric-row">
-      <article class="metric-card">
-        <p class="metric-label">{{ quarter.quarter }} 新车进场</p>
-        <p class="metric-value">{{ quarter.entered }}</p>
-      </article>
-      <article class="metric-card">
-        <p class="metric-label">已接入</p>
-        <p class="metric-value">{{ quarter.connected }}</p>
-      </article>
-      <article class="metric-card">
-        <p class="metric-label">接入率 / 目标 {{ quarter.target }}%</p>
-        <p class="metric-value is-accent">{{ quarter.rate }}%</p>
-      </article>
-      <article class="metric-card is-soft">
-        <p class="metric-label">超时未完成</p>
-        <p class="metric-value">{{ quarter.overdue }}</p>
-      </article>
+  <div class="report-page board-page">
+    <section class="apron" aria-label="季度接入">
+      <header class="apron-head">
+        <div>
+          <p class="kicker">{{ quarter.quarter }}</p>
+          <h2>新车接入</h2>
+        </div>
+        <p class="roster">
+          <span class="kicker">接入率 / 目标 {{ quarter.target }}%</span>
+          <span class="readout is-accent">{{ quarter.rate }}%</span>
+        </p>
+      </header>
+      <div class="tracks">
+        <div v-for="item in quarterTracks" :key="item.key" class="track" :class="[item.tone, { 'has-value': item.value > 0 }]">
+          <div class="track-head">
+            <span class="track-label">{{ item.label }}</span>
+            <span class="track-value">{{ item.value.toLocaleString() }}</span>
+          </div>
+          <div class="track-bar" aria-hidden="true">
+            <span class="track-fill" :style="{ width: `${item.width}%` }" />
+          </div>
+          <p class="track-note">{{ item.note }}</p>
+        </div>
+      </div>
     </section>
 
     <section class="panel filter-panel">
@@ -35,7 +41,7 @@
     <section class="report-grid">
       <article v-for="report in reports" :key="report.id" class="panel report-card">
         <div class="report-meta">
-          <span>{{ report.type }}</span>
+          <span class="kicker">{{ report.type }}</span>
           <span>{{ report.generateTime }}</span>
         </div>
         <h3>{{ report.title }}</h3>
@@ -63,7 +69,7 @@
 <script setup lang="ts">
 defineOptions({ name: "ReportCenter" });
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import ReportAPI from "@/api/report";
 import MonitorAPI from "@/api/monitor";
 import { REPORT_TYPES } from "@/constants/monitor";
@@ -76,6 +82,25 @@ const loading = ref(false);
 const viewVisible = ref(false);
 const current = ref<Report>();
 const quarter = ref({ quarter: "2026-Q4", entered: 0, connected: 0, rate: 0, target: 100, overdue: 0 });
+
+const quarterTracks = computed(() => {
+  const entered = quarter.value.entered;
+  const share = (value: number) => {
+    if (!entered) return 0;
+    const pct = Math.min(100, (value / entered) * 100);
+    return pct > 0 ? Math.max(pct, 2) : 0;
+  };
+  const label = (value: number) => {
+    if (!entered) return "占进场 0%";
+    const pct = (value / entered) * 100;
+    return `占进场 ${pct > 0 && pct < 1 ? "<1" : Math.round(pct)}%`;
+  };
+  return [
+    { key: "entered", label: "新车进场", value: entered, tone: "is-ink", width: entered ? 100 : 0, note: "本季分母" },
+    { key: "connected", label: "已接入", value: quarter.value.connected, tone: "is-charge", width: share(quarter.value.connected), note: label(quarter.value.connected) },
+    { key: "overdue", label: "超时未完成", value: quarter.value.overdue, tone: "is-fault", width: share(quarter.value.overdue), note: label(quarter.value.overdue) },
+  ];
+});
 
 async function loadReports() {
   loading.value = true;
@@ -121,66 +146,10 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.report-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 24px;
-}
-
-.metric-row,
 .report-grid {
   display: grid;
-  gap: 16px;
-}
-
-.metric-row {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.report-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.metric-card,
-.panel {
-  background: #fff;
-  border-radius: 16px;
-}
-
-.metric-card {
-  height: 100px;
-  padding: 18px;
-
-  &.is-soft {
-    background: #eaf1fe;
-  }
-}
-
-.metric-label,
-.report-meta,
-.report-card p,
-.dialog-line {
-  margin: 0;
-  font-size: 13px;
-  color: #66758b;
-}
-
-.metric-value {
-  margin: 8px 0 0;
-  font-size: 28px;
-  font-weight: 600;
-  line-height: 34px;
-  letter-spacing: 0;
-  color: #1b2b43;
-
-  &.is-accent {
-    color: #2563eb;
-  }
-}
-
-.panel {
-  padding: 24px;
+  gap: 16px;
 }
 
 .filter-panel {
@@ -201,8 +170,16 @@ onMounted(async () => {
 .report-card h3 {
   margin: 8px 0;
   font-size: 16px;
-  font-weight: 500;
-  color: #1b2b43;
+  font-weight: 600;
+  color: var(--shell-text, #1b2b43);
+}
+
+.report-meta,
+.report-card p,
+.dialog-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--shell-muted, #66758b);
 }
 
 .report-meta {
@@ -222,12 +199,9 @@ onMounted(async () => {
   margin-top: 8px;
 }
 
-.text-btn {
-  padding: 0;
-  font-size: 13px;
-  color: #2563eb;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
+@media (max-width: 860px) {
+  .report-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

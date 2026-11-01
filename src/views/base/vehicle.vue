@@ -3,7 +3,7 @@
     <PageSearch ref="searchRef" :search-config="searchConfig" @query-click="handleQueryClick" @reset-click="handleResetClick" />
     <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
       <template #overdue="{ row }">
-        <span :class="row.overdue ? 'is-alarm' : 'is-ok'">{{ row.overdue ? "超时" : "未超时" }}</span>
+        <span class="lamp" :class="row.overdue ? 'is-fault' : ''">{{ row.overdue ? "超时" : "未超时" }}</span>
       </template>
     </PageContent>
     <PageModal ref="addModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />
@@ -113,13 +113,3 @@ function handleOperateClick(data: IOperateData) {
   if (data.name === "view") handleViewClick(data.row);
 }
 </script>
-
-<style lang="scss" scoped>
-.is-alarm {
-  color: #e3828b;
-}
-
-.is-ok {
-  color: #66758b;
-}
-</style>
