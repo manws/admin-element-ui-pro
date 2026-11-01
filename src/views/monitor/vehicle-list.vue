@@ -1,5 +1,10 @@
 <template>
   <div class="p-4 space-y-4">
+    <div class="fleet-count">
+      已监控 {{ summary.monitored }} 辆
+      <span>在线 {{ summary.online }}</span>
+      <span>离线 {{ summary.offline }}</span>
+    </div>
     <PageSearch
       ref="searchRef"
       :search-config="searchConfig"
@@ -8,14 +13,13 @@
     />
     <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
       <template #alarmFlag="{ row }">
-        <el-tag :type="row.alarmFlag ? 'danger' : 'success'" size="small">
-          {{ row.alarmFlag ? "告警" : "正常" }}
-        </el-tag>
+        <span :class="row.alarmFlag ? 'is-alarm' : 'is-ok'">{{ row.alarmFlag ? "告警" : "正常" }}</span>
       </template>
       <template #online="{ row }">
-        <el-tag :type="row.online ? 'success' : 'info'" size="small">
+        <span class="status-text">
+          <i class="status-dot" :class="row.online ? 'is-online' : 'is-offline'" />
           {{ row.online ? "在线" : "离线" }}
-        </el-tag>
+        </span>
       </template>
       <template #soc="{ row }">
         <el-progress :percentage="row.soc" :stroke-width="8" />
@@ -30,12 +34,18 @@ defineOptions({ name: "MonitorVehicleList" });
 import usePage from "@/components/CURD/usePage";
 import type { IContentConfig, IOperateData, ISearchConfig } from "@/components/CURD/types";
 import MonitorAPI from "@/api/monitor";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { COMPANIES, ONLINE_STATUS, VEHICLE_BRANDS } from "@/constants/monitor";
 
 const router = useRouter();
+const summary = ref({ monitored: 0, online: 0, offline: 0 });
 
 const { searchRef, contentRef, handleQueryClick, handleResetClick } = usePage();
+
+onMounted(async () => {
+  summary.value = await MonitorAPI.getOnlineSummary();
+});
 
 const searchConfig: ISearchConfig = {
   formItems: [
@@ -75,7 +85,7 @@ const contentConfig: IContentConfig = {
     { type: "index", label: "#", width: 55 },
     { label: "车牌号", prop: "plateNumber", width: 110 },
     { label: "车品牌", prop: "brand", width: 100 },
-    { label: "运营单位", prop: "company", minWidth: 160, show: false },
+    { label: "运营单位", prop: "company", minWidth: 160 },
     { label: "车架号(VIN)", prop: "vin", minWidth: 170 },
     { label: "当前SOC", prop: "soc", templet: "custom", slotName: "soc", width: 120 },
     { label: "电压(V)", prop: "voltage", width: 90, align: "right" },
@@ -91,7 +101,7 @@ const contentConfig: IContentConfig = {
       fixed: "right",
       operat: [
         { name: "detail", text: "详情", perm: "view", attrs: { type: "primary" } },
-        { name: "track", text: "轨迹", perm: "view", attrs: { type: "warning" } },
+        { name: "track", text: "轨迹", perm: "view", attrs: { type: "primary" } },
       ],
     },
   ],
@@ -106,3 +116,44 @@ function handleOperateClick(data: IOperateData) {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.fleet-count {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #66758b;
+
+  span {
+    color: #1b2b43;
+  }
+}
+
+.status-text {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+
+  &.is-online {
+    background: #79bd85;
+  }
+
+  &.is-offline {
+    background: #7e8b9f;
+  }
+}
+
+.is-alarm {
+  color: #e3828b;
+}
+
+.is-ok {
+  color: #66758b;
+}
+</style>

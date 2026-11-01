@@ -38,4 +38,8 @@ export interface UserInfo {
   roles?: string[];
   /** 按钮权限标识集合 */
   perms?: string[];
+  /** 业务角色名称 */
+  roleName?: string;
+  /** 数据范围：空表示全场，否则为运营公司 */
+  dataScope?: string;
 }

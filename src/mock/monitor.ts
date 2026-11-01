@@ -4,15 +4,29 @@
 
 import type {
   AlarmRecord,
+  CellSample,
   ChargeHeatPoint,
   CurvePoint,
   MotorInfo,
+  NoticeRecord,
   OverviewStats,
   TrackPoint,
   Vehicle,
   VehicleDetail,
 } from "@/types/api/monitor";
-import { ALARM_WAYS, COMPANIES, FAULT_TYPES, VEHICLE_BRANDS, VEHICLE_CATEGORIES } from "@/constants/monitor";
+import {
+  ACCESS_METHODS,
+  ALARM_WAYS,
+  COMPANIES,
+  COST_BEARERS,
+  FAULT_TYPES,
+  PROTOCOL_CATEGORIES,
+  VEHICLE_BRANDS,
+  VEHICLE_CATEGORIES,
+  VEHICLE_MAKES,
+} from "@/constants/monitor";
+import { STORAGE_KEYS } from "@/constants";
+import { Storage } from "@/utils/storage";
 
 /** 伪随机数生成器（保证数据结构稳定） */
 function mulberry32(seed: number) {
@@ -46,6 +60,23 @@ function recentTime(minutesAgo: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
+function currentDataScope(): string {
+  const user = Storage.get<{ dataScope?: string } | null>(STORAGE_KEYS.USER_INFO, null);
+  return user?.dataScope ?? "";
+}
+
+function inScope(company: string): boolean {
+  const scope = currentDataScope();
+  return !scope || company === scope;
+}
+
+function addDays(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 /** 机场区域坐标（北京首都国际机场飞行区） */
 const AIRPORT = { lngMin: 116.578, lngMax: 116.622, latMin: 40.068, latMax: 40.092 };
 
@@ -65,6 +96,7 @@ const POSITIONS = [
 /** 生成单体车辆 */
 function makeVehicle(id: number): Vehicle {
   const brand = pick(VEHICLE_BRANDS);
+  const make = pick(VEHICLE_MAKES);
   const category = pick(VEHICLE_CATEGORIES);
   const online = rand() > 0.15;
   const charging = online && rand() > 0.7;
@@ -73,10 +105,20 @@ function makeVehicle(id: number): Vehicle {
   const totalMileage = num(8000, 180000, 0);
   const speed = online ? (charging ? 0 : num(0, 60, 0)) : 0;
 
+  const accessMethod = id % 11 === 0 ? "OBD" : id % 13 === 0 ? "其他" : pick(ACCESS_METHODS);
+  const protocolCategory = accessMethod === "协议对接" ? pick(PROTOCOL_CATEGORIES) : "";
+  const materialArrivalTime = `${2024 + (id % 2)}-${String((id % 12) + 1).padStart(2, "0")}-${String((id % 27) + 1).padStart(2, "0")}`;
+  const requiredFinishTime = addDays(materialArrivalTime, 7);
+  const late = id % 17 === 0;
+  const actualFinishTime = late ? "" : addDays(materialArrivalTime, id % 5);
+  const overdue = late || (actualFinishTime !== "" && actualFinishTime > requiredFinishTime);
+  const entryQuarter = `2026-Q${(id % 4) + 1}`;
+
   return {
     id,
     vehicleType: category === "摆渡车" || category === "牵引车" || category === "除冰车" ? "特种车" : "通用车",
     category,
+    make,
     brand,
     model: `${brand}-${pick(["EV", "Pro", "Plus", "智享"])}${Math.floor(num(1, 9, 0))}`,
     batteryModel: `${pick(["宁德时代", "国轩高科", "亿纬锂能", "中创新航"])}-${Math.floor(num(80, 300, 0))}kWh`,
@@ -90,6 +132,15 @@ function makeVehicle(id: number): Vehicle {
     accessTime: `${2022 + Math.floor(num(0, 4, 0))}-${String(Math.floor(num(1, 12, 0))).padStart(2, "0")}-${String(Math.floor(num(1, 28, 0))).padStart(2, "0")}`,
     factoryTime: `${2020 + Math.floor(num(0, 6, 0))}-${String(Math.floor(num(1, 12, 0))).padStart(2, "0")}`,
     available: rand() > 0.03,
+    accessMethod,
+    protocolCategory,
+    materialArrivalTime,
+    requiredFinishTime,
+    actualFinishTime,
+    overdue,
+    entryQuarter,
+    countInQuarterRate: entryQuarter === "2026-Q4",
+    costBearer: accessMethod === "协议对接" ? "" : pick(COST_BEARERS),
     online,
     charging,
     alarmFlag,
@@ -188,13 +239,24 @@ function makeTrack(): TrackPoint[] {
   for (let i = 0; i < 40; i++) {
     const t = recentTime(40 - i);
     const phase = i / 40;
-    const state: TrackPoint["state"] = phase < 0.15 ? "charging" : phase > 0.8 ? "normal" : "normal";
+    const segment: TrackPoint["state"] = phase < 0.1 ? "offline" : phase < 0.25 ? "charging" : phase > 0.7 ? "alarm" : "normal";
     points.push({
       time: t,
       lng: base.lng + Math.sin(phase * Math.PI * 2) * 0.012,
       lat: base.lat + Math.cos(phase * Math.PI * 2) * 0.008,
-      state: phase > 0.7 ? "alarm" : state,
+      state: segment,
       soc: Math.round(90 - phase * 25),
+      speed: segment === "charging" || segment === "offline" ? 0 : Math.round(12 + phase * 30),
+      voltage: Number((360 + Math.sin(phase * 6) * 8).toFixed(1)),
+      current: Number((segment === "charging" ? -40 : 30 + phase * 40).toFixed(1)),
+      power: Number((segment === "offline" ? 0 : 20 + phase * 50).toFixed(1)),
+      vehicleStatus: segment === "charging" ? "充电" : segment === "offline" ? "离线" : "行驶",
+      gear: segment === "charging" || segment === "offline" ? "P" : "D",
+      insulationResistance: Math.round(420 - phase * 80),
+      maxVoltage: Number((4.15 - phase * 0.08).toFixed(3)),
+      minVoltage: Number((3.42 - phase * 0.06).toFixed(3)),
+      maxTemp: Number((32 + phase * 8).toFixed(1)),
+      minTemp: Number((24 + phase * 2).toFixed(1)),
     });
   }
   return points;
@@ -202,7 +264,7 @@ function makeTrack(): TrackPoint[] {
 
 /** 获取车辆分页列表 */
 export function mockGetVehicles(params: any): { list: Vehicle[]; total: number } {
-  let list = [...VEHICLES];
+  let list = VEHICLES.filter((v) => inScope(v.company));
   const {
     selfNumber,
     vin,
@@ -239,15 +301,37 @@ export function mockGetVehicleDetail(id: number): VehicleDetail {
     motorList: makeMotors(),
     alarmList: ALARMS.filter((a) => a.selfNumber === vehicle.selfNumber).slice(0, 5),
     trackPoints: makeTrack(),
+    cells: Array.from({ length: 8 }, (_, i) => ({
+      index: i + 1,
+      voltage: Number((vehicle.cellMinVoltage + ((vehicle.cellMaxVoltage - vehicle.cellMinVoltage) * i) / 7).toFixed(3)),
+      temperature: Number((vehicle.cellMinTemp + ((vehicle.cellMaxTemp - vehicle.cellMinTemp) * (i % 4)) / 3).toFixed(1)),
+    })) satisfies CellSample[],
   };
 }
 
 /** 获取告警分页列表 */
+function scopedAlarms(): AlarmRecord[] {
+  return ALARMS.filter((a) => inScope(a.vehicleUnit));
+}
+
+export function mockAlarmStats() {
+  const list = scopedAlarms();
+  const severe = list.filter((a) => a.level === 1).length;
+  return {
+    total: list.length,
+    severe,
+    important: list.filter((a) => a.level === 2).length,
+    normal: list.filter((a) => a.level === 3).length,
+    keyVehicle: severe,
+  };
+}
+
 export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number } {
-  let list = [...ALARMS];
+  let list = scopedAlarms();
   const {
     deviceCode,
     selfNumber,
+    plateNumber,
     faultType,
     faultCode,
     faultReason,
@@ -258,10 +342,11 @@ export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number
 
   if (deviceCode) list = list.filter((a) => a.deviceCode.includes(deviceCode));
   if (selfNumber) list = list.filter((a) => a.selfNumber.includes(selfNumber));
+  if (plateNumber) list = list.filter((a) => a.plateNumber === plateNumber);
   if (faultType) list = list.filter((a) => a.faultType === faultType);
   if (faultCode) list = list.filter((a) => a.faultCode.includes(faultCode));
   if (faultReason) list = list.filter((a) => a.faultReason.includes(faultReason));
-  if (level !== undefined && level !== null && level !== "") list = list.filter((a) => a.level === level);
+  if (level !== undefined && level !== null && level !== "") list = list.filter((a) => a.level === Number(level));
 
   const total = list.length;
   const start = (pageNum - 1) * pageSize;
@@ -270,6 +355,32 @@ export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number
 
 /** 总览统计 */
 export function mockOverviewStats(): OverviewStats {
+  const scoped = VEHICLES.filter((v) => inScope(v.company));
+  if (currentDataScope()) {
+    const total = scoped.length;
+    const onlineCount = scoped.filter((v) => v.online).length;
+    return {
+      totalCharge: Math.round(scoped.reduce((sum, v) => sum + v.batteryCapacity * 12, 0)),
+      todayCharge: Math.round(scoped.reduce((sum, v) => sum + (v.charging ? v.power : 0), 0)),
+      totalChargeCount: total * 40,
+      todayChargeCount: scoped.filter((v) => v.charging).length,
+      totalCarbon: Math.round(scoped.reduce((sum, v) => sum + v.totalMileage * 0.12, 0)),
+      todayCarbon: Math.round(scoped.reduce((sum, v) => sum + v.todayMileage * 0.12, 0)),
+      totalMileage: Math.round(scoped.reduce((sum, v) => sum + v.totalMileage, 0)),
+      todayMileage: Math.round(scoped.reduce((sum, v) => sum + v.todayMileage, 0)),
+      vehicleTotal: total,
+      onlineCount,
+      chargingCount: scoped.filter((v) => v.charging).length,
+      faultCount: scoped.filter((v) => v.alarmFlag).length,
+      safetyScore: total ? Math.round(scoped.reduce((sum, v) => sum + v.safetyScore, 0) / total) : 0,
+      safetyFactors: [
+        { name: "在线稳定系数", value: total ? Number((onlineCount / total).toFixed(2)) : 0 },
+        { name: "电池一致性系数", value: 0.91 },
+        { name: "绝缘安全系数", value: 0.94 },
+        { name: "告警收敛系数", value: total ? Number((1 - scoped.filter((v) => v.alarmFlag).length / total).toFixed(2)) : 0 },
+      ],
+    };
+  }
   const total = 1936;
   const onlineCount = Math.round(total * num(0.8, 0.95, 2));
   return {
@@ -286,6 +397,12 @@ export function mockOverviewStats(): OverviewStats {
     chargingCount: Math.round(total * num(0.15, 0.35, 2)),
     faultCount: Math.round(total * num(0.02, 0.06, 2)),
     safetyScore: Math.round(num(82, 96, 0)),
+    safetyFactors: [
+      { name: "在线稳定系数", value: 0.96 },
+      { name: "电池一致性系数", value: 0.91 },
+      { name: "绝缘安全系数", value: 0.94 },
+      { name: "告警收敛系数", value: 0.88 },
+    ],
   };
 }
 
@@ -312,12 +429,14 @@ export function mockVehicleHeatmap(): Array<[number, number, number]> {
 
 /** 单车里程最新 5 条 */
 export function mockTopMileage(): Vehicle[] {
-  return [...VEHICLES].sort((a, b) => b.lastOnlineTime.localeCompare(a.lastOnlineTime)).slice(0, 5);
+  return VEHICLES.filter((v) => inScope(v.company))
+    .sort((a, b) => b.lastOnlineTime.localeCompare(a.lastOnlineTime))
+    .slice(0, 5);
 }
 
 /** 最新 5 条告警 */
 export function mockLatestAlarms(): AlarmRecord[] {
-  return [...ALARMS].sort((a, b) => b.faultTime.localeCompare(a.faultTime)).slice(0, 5);
+  return scopedAlarms().sort((a, b) => b.faultTime.localeCompare(a.faultTime)).slice(0, 5);
 }
 
 /** 车辆状态统计（用于地图统计面板） */
@@ -350,7 +469,65 @@ export function mockHeatmap(): ChargeHeatPoint[] {
 
 /** 车辆位置散点（地图） */
 export function mockVehiclePositions(): Vehicle[] {
-  return VEHICLES.slice(0, 80);
+  return VEHICLES.filter((v) => inScope(v.company)).slice(0, 80);
+}
+
+export function mockOnlineSummary() {
+  const monitored = VEHICLES.filter((v) => v.monitorFlag && inScope(v.company));
+  const online = monitored.filter((v) => v.online).length;
+  return { monitored: monitored.length, online, offline: monitored.length - online };
+}
+
+export function mockAccessQuarterStats() {
+  const list = VEHICLES.filter((v) => v.countInQuarterRate && inScope(v.company));
+  const entered = list.length;
+  const connected = list.filter((v) => v.actualFinishTime).length;
+  return {
+    quarter: "2026-Q4",
+    entered,
+    connected,
+    rate: entered ? Math.round((connected / entered) * 1000) / 10 : 100,
+    target: 100,
+    overdue: list.filter((v) => v.overdue).length,
+  };
+}
+
+const NOTICES: NoticeRecord[] = [
+  {
+    id: 1,
+    noticeTime: "2026-10-29 09:20:00",
+    target: "首都机场股份公司运行值班",
+    channel: "短信",
+    content: "车辆 JD1023 电池温差超限，已列为重点车辆告警",
+    arrangement: "采购人要求 2 小时内现场复核传感器",
+    result: "",
+  },
+  {
+    id: 2,
+    noticeTime: "2026-10-28 16:05:00",
+    target: "地服公司调度",
+    channel: "微信小程序",
+    content: "车辆 JD1108 通信中断超过 30 分钟",
+    arrangement: "安排驾驶员回场检查终端",
+    result: "终端重启后恢复上报",
+  },
+];
+
+export function mockGetNotices() {
+  return { list: [...NOTICES], total: NOTICES.length };
+}
+
+export function mockSaveNotice(data: NoticeRecord) {
+  if (data.id) {
+    const idx = NOTICES.findIndex((item) => item.id === data.id);
+    if (idx >= 0) {
+      NOTICES[idx] = { ...NOTICES[idx], ...data };
+      return NOTICES[idx];
+    }
+  }
+  const entity = { ...data, id: NOTICES.reduce((max, item) => Math.max(max, item.id), 0) + 1 };
+  NOTICES.unshift(entity);
+  return entity;
 }
 
 // ===== 车辆/告警 增删改（内存操作） =====

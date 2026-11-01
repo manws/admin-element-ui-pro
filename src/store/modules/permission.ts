@@ -4,6 +4,7 @@ import { store } from "@/store";
 import router from "@/router";
 import { useUserStoreHook } from "@/store/modules/user";
 import { appConfig } from "@/settings";
+import { ROLE_ROOT } from "@/constants";
 
 import MenuAPI from "@/api/system/menu";
 import { RouteItem } from "@/types";
@@ -53,7 +54,16 @@ export const usePermissionStore = defineStore("permission", () => {
         dynamicRoutes = [];
       }
 
-      routes.value = [...constantRoutes, ...dynamicRoutes];
+      const isSuper = useUserStoreHook().userInfo.roles?.includes(ROLE_ROOT);
+      const visibleRoutes = isSuper
+        ? constantRoutes
+        : constantRoutes.map((route) =>
+            route.path === "/system"
+              ? { ...route, meta: { ...route.meta, hidden: true } }
+              : route,
+          );
+
+      routes.value = [...visibleRoutes, ...dynamicRoutes];
       isRouteGenerated.value = true;
 
       return dynamicRoutes;

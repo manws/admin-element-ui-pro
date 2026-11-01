@@ -59,13 +59,20 @@
       <div class="login-form__heading">
         <h2 class="login-form__title">{{ t("login.twoFactor") }}</h2>
         <p class="login-form__subtitle">
-          验证码已发送至 {{ maskedPhone }}（Mock 环境验证码：<b>123456</b>）
+          {{ factorType === "sms" ? `短信验证码已发送至 ${maskedPhone}` : "请输入动态口令" }}（演示校验码 123456）
         </p>
       </div>
 
       <div class="login-form__body">
         <div class="field-group">
-          <label class="field-label" for="login-verify-code">{{ t("login.verifyCode") }}</label>
+          <span class="field-label">认证方式</span>
+          <el-radio-group v-model="factorType">
+            <el-radio value="sms">短信验证码</el-radio>
+            <el-radio value="otp">动态口令</el-radio>
+          </el-radio-group>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="login-verify-code">{{ factorType === "sms" ? "短信验证码" : "动态口令" }}</label>
           <el-input
             id="login-verify-code"
             v-model.trim="verifyCode"
@@ -107,6 +114,7 @@ const isCapsLock = ref(false);
 // 1 = 账号密码，2 = 双因素验证
 const verifyStep = ref(1);
 const verifyCode = ref("");
+const factorType = ref<"sms" | "otp">("sms");
 const verifyFailCount = ref(0);
 const lockCountdown = ref(0);
 
@@ -163,7 +171,7 @@ async function handleVerify() {
     verifyFailCount.value += 1;
     if (verifyFailCount.value >= 3) {
       lockCountdown.value = 15;
-      ElMessage.error("连续 3 次验证失败，账户已锁定 15 分钟");
+      ElMessage.error("连续 3 次验证失败，账户已锁定");
       const timer = setInterval(() => {
         lockCountdown.value -= 1;
         if (lockCountdown.value <= 0) {

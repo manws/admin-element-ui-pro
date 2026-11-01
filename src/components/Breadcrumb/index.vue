@@ -3,7 +3,7 @@
     <el-breadcrumb-item v-for="(item, index) in breadcrumbs" :key="item.path">
       <span
         v-if="item.redirect === 'noredirect' || index === breadcrumbs.length - 1"
-        class="color-gray-400"
+        class="breadcrumb-current"
       >
         {{ translateRouteTitle(item.meta.title ?? "") }}
       </span>
@@ -87,5 +87,10 @@ onBeforeMount(() => {
 .el-breadcrumb__inner,
 .el-breadcrumb__inner a {
   font-weight: 400 !important;
+}
+
+.breadcrumb-current {
+  font-weight: 400;
+  color: var(--el-text-color-placeholder);
 }
 </style>

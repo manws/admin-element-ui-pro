@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded bg-[var(--el-bg-color)] border border-[var(--el-border-color)] p-5 h-full md:flex flex-1 flex-col md:overflow-auto"
+    class="page-surface rounded bg-[var(--el-bg-color)] border border-[var(--el-border-color)] p-5 h-full md:flex flex-1 flex-col md:overflow-auto"
   >
     <!-- 表格工具 -->
     <div class="flex flex-col md:flex-row justify-between gap-y-2.5 mb-2.5">

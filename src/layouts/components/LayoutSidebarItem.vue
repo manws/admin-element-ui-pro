@@ -243,7 +243,7 @@ function resolvePath(routePath: string) {
   }
 
   .el-menu--collapse {
-    width: $sidebar-width-collapsed;
+    width: var(--sidebar-width-collapsed);
 
     .el-sub-menu {
       & > .el-sub-menu__title > span {
@@ -293,14 +293,14 @@ html.sidebar-color-blue {
     }
   }
 
-  // 深蓝色侧边栏配色下的父菜单激活状态"
-  html.sidebar-color-blue & {
+  // 经典蓝侧边栏：父级只提亮文字，选中态落在当前子项
+  html.sidebar-color-blue:not(.dark) & {
     &.has-active-child > .el-sub-menu__title {
-      color: var(--el-color-primary-light-3) !important;
-      background-color: rgba(64, 128, 255, 0.2) !important;
+      color: #e9f0fb !important;
+      background-color: transparent !important;
 
       .menu-icon {
-        color: var(--el-color-primary-light-3) !important;
+        color: #e9f0fb !important;
       }
     }
   }

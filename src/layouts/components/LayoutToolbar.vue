@@ -27,9 +27,7 @@
     <div class="navbar-actions__item">
       <el-dropdown trigger="click">
         <div class="user-profile">
-          <el-avatar :size="28" :src="userStore.userInfo.avatar">
-            <el-icon :size="16"><User /></el-icon>
-          </el-avatar>
+          <el-avatar :size="28" :src="userStore.userInfo.avatar || defaultAvatar" />
           <span class="user-profile__name">{{
             userStore.userInfo.userName || userStore.userInfo.userCode || "用户"
           }}</span>
@@ -66,6 +64,7 @@ import {
   LayoutMode,
 } from "@/enums/settings";
 import { useAppStore, useSettingsStore, useUserStore } from "@/store";
+import defaultAvatar from "@/assets/images/avatar-default.svg";
 
 // 导入子组件
 import CommandPalette from "@/components/CommandPalette/index.vue";

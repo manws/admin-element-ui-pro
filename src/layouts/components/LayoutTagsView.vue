@@ -13,12 +13,11 @@
           :key="tag.fullPath"
           h-26px
           cursor-pointer
-          :closable="!tag.affix"
+          :closable="false"
           :effect="tagsViewStore.isActive(tag) ? 'dark' : 'light'"
           :type="tagsViewStore.isActive(tag) ? 'primary' : 'info'"
           @click.middle="handleMiddleClick(tag)"
           @contextmenu.prevent="(event: MouseEvent) => openContextMenu(tag, event)"
-          @close="closeSelectedTag(tag)"
           @click="
             router.push({
               path: tag.fullPath,
@@ -27,6 +26,11 @@
           "
         >
           {{ translateRouteTitle(tag.title) }}
+          <span
+            v-if="!tag.affix"
+            class="i-svg:tag-close tag-close"
+            @click.stop="closeSelectedTag(tag)"
+          />
         </el-tag>
       </div>
     </el-scrollbar>
@@ -372,12 +376,19 @@ useContextMenuManager();
 <style lang="scss" scoped>
 .tags-container {
   width: 100%;
-  height: $tags-view-height;
+  height: var(--tags-view-height);
   padding: 0 15px;
   border-top: 1px solid var(--el-border-color-light);
 
   .scroll-container {
     white-space: nowrap;
+  }
+
+  .tag-close {
+    width: 12px;
+    height: 12px;
+    margin-left: 10px;
+    font-size: 12px;
   }
 }
 .contextmenu {

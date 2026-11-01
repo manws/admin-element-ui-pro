@@ -1,7 +1,11 @@
 <template>
   <div class="p-4 space-y-4">
     <PageSearch ref="searchRef" :search-config="searchConfig" @query-click="handleQueryClick" @reset-click="handleResetClick" />
-    <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick" />
+    <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
+      <template #overdue="{ row }">
+        <span :class="row.overdue ? 'is-alarm' : 'is-ok'">{{ row.overdue ? "超时" : "未超时" }}</span>
+      </template>
+    </PageContent>
     <PageModal ref="addModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />
     <PageModal ref="editModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />
   </div>
@@ -13,7 +17,16 @@ defineOptions({ name: "BaseVehicle" });
 import usePage from "@/components/CURD/usePage";
 import type { IContentConfig, IModalConfig, IOperateData, ISearchConfig } from "@/components/CURD/types";
 import MonitorAPI from "@/api/monitor";
-import { COMPANIES, VEHICLE_BRANDS, VEHICLE_CATEGORIES, VEHICLE_TYPES } from "@/constants/monitor";
+import {
+  ACCESS_METHODS,
+  COMPANIES,
+  COST_BEARERS,
+  PROTOCOL_CATEGORIES,
+  VEHICLE_BRANDS,
+  VEHICLE_CATEGORIES,
+  VEHICLE_MAKES,
+  VEHICLE_TYPES,
+} from "@/constants/monitor";
 
 const {
   searchRef,
@@ -46,6 +59,7 @@ const contentConfig: IContentConfig = {
     { type: "index", label: "#", width: 55 },
     { label: "自编号", prop: "selfNumber", width: 100 },
     { label: "车牌号", prop: "plateNumber", width: 110 },
+    { label: "品牌", prop: "make", width: 110 },
     { label: "车品牌", prop: "brand", width: 100 },
     { label: "型号", prop: "model", width: 130 },
     { label: "车辆类型", prop: "vehicleType", width: 90 },
@@ -55,6 +69,8 @@ const contentConfig: IContentConfig = {
     { label: "运营公司", prop: "company", minWidth: 160 },
     { label: "是否监控", prop: "monitorFlag", templet: "switch", width: 90 },
     { label: "是否可用", prop: "available", templet: "switch", width: 90 },
+    { label: "接入方式", prop: "accessMethod", width: 100 },
+    { label: "是否超时", prop: "overdue", templet: "custom", slotName: "overdue", width: 90 },
     { label: "接入时间", prop: "accessTime", width: 110 },
     { label: "操作", templet: "tool", width: 140, fixed: "right", operat: ["edit", "view", "delete"] },
   ],
@@ -62,10 +78,11 @@ const contentConfig: IContentConfig = {
 
 const modalConfig: IModalConfig = {
   pk: "id",
-  dialog: { title: "车辆信息", width: "720px" },
+  dialog: { title: "车辆信息", width: "860px" },
   formItems: [
     { type: "select", label: "车辆类型", prop: "vehicleType", options: VEHICLE_TYPES.map((t) => ({ label: t, value: t })), col: { span: 12 } },
     { type: "select", label: "车辆分类", prop: "category", options: VEHICLE_CATEGORIES.map((c) => ({ label: c, value: c })), col: { span: 12 } },
+    { type: "select", label: "品牌", prop: "make", options: VEHICLE_MAKES.map((b) => ({ label: b, value: b })), col: { span: 12 } },
     { type: "select", label: "车品牌", prop: "brand", options: VEHICLE_BRANDS.map((b) => ({ label: b, value: b })), col: { span: 12 } },
     { type: "input", label: "型号", prop: "model", col: { span: 12 } },
     { type: "input", label: "电池型号", prop: "batteryModel", col: { span: 12 } },
@@ -79,6 +96,14 @@ const modalConfig: IModalConfig = {
     { type: "switch", label: "是否监控", prop: "monitorFlag", initialValue: false, col: { span: 12 } },
     { type: "switch", label: "VIN 充电", prop: "vinCharge", initialValue: false, col: { span: 12 } },
     { type: "switch", label: "是否可用", prop: "available", initialValue: true, col: { span: 12 } },
+    { type: "select", label: "接入方式", prop: "accessMethod", options: ACCESS_METHODS.map((t) => ({ label: t, value: t })), col: { span: 12 } },
+    { type: "select", label: "协议类别", prop: "protocolCategory", options: PROTOCOL_CATEGORIES.map((t) => ({ label: t, value: t })), col: { span: 12 } },
+    { type: "input", label: "资料到达时间", prop: "materialArrivalTime", col: { span: 12 }, attrs: { placeholder: "YYYY-MM-DD" } },
+    { type: "input", label: "要求完成时间", prop: "requiredFinishTime", col: { span: 12 }, attrs: { placeholder: "到达后 7 日" } },
+    { type: "input", label: "实际完成时间", prop: "actualFinishTime", col: { span: 12 }, attrs: { placeholder: "YYYY-MM-DD" } },
+    { type: "input", label: "进场季度", prop: "entryQuarter", col: { span: 12 }, attrs: { placeholder: "2026-Q4" } },
+    { type: "switch", label: "计入季度接入率", prop: "countInQuarterRate", initialValue: true, col: { span: 12 } },
+    { type: "select", label: "费用承担方", prop: "costBearer", options: COST_BEARERS.map((t) => ({ label: t, value: t })), col: { span: 12 } },
   ],
   formAction: (data) => MonitorAPI.saveVehicle(data),
 };
@@ -88,3 +113,13 @@ function handleOperateClick(data: IOperateData) {
   if (data.name === "view") handleViewClick(data.row);
 }
 </script>
+
+<style lang="scss" scoped>
+.is-alarm {
+  color: #e3828b;
+}
+
+.is-ok {
+  color: #66758b;
+}
+</style>

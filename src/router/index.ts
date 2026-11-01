@@ -63,19 +63,19 @@ export const constantRoutes: RouteRecordRaw[] = [
     path: "/monitor",
     component: Layout,
     redirect: "/monitor/map",
-    meta: { title: "监控预警", icon: "el-icon-monitor" },
+    meta: { title: "监控预警", icon: "nav-monitor" },
     children: [
       {
         path: "map",
         component: () => import("@/views/monitor/map.vue"),
         name: "MonitorMap",
-        meta: { title: "地图监控", icon: "el-icon-location", keepAlive: true },
+        meta: { title: "地图监控", icon: "nav-location", keepAlive: true },
       },
       {
         path: "vehicle-list",
         component: () => import("@/views/monitor/vehicle-list.vue"),
         name: "MonitorVehicleList",
-        meta: { title: "车辆列表", icon: "el-icon-van", keepAlive: true },
+        meta: { title: "车辆列表", icon: "nav-vehicle", keepAlive: true },
       },
       {
         path: "vehicle-detail",
@@ -93,13 +93,13 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "alarm",
         component: () => import("@/views/monitor/alarm.vue"),
         name: "MonitorAlarm",
-        meta: { title: "告警管理", icon: "el-icon-bell", keepAlive: true },
+        meta: { title: "告警管理", icon: "nav-alarm", keepAlive: true },
       },
       {
         path: "heatmap",
         component: () => import("@/views/monitor/heatmap.vue"),
         name: "MonitorHeatmap",
-        meta: { title: "充电热力图", icon: "el-icon-data-analysis", keepAlive: true },
+        meta: { title: "充电热力图", icon: "nav-heatmap", keepAlive: true },
       },
     ],
   },
@@ -109,7 +109,7 @@ export const constantRoutes: RouteRecordRaw[] = [
     path: "/base",
     component: Layout,
     redirect: "/base/vehicle",
-    meta: { title: "基础数据", icon: "el-icon-collection" },
+    meta: { title: "基础数据", icon: "nav-database" },
     children: [
       {
         path: "vehicle",
@@ -149,7 +149,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "user",
         component: () => import("@/views/system/user.vue"),
         name: "SystemUser",
-        meta: { title: "用户管理", icon: "el-icon-user", keepAlive: true },
+        meta: { title: "用户管理", icon: "nav-user", keepAlive: true },
       },
     ],
   },
@@ -158,13 +158,13 @@ export const constantRoutes: RouteRecordRaw[] = [
   {
     path: "/report",
     component: Layout,
-    meta: { title: "报告中心", icon: "el-icon-document" },
+    meta: { title: "报告中心", icon: "nav-report" },
     children: [
       {
         path: "",
         component: () => import("@/views/report/index.vue"),
         name: "ReportCenter",
-        meta: { title: "报告中心", icon: "el-icon-document", keepAlive: true },
+        meta: { title: "报告中心", icon: "nav-report", keepAlive: true },
       },
     ],
   },

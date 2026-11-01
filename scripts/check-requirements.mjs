@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-/** 功能追踪矩阵（与 docs/需求文档.md 第三章保持一致） */
+/** 功能追踪矩阵（与 docs/需求文档.md「功能追踪矩阵」保持一致） */
 const FEATURES = [
   { id: "F-01-01", name: "账号密码登录", route: "/login", file: "src/views/login/index.vue" },
   { id: "F-01-02", name: "双因素认证", route: "/login", file: "src/views/login/components/Login.vue" },

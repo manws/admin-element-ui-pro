@@ -230,7 +230,7 @@ watch(
     top: 0;
     z-index: 999;
     width: 100%;
-    height: $navbar-height;
+    height: var(--navbar-height);
     background-color: var(--menu-background);
     border-bottom: 1px solid var(--el-border-color-lighter);
 
@@ -270,7 +270,7 @@ watch(
 
         .el-menu-item {
           height: 100%;
-          line-height: $navbar-height;
+          line-height: var(--navbar-height);
           border-bottom: none;
 
           &.is-active {
@@ -292,22 +292,22 @@ watch(
 
   &__container {
     display: flex;
-    height: calc(100vh - $navbar-height);
+    height: calc(100vh - var(--navbar-height));
     padding-top: 0;
 
     .layout__sidebar--left {
       position: relative;
-      width: $sidebar-width;
+      width: var(--sidebar-width);
       height: 100%;
       background-color: var(--menu-background);
       transition: width 0.28s;
 
       &.layout__sidebar--collapsed {
-        width: $sidebar-width-collapsed !important;
+        width: var(--sidebar-width-collapsed) !important;
       }
 
       :deep(.el-scrollbar) {
-        height: calc(100vh - $navbar-height - 50px);
+        height: calc(100vh - var(--navbar-height) - 50px);
       }
 
       :deep(.el-menu) {
@@ -343,7 +343,7 @@ watch(
   .layout__container {
     .layout__sidebar--left {
       position: fixed;
-      top: $navbar-height;
+      top: var(--navbar-height);
       bottom: 0;
       left: 0;
       z-index: 1000;
@@ -353,15 +353,15 @@ watch(
 
   &.hideSidebar {
     .layout__sidebar--left {
-      width: $sidebar-width !important;
-      transform: translateX(-$sidebar-width);
+      width: var(--sidebar-width) !important;
+      transform: translateX(calc(var(--sidebar-width) * -1));
     }
   }
 }
 
 :deep(.hasTagsView) {
   .app-main {
-    height: calc(100vh - $navbar-height - $tags-view-height) !important;
+    height: calc(100vh - var(--navbar-height) - var(--tags-view-height)) !important;
   }
 }
 </style>

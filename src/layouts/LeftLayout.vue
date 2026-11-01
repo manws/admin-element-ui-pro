@@ -48,12 +48,12 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
     bottom: 0;
     left: 0;
     z-index: 999;
-    width: $sidebar-width;
+    width: var(--sidebar-width);
     background-color: $menu-background;
     transition: width 0.28s;
 
     &--collapsed {
-      width: $sidebar-width-collapsed;
+      width: var(--sidebar-width-collapsed);
     }
 
     .layout-sidebar {
@@ -64,7 +64,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 
       &.has-logo {
         .el-scrollbar {
-          height: calc(100vh - $navbar-height);
+          height: calc(100vh - var(--navbar-height));
         }
       }
 
@@ -77,12 +77,12 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
   &__main {
     position: relative;
     height: 100%;
-    margin-left: $sidebar-width;
+    margin-left: var(--sidebar-width);
     overflow-y: auto;
     transition: margin-left 0.28s;
 
     &--collapsed {
-      margin-left: $sidebar-width-collapsed;
+      margin-left: var(--sidebar-width-collapsed);
     }
 
     .fixed-header {
@@ -97,7 +97,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 /* 移动端样式*/
 .mobile {
   .layout__sidebar {
-    width: $sidebar-width !important;
+    width: var(--sidebar-width) !important;
     transition:
       transform 0.28s,
       width 0s;
@@ -105,7 +105,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 
   &.hideSidebar {
     .layout__sidebar {
-      transform: translateX(-$sidebar-width);
+      transform: translateX(calc(var(--sidebar-width) * -1));
     }
   }
 
@@ -122,7 +122,7 @@ const { showTagsView, showLogo, isSidebarOpen, routes } = useLayout();
 
 .hasTagsView {
   :deep(.app-main) {
-    height: calc(100vh - $navbar-height - $tags-view-height) !important;
+    height: calc(100vh - var(--navbar-height) - var(--tags-view-height)) !important;
   }
 }
 </style>

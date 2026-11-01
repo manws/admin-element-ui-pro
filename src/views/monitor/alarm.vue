@@ -1,113 +1,158 @@
 <template>
-  <div class="p-4">
-    <el-card shadow="never">
+  <div class="alarm-page">
+    <section class="metric-row">
+      <article class="metric-card">
+        <p class="metric-label">告警次数</p>
+        <p class="metric-value">{{ alarmStats.total }}</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">严重 / 重点车辆</p>
+        <p class="metric-value is-accent">{{ alarmStats.severe }}</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">重要</p>
+        <p class="metric-value">{{ alarmStats.important }}</p>
+      </article>
+      <article class="metric-card is-soft">
+        <p class="metric-label">一般</p>
+        <p class="metric-value">{{ alarmStats.normal }}</p>
+      </article>
+    </section>
+
+    <section class="panel">
       <el-tabs v-model="activeTab">
-        <!-- 告警管理 -->
-        <el-tab-pane label="告警管理" name="alarm">
-          <el-form :model="queryParams" inline class="mb-2">
+        <el-tab-pane label="实时告警" name="alarm">
+          <el-form :model="queryParams" inline class="query-form">
             <el-form-item label="设备识别码">
-              <el-input v-model="queryParams.deviceCode" placeholder="IMEI" clearable style="width: 180px" />
+              <el-input v-model="queryParams.deviceCode" placeholder="IMEI" clearable style="width: 160px" />
             </el-form-item>
             <el-form-item label="车辆自编号">
-              <el-input v-model="queryParams.selfNumber" placeholder="自编号" clearable style="width: 140px" />
+              <el-input v-model="queryParams.selfNumber" clearable style="width: 120px" />
             </el-form-item>
             <el-form-item label="故障类型">
-              <el-select v-model="queryParams.faultType" placeholder="全部" clearable style="width: 160px">
+              <el-select v-model="queryParams.faultType" placeholder="全部" clearable style="width: 140px">
                 <el-option v-for="t in FAULT_TYPES" :key="t" :label="t" :value="t" />
               </el-select>
             </el-form-item>
             <el-form-item label="故障码">
-              <el-input v-model="queryParams.faultCode" placeholder="故障码" clearable style="width: 120px" />
+              <el-input v-model="queryParams.faultCode" clearable style="width: 110px" />
             </el-form-item>
-            <el-form-item label="告警级别">
-              <el-select v-model="queryParams.level" placeholder="全部" clearable style="width: 120px">
-                <el-option v-for="l in ALARM_LEVELS" :key="l.value" :label="l.label" :value="l.value" />
-              </el-select>
+            <el-form-item label="故障原因">
+              <el-input v-model="queryParams.faultReason" clearable style="width: 140px" />
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="handleQuery">查询</el-button>
               <el-button @click="handleReset">重置</el-button>
-              <el-button type="success" :icon="'Download'" @click="handleExport">导出</el-button>
+              <el-button type="primary" @click="handleExport">导出</el-button>
+              <el-button @click="levelVisible = true">告警级别</el-button>
             </el-form-item>
           </el-form>
 
-          <el-table v-loading="loading" :data="alarmList" border>
-            <el-table-column type="index" label="#" width="55" />
-            <el-table-column prop="deviceCode" label="设备识别码" width="170" />
+          <el-table v-loading="loading" :data="alarmList">
+            <el-table-column prop="deviceCode" label="设备识别码" width="160" />
             <el-table-column prop="selfNumber" label="车辆自编号" width="110" />
-            <el-table-column prop="plateNumber" label="车牌号" width="110" />
-            <el-table-column prop="vehicleUnit" label="车辆单位" min-width="150" />
-            <el-table-column prop="faultType" label="故障类型" width="130" />
+            <el-table-column prop="vehicleUnit" label="车辆单位" min-width="140" />
+            <el-table-column prop="faultType" label="故障类型" width="120" />
             <el-table-column prop="faultCode" label="故障码" width="90" />
             <el-table-column prop="faultReason" label="故障原因" min-width="160" />
-            <el-table-column label="告警级别" width="100">
+            <el-table-column prop="alarmWay" label="告警方式" width="110" />
+            <el-table-column label="级别" width="140">
               <template #default="{ row }">
-                <el-tag :type="ALARM_LEVEL_MAP[row.level]?.type" size="small">
-                  {{ ALARM_LEVEL_MAP[row.level]?.label }}
-                </el-tag>
-                <el-tag v-if="row.level === 1" type="danger" effect="dark" size="small" class="ml-1">重点</el-tag>
+                {{ levelLabel(row.level) }}
+                <span v-if="row.level === 1" class="key-mark">重点车辆告警</span>
               </template>
             </el-table-column>
-            <el-table-column prop="alarmWay" label="告警方式" width="100" />
             <el-table-column prop="faultDate" label="故障日期" width="110" />
             <el-table-column prop="faultTime" label="故障发生时间" width="170" />
             <el-table-column prop="updateTime" label="最后更新时间" width="170" />
-            <el-table-column label="操作" width="100" fixed="right">
+            <el-table-column label="操作" width="80" fixed="right">
               <template #default="{ row }">
-                <el-button type="primary" link @click="showRawMessage(row)">报文</el-button>
+                <button type="button" class="text-btn" @click="showRawMessage(row)">报文</button>
               </template>
             </el-table-column>
           </el-table>
-
-          <div class="flex justify-end mt-4">
+          <div class="pager">
             <el-pagination
               v-model:current-page="pageNum"
               v-model:page-size="pageSize"
               :total="total"
               :page-sizes="[10, 20, 30, 50]"
-              layout="total, sizes, prev, pager, next, jumper"
-              background
+              layout="total, sizes, prev, pager, next"
               @size-change="loadAlarms"
               @current-change="loadAlarms"
             />
           </div>
         </el-tab-pane>
 
-        <!-- 消息推送记录 -->
-        <el-tab-pane label="消息推送记录" name="push">
-          <el-alert type="info" :closable="false" show-icon class="mb-3" title="通过短信 / 微信小程序实时推送车辆故障告警、满电提示等信息" />
-          <el-table v-loading="pushLoading" :data="pushRecords" border>
-            <el-table-column type="index" label="#" width="55" />
+        <el-tab-pane label="消息推送" name="push">
+          <p class="hint">通过平台短信或微信小程序推送故障告警与满电提示。</p>
+          <el-table v-loading="pushLoading" :data="pushRecords">
             <el-table-column prop="time" label="推送时间" width="180" />
             <el-table-column prop="plateNumber" label="车牌号" width="120" />
-            <el-table-column prop="channel" label="推送通道" width="120">
-              <template #default="{ row }">
-                <el-tag :type="row.channel === '短信' ? 'primary' : row.channel === '微信小程序' ? 'success' : 'info'" size="small">
-                  {{ row.channel }}
-                </el-tag>
-              </template>
-            </el-table-column>
+            <el-table-column prop="channel" label="推送通道" width="120" />
             <el-table-column prop="type" label="推送类型" width="110" />
             <el-table-column prop="content" label="推送内容" min-width="240" />
-            <el-table-column prop="status" label="状态" width="90">
+            <el-table-column prop="status" label="状态" width="90" />
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="异常通知" name="notice">
+          <p class="hint">异常通知采购人后保持可追踪，处理完成前结果为空。</p>
+          <el-button type="primary" class="mb-16" @click="openNotice()">登记通知</el-button>
+          <el-table :data="notices">
+            <el-table-column prop="noticeTime" label="通知时间" width="170" />
+            <el-table-column prop="target" label="通知对象" min-width="160" />
+            <el-table-column prop="channel" label="渠道" width="110" />
+            <el-table-column prop="content" label="内容" min-width="180" />
+            <el-table-column prop="arrangement" label="采购人安排" min-width="160" />
+            <el-table-column label="处理结果" min-width="140">
+              <template #default="{ row }">{{ row.result || "处理中" }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="80">
               <template #default="{ row }">
-                <el-tag :type="row.status === '已送达' ? 'success' : 'danger'" size="small">{{ row.status }}</el-tag>
+                <button type="button" class="text-btn" @click="openNotice(row)">更新</button>
               </template>
             </el-table-column>
           </el-table>
         </el-tab-pane>
       </el-tabs>
-    </el-card>
+    </section>
 
-    <!-- 报文查看弹窗 -->
-    <el-dialog v-model="messageVisible" title="原始报文（Hex）" width="640px">
-      <div class="raw-message">
-        <p class="text-sm mb-2">设备识别码：{{ currentAlarm?.deviceCode }}</p>
-        <pre>{{ currentAlarm?.rawMessage }}</pre>
+    <el-dialog v-model="messageVisible" title="原始报文" width="640px">
+      <p class="hint">设备识别码 {{ currentAlarm?.deviceCode }}</p>
+      <pre class="raw-message">{{ currentAlarm?.rawMessage }}</pre>
+    </el-dialog>
+
+    <el-dialog v-model="levelVisible" title="告警级别" width="480px">
+      <p class="hint">级别为严重时标记为重点车辆告警。</p>
+      <div v-for="item in levelConfig" :key="item.value" class="level-row">
+        <span>{{ item.value }}</span>
+        <el-input v-model="item.label" />
+        <span>{{ item.value === 1 ? "重点车辆告警" : "" }}</span>
       </div>
       <template #footer>
-        <el-button type="primary" @click="copyMessage">复制报文</el-button>
-        <el-button @click="messageVisible = false">关闭</el-button>
+        <el-button type="primary" @click="levelVisible = false">确定</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="noticeVisible" title="异常通知" width="560px">
+      <el-form :model="noticeForm" label-width="100px">
+        <el-form-item label="通知时间"><el-input v-model="noticeForm.noticeTime" /></el-form-item>
+        <el-form-item label="通知对象"><el-input v-model="noticeForm.target" /></el-form-item>
+        <el-form-item label="渠道">
+          <el-select v-model="noticeForm.channel">
+            <el-option label="短信" value="短信" />
+            <el-option label="微信小程序" value="微信小程序" />
+            <el-option label="电话" value="电话" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="内容"><el-input v-model="noticeForm.content" type="textarea" /></el-form-item>
+        <el-form-item label="采购人安排"><el-input v-model="noticeForm.arrangement" type="textarea" /></el-form-item>
+        <el-form-item label="处理结果"><el-input v-model="noticeForm.result" placeholder="未完成可留空" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="noticeVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveNotice">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -117,28 +162,52 @@
 defineOptions({ name: "MonitorAlarm" });
 
 import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import MonitorAPI from "@/api/monitor";
-import { ALARM_LEVELS, ALARM_LEVEL_MAP, FAULT_TYPES } from "@/constants/monitor";
-import type { AlarmRecord, PushRecord } from "@/types/api/monitor";
+import { FAULT_TYPES } from "@/constants/monitor";
+import type { AlarmRecord, NoticeRecord, PushRecord } from "@/types/api/monitor";
 
+const route = useRoute();
 const activeTab = ref("alarm");
 const loading = ref(false);
 const pushLoading = ref(false);
 const alarmList = ref<AlarmRecord[]>([]);
 const pushRecords = ref<PushRecord[]>([]);
+const notices = ref<NoticeRecord[]>([]);
 const total = ref(0);
 const pageNum = ref(1);
 const pageSize = ref(10);
 const messageVisible = ref(false);
+const levelVisible = ref(false);
+const noticeVisible = ref(false);
 const currentAlarm = ref<AlarmRecord>();
+const alarmStats = ref({ total: 0, severe: 0, important: 0, normal: 0 });
+const levelConfig = ref([
+  { value: 1, label: "严重" },
+  { value: 2, label: "重要" },
+  { value: 3, label: "一般" },
+]);
+const noticeForm = ref<NoticeRecord>({
+  id: 0,
+  noticeTime: "",
+  target: "",
+  channel: "短信",
+  content: "",
+  arrangement: "",
+  result: "",
+});
 
-const queryParams = ref<Record<string, any>>({
+const queryParams = ref({
   deviceCode: "",
-  selfNumber: "",
+  selfNumber: typeof route.query.selfNumber === "string" ? route.query.selfNumber : "",
   faultType: "",
   faultCode: "",
-  level: "",
+  faultReason: "",
 });
+
+function levelLabel(level: number) {
+  return levelConfig.value.find((item) => item.value === level)?.label ?? String(level);
+}
 
 async function loadAlarms() {
   loading.value = true;
@@ -167,66 +236,154 @@ function handleQuery() {
 }
 
 function handleReset() {
-  queryParams.value = { deviceCode: "", selfNumber: "", faultType: "", faultCode: "", level: "" };
+  queryParams.value = { deviceCode: "", selfNumber: "", faultType: "", faultCode: "", faultReason: "" };
   handleQuery();
 }
 
-function showRawMessage(row: any) {
+function showRawMessage(row: AlarmRecord) {
   currentAlarm.value = row;
   messageVisible.value = true;
 }
 
-function copyMessage() {
-  if (currentAlarm.value) {
-    navigator.clipboard?.writeText(currentAlarm.value.rawMessage).then(() => {
-      ElMessage.success("已复制");
-    });
-  }
-}
-
-/** 前端 CSV 导出 */
 function handleExport() {
-  const headers = ["设备识别码", "车辆自编号", "车牌号", "故障类型", "故障码", "故障原因", "告警方式", "告警级别", "故障日期", "故障发生时间"];
+  const headers = ["设备识别码", "车辆自编号", "车辆单位", "故障类型", "故障码", "故障原因", "告警方式", "故障日期", "故障发生时间", "故障最后更新时间"];
   const rows = alarmList.value.map((a) => [
-    a.deviceCode,
-    a.selfNumber,
-    a.plateNumber,
-    a.faultType,
-    a.faultCode,
-    a.faultReason,
-    a.alarmWay,
-    ALARM_LEVEL_MAP[a.level]?.label ?? a.level,
-    a.faultDate,
-    a.faultTime,
+    a.deviceCode, a.selfNumber, a.vehicleUnit, a.faultType, a.faultCode, a.faultReason, a.alarmWay, a.faultDate, a.faultTime, a.updateTime,
   ]);
   const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `告警记录_${Date.now()}.csv`;
+  link.download = `实时故障_${Date.now()}.csv`;
   link.click();
   URL.revokeObjectURL(url);
-  ElMessage.success("导出成功");
 }
 
-onMounted(() => {
+function openNotice(row?: NoticeRecord) {
+  noticeForm.value = row
+    ? { ...row }
+    : { id: 0, noticeTime: new Date().toISOString().slice(0, 16).replace("T", " "), target: "", channel: "短信", content: "", arrangement: "", result: "" };
+  noticeVisible.value = true;
+}
+
+async function saveNotice() {
+  await MonitorAPI.saveNotice(noticeForm.value);
+  notices.value = (await MonitorAPI.getNotices()).list;
+  noticeVisible.value = false;
+}
+
+onMounted(async () => {
+  alarmStats.value = await MonitorAPI.getAlarmStats();
+  notices.value = (await MonitorAPI.getNotices()).list;
   loadAlarms();
   loadPushRecords();
 });
 </script>
 
 <style lang="scss" scoped>
-.raw-message {
-  pre {
-    padding: 12px;
-    overflow-x: auto;
-    font-family: "Courier New", monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    background: #1e1e1e;
-    color: #d4d4d4;
-    border-radius: 8px;
+.alarm-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card,
+.panel {
+  background: #fff;
+  border-radius: 16px;
+}
+
+.metric-card {
+  height: 100px;
+  padding: 18px;
+
+  &.is-soft {
+    background: #eaf1fe;
   }
+}
+
+.metric-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #66758b;
+}
+
+.metric-value {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 34px;
+  letter-spacing: 0;
+  color: #1b2b43;
+
+  &.is-accent {
+    color: #2563eb;
+  }
+}
+
+.panel {
+  padding: 24px;
+}
+
+.query-form {
+  margin-bottom: 8px;
+}
+
+.hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #66758b;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.text-btn {
+  padding: 0;
+  font-size: 13px;
+  color: #2563eb;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.key-mark {
+  margin-left: 8px;
+  color: #e3828b;
+}
+
+.raw-message {
+  padding: 16px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1b2b43;
+  background: #f4f6fa;
+  border-radius: 16px;
+}
+
+.level-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 120px;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #66758b;
 }
 </style>

@@ -44,14 +44,14 @@ const USERS: PlatformUser[] = [
 
 /** 报告列表 */
 const REPORTS: Report[] = [
-  { id: 1, type: "周报", title: "新能源汽车运行监控周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "本周全场车辆在线率 92.3%，故障总数 45 起，环比下降 8%，无高危报警。", fileType: "PDF + Excel" },
-  { id: 2, type: "月报", title: "新能源汽车运行监控月报（2026-09）", period: "2026 年 9 月", generateTime: "2026-10-05 09:00:00", summary: "9 月总充电量 560 万 kWh，碳减排 3600 吨，车辆可用率 98.1%，提出充电策略优化建议 3 条。", fileType: "PDF" },
-  { id: 3, type: "半年报", title: "新能源汽车运行监控半年报（2026 上半年）", period: "2026 年 1-6 月", generateTime: "2026-07-05 09:00:00", summary: "上半年累计行驶里程 2.1 亿公里，平均能耗 0.18 kWh/km，资产健康度评分 91 分。", fileType: "PDF" },
-  { id: 4, type: "年报", title: "新能源汽车运行监控年报（2025）", period: "2025 年", generateTime: "2026-01-10 09:00:00", summary: "全年碳减排 4.2 万吨，车辆接入率 100%，平台可用性 99.99%。", fileType: "PDF" },
-  { id: 5, type: "故障统计周报", title: "电动车辆故障统计分析周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "TOP 故障类型：电池温度异常 18 起、通信中断 12 起、绝缘故障 8 起。", fileType: "PDF + Excel" },
-  { id: 6, type: "接入统计周报", title: "车辆接入情况统计分析周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "本周新增接入 12 辆，累计接入 1936 辆，接入率 100%，数据完整率 98.5%。", fileType: "PDF + Excel" },
-  { id: 7, type: "高危报警专项", title: "高危报警专项分析报告（车辆 JD1023 电池温差超限）", period: "2026-10-22", generateTime: "2026-10-23 15:00:00", summary: "车辆 JD1023 单体温差 18℃ 触发高危报警，经排查为 BMS 温度传感器漂移，已安排更换。", fileType: "PDF" },
-  { id: 8, type: "车辆信息核查月报", title: "车辆信息核查管理月报（2026-10）", period: "2026 年 10 月", generateTime: "2026-10-29 09:00:00", summary: "本月信息完整率 99.2%，发现重复 VIN 2 条，已下发整改通知。", fileType: "PDF" },
+  { id: 1, type: "周报", title: "新能源汽车运行监控周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "本周全场车辆在线率 92.3%，故障总数 45 起，环比下降 8%。定量分析后建议错峰充电，本报告不含高危报警专项。", fileType: "PDF", archived: true },
+  { id: 2, type: "月报", title: "新能源汽车运行监控月报（2026-09）", period: "2026 年 9 月", generateTime: "2026-10-05 09:00:00", summary: "9 月总充电量 560 万 kWh，碳减排 3600 吨，车辆可用率 98.1%，提出充电策略优化建议 3 条。", fileType: "PDF", archived: true },
+  { id: 3, type: "半年报", title: "新能源汽车运行监控半年报（2026 上半年）", period: "2026 年 1-6 月", generateTime: "2026-07-05 09:00:00", summary: "上半年累计行驶里程 2.1 亿公里，平均能耗 0.18 kWh/km，建议特种车单独制定补能窗口。", fileType: "PDF", archived: false },
+  { id: 4, type: "年报", title: "新能源汽车运行监控年报（2025）", period: "2025 年", generateTime: "2026-01-10 09:00:00", summary: "全年碳减排 4.2 万吨，季度新车接入率 100%，建议维持协议接入优先。", fileType: "PDF", archived: true },
+  { id: 5, type: "故障统计周报", title: "电动车辆故障统计分析周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "TOP 故障类型：电池温度异常 18 起、通信中断 12 起、绝缘故障 8 起。周期 7 天。", fileType: "PDF", archived: false },
+  { id: 6, type: "接入统计周报", title: "车辆接入情况统计分析周报（2026-10-19 ~ 10-25）", period: "2026 第 43 周", generateTime: "2026-10-26 12:00:00", summary: "已接入 1936 辆，待接入 8 辆。接入方式：协议对接 1802、OBD 126、其他 8。2026-Q4 新车进场接入率目标 100%。", fileType: "PDF", archived: false },
+  { id: 7, type: "高危报警专项", title: "高危报警专项分析报告（车辆 JD1023 电池温差超限）", period: "2026-10-22", generateTime: "2026-10-23 15:00:00", summary: "严重告警单独出具，不并入故障统计周报。车辆 JD1023 单体温差 18℃，BMS 温度传感器漂移，已安排更换。", fileType: "PDF", archived: false },
+  { id: 8, type: "车辆信息核查报告", title: "车辆信息核查报告（2026-10-29）", period: "按需", generateTime: "2026-10-29 09:00:00", summary: "信息完整率 99.2%，发现重复 VIN 2 条，已下发整改。原文未规定固定周期，本次按需出具。", fileType: "PDF", archived: false },
 ];
 
 /** 推送记录列表 */
@@ -67,7 +67,7 @@ function filterBy<T extends Record<string, any>>(list: T[], params: Record<strin
   let result = [...list];
   for (const [key, value] of Object.entries(params)) {
     if (value === undefined || value === null || value === "") continue;
-    if (key === "pageIndex" || key === "pageSize") continue;
+    if (key === "pageIndex" || key === "pageNum" || key === "pageSize") continue;
     if (typeof value === "string") {
       result = result.filter((item) => String(item[key] ?? "").includes(value));
     } else {
@@ -102,7 +102,41 @@ export function mockGetUsers(params: any) {
 }
 
 export function mockGetReports(params: any) {
-  return paginate(filterBy(REPORTS, params || {}), params || {});
+  const query = { ...(params || {}) };
+  const type = query.type;
+  delete query.type;
+  if (query.archived === "" || query.archived === undefined) delete query.archived;
+  let list = filterBy(REPORTS, query);
+  if (type) list = list.filter((item) => item.type === type);
+  return paginate(list, query);
+}
+
+export function mockArchiveReport(id: number) {
+  const report = REPORTS.find((item) => item.id === id);
+  if (report) report.archived = !report.archived;
+  return report;
+}
+
+export function mockCreateReport(type: string) {
+  const now = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  const generateTime = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}:00`;
+  const report: Report = {
+    id: nextId(REPORTS),
+    type,
+    title: `${type}（${generateTime.slice(0, 10)}）`,
+    period: type.includes("核查") ? "按需" : "本周期",
+    generateTime,
+    summary: type === "高危报警专项"
+      ? "由严重告警单独生成，不并入周报。"
+      : type === "接入统计周报"
+        ? "含已接入、待接入、接入方式，并汇总本季新车接入率，目标 100%。"
+        : "定量分析与生产运营建议见正文。",
+    fileType: "PDF",
+    archived: false,
+  };
+  REPORTS.unshift(report);
+  return report;
 }
 
 export function mockGetPushRecords(params: any) {

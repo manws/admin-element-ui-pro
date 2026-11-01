@@ -23,7 +23,6 @@
 <script setup lang="ts">
 import { type RouteLocationNormalized } from "vue-router";
 import { useSettingsStore, useTagsViewStore } from "@/store";
-import variables from "@/styles/variables.module.scss";
 import Error404 from "@/views/error/404.vue";
 
 const { cachedViews } = toRefs(useTagsViewStore());
@@ -72,9 +71,9 @@ const currentComponent = (
 
 const appMainHeight = computed(() => {
   if (settingsStore.showTagsView) {
-    return `calc(100vh - ${variables["navbar-height"]} - ${variables["tags-view-height"]})`;
+    return "calc(100vh - var(--navbar-height) - var(--tags-view-height))";
   } else {
-    return `calc(100vh - ${variables["navbar-height"]})`;
+    return "calc(100vh - var(--navbar-height))";
   }
 });
 

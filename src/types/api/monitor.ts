@@ -10,7 +10,9 @@ export interface Vehicle {
   vehicleType: string;
   /** 车辆分类：摆渡车 / 牵引车 / 勤务车 / 行李牵引车 等 */
   category: string;
-  /** 品牌 */
+  /** 品牌（与车品牌分列） */
+  make: string;
+  /** 车品牌 */
   brand: string;
   /** 型号 */
   model: string;
@@ -36,6 +38,24 @@ export interface Vehicle {
   factoryTime: string;
   /** 是否可用 */
   available: boolean;
+  /** 接入方式：协议对接 / OBD / 其他 */
+  accessMethod: string;
+  /** 协议类别：整车 / 其它电池系统 */
+  protocolCategory: string;
+  /** 厂家资料到达时间 */
+  materialArrivalTime: string;
+  /** 要求完成时间（资料到达后 7 日） */
+  requiredFinishTime: string;
+  /** 实际完成时间 */
+  actualFinishTime: string;
+  /** 是否超时 */
+  overdue: boolean;
+  /** 进场季度 */
+  entryQuarter: string;
+  /** 是否计入季度接入率 */
+  countInQuarterRate: boolean;
+  /** 费用承担方 */
+  costBearer: string;
 
   // ===== 实时状态 =====
   /** 在线状态 */
@@ -159,7 +179,7 @@ export interface CurvePoint {
   minTemp?: number;
 }
 
-/** 轨迹点 */
+/** 轨迹点（含回放联动的整车与极值快照） */
 export interface TrackPoint {
   time: string;
   lng: number;
@@ -167,6 +187,24 @@ export interface TrackPoint {
   /** 轨迹段状态：normal 正常 / charging 充电 / alarm 告警 / offline 离线 */
   state: "normal" | "charging" | "alarm" | "offline";
   soc: number;
+  speed: number;
+  voltage: number;
+  current: number;
+  power: number;
+  vehicleStatus: string;
+  gear: string;
+  insulationResistance: number;
+  maxVoltage: number;
+  minVoltage: number;
+  maxTemp: number;
+  minTemp: number;
+}
+
+/** 电池单体 */
+export interface CellSample {
+  index: number;
+  voltage: number;
+  temperature: number;
 }
 
 /** 单车详情（含曲线、电机、告警、轨迹） */
@@ -176,6 +214,8 @@ export interface VehicleDetail extends Vehicle {
   motorList: MotorInfo[];
   alarmList: AlarmRecord[];
   trackPoints: TrackPoint[];
+  /** 电池单体电压与温度 */
+  cells: CellSample[];
 }
 
 /** 终端类型 */
@@ -265,6 +305,31 @@ export interface Report {
   summary: string;
   /** 文件格式 */
   fileType: string;
+  /** 是否已归档 */
+  archived: boolean;
+}
+
+/** 异常通知与处置记录 */
+export interface NoticeRecord {
+  id: number;
+  /** 通知时间 */
+  noticeTime: string;
+  /** 通知对象 */
+  target: string;
+  /** 渠道 */
+  channel: string;
+  /** 内容 */
+  content: string;
+  /** 采购人安排 */
+  arrangement: string;
+  /** 处理结果，完成前为空 */
+  result: string;
+}
+
+/** 安全评估系数 */
+export interface SafetyFactor {
+  name: string;
+  value: number;
 }
 
 /** 推送记录 */
@@ -296,6 +361,7 @@ export interface OverviewStats {
   chargingCount: number;
   faultCount: number;
   safetyScore: number;
+  safetyFactors: SafetyFactor[];
 }
 
 /** 充电热力图数据点 */

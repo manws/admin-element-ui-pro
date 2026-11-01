@@ -1,62 +1,48 @@
 <template>
-  <div class="p-4 space-y-4">
-    <!-- 监控统计面板 -->
-    <el-row :gutter="16">
-      <el-col v-for="item in statPanels" :key="item.label" :xs="12" :sm="12" :md="6">
-        <el-card shadow="never" class="stat-panel">
-          <div class="text-center">
-            <p class="text-sm text-[--el-text-color-secondary]">{{ item.label }}</p>
-            <p class="text-2xl font-bold mt-1" :style="{ color: item.color }">{{ item.value }}</p>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+  <div class="monitor-page">
+    <section class="metric-row">
+      <article
+        v-for="(item, index) in statPanels"
+        :key="item.label"
+        class="metric-card"
+        :class="{ 'is-soft': index === statPanels.length - 1 }"
+      >
+        <p class="metric-label">{{ item.label }}</p>
+        <p class="metric-value" :class="{ 'is-accent': item.accent }">{{ item.value }}</p>
+      </article>
+    </section>
 
-    <!-- 地图 + 车型分组里程 -->
-    <el-row :gutter="16">
-      <el-col :xs="24" :lg="16">
-        <el-card shadow="never" header="全场车辆位置分布（点击车辆查看详情）">
-          <div class="map-legend">
-            <span class="legend-item"><i class="dot dot--normal" />在线</span>
-            <span class="legend-item"><i class="dot dot--charging" />充电中</span>
-            <span class="legend-item"><i class="dot dot--alarm" />告警</span>
-            <span class="legend-item"><i class="dot dot--offline" />离线</span>
-          </div>
-          <ECharts :options="mapOption" height="500px" @chart-click="handleVehicleClick" />
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :lg="8">
-        <el-card shadow="never" header="按车辆类型统计行驶里程（万 km）">
-          <ECharts :options="categoryMileageOption" height="500px" />
-        </el-card>
-      </el-col>
-    </el-row>
+    <section class="chart-row">
+      <article class="chart-card chart-card--scatter">
+        <h3>全场车辆位置分布</h3>
+        <div class="map-legend">
+          <span><i class="dot dot--online" />在线</span>
+          <span><i class="dot dot--charging" />充电中</span>
+          <span><i class="dot dot--alarm" />告警</span>
+          <span><i class="dot dot--offline" />离线</span>
+        </div>
+        <ECharts class="chart-fill" :options="mapOption" height="100%" @chart-click="handleVehicleClick" />
+      </article>
+      <article class="chart-card chart-card--bar">
+        <h3 class="is-sub">按车辆类型统计行驶里程（万 km）</h3>
+        <ECharts :options="categoryMileageOption" height="100%" />
+      </article>
+    </section>
 
-    <!-- 单车详情弹窗 -->
     <el-drawer v-model="drawerVisible" :title="`车辆详情 - ${selectedVehicle?.plateNumber ?? ''}`" size="460px">
       <template v-if="selectedVehicle">
         <el-descriptions :column="1" border>
-          <el-descriptions-item label="在线状态">
-            <el-tag :type="selectedVehicle.online ? 'success' : 'info'">
-              {{ selectedVehicle.online ? "在线" : "离线" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="自编号">{{ selectedVehicle.selfNumber }}</el-descriptions-item>
-          <el-descriptions-item label="车品牌">{{ selectedVehicle.brand }}</el-descriptions-item>
-          <el-descriptions-item label="运营单位">{{ selectedVehicle.company }}</el-descriptions-item>
+          <el-descriptions-item label="在线状态">{{ selectedVehicle.online ? "在线" : "离线" }}</el-descriptions-item>
           <el-descriptions-item label="总行驶里程">{{ selectedVehicle.totalMileage.toLocaleString() }} km</el-descriptions-item>
           <el-descriptions-item label="行驶速度">{{ selectedVehicle.speed }} km/h</el-descriptions-item>
           <el-descriptions-item label="当前 SOC">{{ selectedVehicle.soc }}%</el-descriptions-item>
           <el-descriptions-item label="输出电压">{{ selectedVehicle.voltage }} V</el-descriptions-item>
           <el-descriptions-item label="输出电流">{{ selectedVehicle.current }} A</el-descriptions-item>
           <el-descriptions-item label="输出功率">{{ selectedVehicle.power }} kW</el-descriptions-item>
-          <el-descriptions-item label="单体最高电压">{{ selectedVehicle.cellMaxVoltage }} V</el-descriptions-item>
-          <el-descriptions-item label="单体最低电压">{{ selectedVehicle.cellMinVoltage }} V</el-descriptions-item>
-          <el-descriptions-item label="单体最高温度">{{ selectedVehicle.cellMaxTemp }} ℃</el-descriptions-item>
-          <el-descriptions-item label="单体最低温度">{{ selectedVehicle.cellMinTemp }} ℃</el-descriptions-item>
-          <el-descriptions-item label="最近在线时间">{{ selectedVehicle.lastOnlineTime }}</el-descriptions-item>
+          <el-descriptions-item label="电池单体电压">{{ selectedVehicle.cellMinVoltage }} ~ {{ selectedVehicle.cellMaxVoltage }} V</el-descriptions-item>
+          <el-descriptions-item label="电池单体温度">{{ selectedVehicle.cellMinTemp }} ~ {{ selectedVehicle.cellMaxTemp }} ℃</el-descriptions-item>
         </el-descriptions>
-        <el-button type="primary" class="w-full mt-4" @click="gotoDetail">查看完整详情</el-button>
+        <el-button type="primary" class="detail-btn" @click="gotoDetail">查看完整详情</el-button>
       </template>
     </el-drawer>
   </div>
@@ -71,72 +57,57 @@ import MonitorAPI from "@/api/monitor";
 import type { Vehicle } from "@/types/api/monitor";
 
 const router = useRouter();
-
 const vehicles = ref<Vehicle[]>([]);
 const stats = ref<{ vehicleTotal: number; onlineCount: number; onlineRate: number; chargingCount: number; totalMileage: number }>();
 const drawerVisible = ref(false);
 const selectedVehicle = ref<Vehicle>();
 
 const statPanels = computed(() => [
-  { label: "车辆总数", value: (stats.value?.vehicleTotal ?? 0).toLocaleString(), color: "#409EFF" },
-  { label: "在线率", value: `${Math.round((stats.value?.onlineRate ?? 0) * 100)}%`, color: "#67C23A" },
-  { label: "充电车辆数", value: (stats.value?.chargingCount ?? 0).toLocaleString(), color: "#E6A23C" },
-  { label: "总行驶里程(km)", value: (stats.value?.totalMileage ?? 0).toLocaleString(), color: "#F56C6C" },
+  { label: "可监控车辆总数", value: (stats.value?.vehicleTotal ?? 0).toLocaleString(), accent: false },
+  { label: "车在线率", value: `${Math.round((stats.value?.onlineRate ?? 0) * 100)}%`, accent: true },
+  { label: "充电车辆数", value: (stats.value?.chargingCount ?? 0).toLocaleString(), accent: true },
+  { label: "车辆总行驶里程(km)", value: (stats.value?.totalMileage ?? 0).toLocaleString(), accent: false },
 ]);
 
-/** 车辆状态颜色 */
+const axis = {
+  axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
+  axisLine: { lineStyle: { color: "#E4E9F1" } },
+  splitLine: { lineStyle: { color: "#E4E9F1", width: 1 } },
+};
+
 function vehicleColor(v: Vehicle): string {
-  if (v.alarmFlag) return "#F56C6C";
-  if (v.charging) return "#409EFF";
-  if (v.online) return "#67C23A";
-  return "#c0c4cc";
+  if (v.alarmFlag) return "#E3828B";
+  if (v.charging) return "#6EA4FF";
+  if (v.online) return "#79BD85";
+  return "#7E8B9F";
 }
 
-/** 地图散点 */
-const mapOption = computed(() => {
-  const data = vehicles.value.map((v) => ({
-    value: [v.lng, v.lat],
-    name: v.plateNumber,
-    vehicle: v,
-    itemStyle: { color: vehicleColor(v) },
-  }));
+const mapOption = computed(() => ({
+  tooltip: {
+    trigger: "item",
+    formatter: (params: any) => {
+      const v = params.data?.vehicle;
+      if (!v) return "";
+      return `${v.plateNumber}<br/>SOC ${v.soc}% · ${v.speed} km/h`;
+    },
+  },
+  grid: { left: 56, right: 16, top: 12, bottom: 36 },
+  xAxis: { type: "value", name: "经度", scale: true, ...axis, nameTextStyle: { color: "#66758B", fontSize: 12 } },
+  yAxis: { type: "value", name: "纬度", scale: true, ...axis, nameTextStyle: { color: "#66758B", fontSize: 12 } },
+  series: [
+    {
+      type: "scatter",
+      symbolSize: 12,
+      data: vehicles.value.map((v) => ({
+        value: [v.lng, v.lat],
+        name: v.plateNumber,
+        vehicle: v,
+        itemStyle: { color: vehicleColor(v) },
+      })),
+    },
+  ],
+}));
 
-  return {
-    tooltip: {
-      trigger: "item",
-      formatter: (params: any) => {
-        const v = params.data?.vehicle;
-        if (!v) return "";
-        return `${v.plateNumber}<br/>${v.selfNumber} · ${v.company}<br/>SOC: ${v.soc}% · 速度: ${v.speed} km/h<br/>状态: ${v.vehicleStatus}`;
-      },
-    },
-    grid: { left: 50, right: 20, top: 20, bottom: 40 },
-    xAxis: {
-      type: "value",
-      name: "经度",
-      nameLocation: "middle",
-      nameGap: 25,
-      scale: true,
-      axisLabel: { fontSize: 10 },
-    },
-    yAxis: {
-      type: "value",
-      name: "纬度",
-      scale: true,
-      axisLabel: { fontSize: 10 },
-    },
-    series: [
-      {
-        type: "scatter",
-        symbolSize: 12,
-        data,
-        emphasis: { scale: 1.5 },
-      },
-    ],
-  };
-});
-
-/** 按车型分组里程 */
 const categoryMileageOption = computed(() => {
   const map = new Map<string, number>();
   vehicles.value.forEach((v) => {
@@ -147,16 +118,16 @@ const categoryMileageOption = computed(() => {
     .sort((a, b) => b.value - a.value);
 
   return {
-    tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    grid: { left: 90, right: 20, top: 10, bottom: 30 },
-    xAxis: { type: "value" },
-    yAxis: { type: "category", data: entries.map((e) => e.name) },
+    tooltip: { trigger: "axis" },
+    grid: { left: 88, right: 16, top: 8, bottom: 28 },
+    xAxis: { type: "value", ...axis },
+    yAxis: { type: "category", data: entries.map((e) => e.name), ...axis },
     series: [
       {
         type: "bar",
         data: entries.map((e) => e.value),
-        itemStyle: { color: "#409EFF", borderRadius: [0, 4, 4, 0] },
-        barMaxWidth: 18,
+        itemStyle: { color: "#4E83ED", borderRadius: [0, 3, 3, 0] },
+        barMaxWidth: 16,
       },
     ],
   };
@@ -177,53 +148,127 @@ function gotoDetail() {
 }
 
 onMounted(async () => {
-  const [positions, s] = await Promise.all([
-    MonitorAPI.getVehiclePositions(),
-    MonitorAPI.getMonitorStats(),
-  ]);
+  const [positions, s] = await Promise.all([MonitorAPI.getVehiclePositions(), MonitorAPI.getMonitorStats()]);
   vehicles.value = positions;
   stats.value = s;
 });
 </script>
 
 <style lang="scss" scoped>
-.stat-panel {
-  :deep(.el-card__body) {
-    padding: 16px;
+.monitor-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-card,
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+}
+
+.metric-card {
+  height: 100px;
+  padding: 18px;
+
+  &.is-soft {
+    background: #eaf1fe;
   }
+}
+
+.metric-label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #66758b;
+}
+
+.metric-value {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 34px;
+  letter-spacing: 0;
+  color: #1b2b43;
+
+  &.is-accent {
+    color: #2563eb;
+  }
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: minmax(0, 630fr) minmax(0, 386fr);
+  gap: 20px;
+}
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+  height: 448px;
+  padding: 24px;
+
+  h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #1b2b43;
+
+    &.is-sub {
+      font-size: 14px;
+    }
+  }
+}
+
+.chart-fill,
+.chart-card :deep(.echarts),
+.chart-card > :last-child {
+  flex: 1;
+  min-height: 0;
 }
 
 .map-legend {
   display: flex;
   gap: 16px;
   margin-bottom: 8px;
+  font-size: 12px;
+  color: #66758b;
 
-  .legend-item {
-    display: flex;
+  span {
+    display: inline-flex;
+    gap: 8px;
     align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
   }
+}
 
-  .dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 
-    &--normal {
-      background: #67c23a;
-    }
-    &--charging {
-      background: #409eff;
-    }
-    &--alarm {
-      background: #f56c6c;
-    }
-    &--offline {
-      background: #c0c4cc;
-    }
+  &--online {
+    background: #79bd85;
   }
+  &--charging {
+    background: #6ea4ff;
+  }
+  &--alarm {
+    background: #e3828b;
+  }
+  &--offline {
+    background: #7e8b9f;
+  }
+}
+
+.detail-btn {
+  width: 100%;
+  margin-top: 16px;
 }
 </style>

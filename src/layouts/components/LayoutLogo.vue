@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { appConfig } from "@/settings";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/logo.svg";
 
 defineProps({
   collapse: {
@@ -26,7 +26,7 @@ defineProps({
 <style lang="scss" scoped>
 .logo {
   width: 100%;
-  height: $navbar-height;
+  height: var(--navbar-height);
   background-color: $sidebar-logo-background;
 
   .title {
@@ -56,7 +56,7 @@ defineProps({
 .openSidebar {
   &.layout-top .layout__header-left .logo,
   &.layout-mix .layout__header-logo .logo {
-    width: $sidebar-width; // 210px，显示logo+文字
+    width: var(--sidebar-width);
   }
 }
 
@@ -64,7 +64,7 @@ defineProps({
 .hideSidebar {
   &.layout-top .layout__header-left .logo,
   &.layout-mix .layout__header-logo .logo {
-    width: $sidebar-width-collapsed; // 54px，只显示logo
+    width: var(--sidebar-width-collapsed);
   }
 
   // 隐藏文字，只显示图标

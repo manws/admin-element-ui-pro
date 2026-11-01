@@ -32,7 +32,7 @@ function toggleSideBar() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: $navbar-height;
+  height: var(--navbar-height);
 
   &__actions {
     display: flex;

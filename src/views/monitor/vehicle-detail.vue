@@ -1,22 +1,22 @@
 <template>
-  <div class="p-4">
+  <div class="detail-page">
     <el-card shadow="never">
-      <!-- 头部概览 -->
-      <div class="flex items-center justify-between mb-4">
+      <div class="detail-head">
         <div>
-          <p class="text-lg font-bold m-0">
+          <p class="detail-title">
             {{ detail?.plateNumber }}
-            <el-tag :type="detail?.online ? 'success' : 'info'" size="small" class="ml-2">
+            <span class="status-text">
+              <i class="status-dot" :class="detail?.online ? 'is-online' : 'is-offline'" />
               {{ detail?.online ? "在线" : "离线" }}
-            </el-tag>
-            <el-tag v-if="detail?.alarmFlag" type="danger" size="small" class="ml-1">告警</el-tag>
-            <el-tag v-if="detail?.charging" type="primary" size="small" class="ml-1">充电中</el-tag>
+            </span>
+            <span v-if="detail?.alarmFlag" class="status-text is-alarm">告警</span>
+            <span v-if="detail?.charging" class="status-text is-charging">充电中</span>
           </p>
-          <p class="text-sm text-[--el-text-color-secondary] mt-1">
-            {{ detail?.selfNumber }} · {{ detail?.brand }} {{ detail?.model }} · {{ detail?.company }}
+          <p class="detail-sub">
+            {{ detail?.selfNumber }} · {{ detail?.make }} / {{ detail?.brand }} {{ detail?.model }} · {{ detail?.company }}
           </p>
         </div>
-        <el-button type="warning" @click="gotoTrack">历史轨迹回放</el-button>
+        <el-button type="primary" @click="gotoTrack">历史轨迹回放</el-button>
       </div>
 
       <el-tabs v-model="activeTab">
@@ -25,6 +25,7 @@
           <el-descriptions :column="3" border>
             <el-descriptions-item label="车辆类型">{{ detail?.vehicleType }}</el-descriptions-item>
             <el-descriptions-item label="车辆分类">{{ detail?.category }}</el-descriptions-item>
+            <el-descriptions-item label="品牌">{{ detail?.make }}</el-descriptions-item>
             <el-descriptions-item label="车品牌">{{ detail?.brand }}</el-descriptions-item>
             <el-descriptions-item label="型号">{{ detail?.model }}</el-descriptions-item>
             <el-descriptions-item label="电池型号">{{ detail?.batteryModel }}</el-descriptions-item>
@@ -54,6 +55,8 @@
         <!-- 整车状态 -->
         <el-tab-pane label="整车状态" name="status">
           <el-descriptions :column="4" border>
+            <el-descriptions-item label="行驶速度">{{ detail?.speed }} km/h</el-descriptions-item>
+            <el-descriptions-item label="当前 SOC">{{ detail?.soc }}%</el-descriptions-item>
             <el-descriptions-item label="整车功率">{{ detail?.power }} kW</el-descriptions-item>
             <el-descriptions-item label="SOC">{{ detail?.soc }}%</el-descriptions-item>
             <el-descriptions-item label="总电压">{{ detail?.voltage }} V</el-descriptions-item>
@@ -96,9 +99,7 @@
             <el-table-column prop="faultTime" label="告警时间" width="180" />
             <el-table-column label="告警等级" width="100">
               <template #default="{ row }">
-                <el-tag :type="ALARM_LEVEL_MAP[row.level]?.type" size="small">
-                  {{ ALARM_LEVEL_MAP[row.level]?.label }}
-                </el-tag>
+                <span :class="{ 'is-alarm': row.level === 1 }">{{ ALARM_LEVEL_MAP[row.level]?.label }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="content" label="告警内容" />
@@ -106,14 +107,28 @@
         </el-tab-pane>
 
         <!-- 定位数据 -->
+        <el-tab-pane label="在线信息" name="online">
+          <el-descriptions :column="3" border>
+            <el-descriptions-item label="在线状态">{{ detail?.online ? "在线" : "离线" }}</el-descriptions-item>
+            <el-descriptions-item label="最近在线时间">{{ detail?.lastOnlineTime }}</el-descriptions-item>
+            <el-descriptions-item label="上报间隔">{{ detail?.reportInterval }} s</el-descriptions-item>
+          </el-descriptions>
+        </el-tab-pane>
+
         <el-tab-pane label="定位数据" name="location">
           <el-descriptions :column="2" border class="mb-4">
-            <el-descriptions-item label="位置描述">{{ detail?.position }}</el-descriptions-item>
-            <el-descriptions-item label="最近在线时间">{{ detail?.lastOnlineTime }}</el-descriptions-item>
-            <el-descriptions-item label="经度">{{ detail?.lng }}</el-descriptions-item>
-            <el-descriptions-item label="纬度">{{ detail?.lat }}</el-descriptions-item>
+            <el-descriptions-item label="车辆定位">{{ detail?.position }}</el-descriptions-item>
+            <el-descriptions-item label="经纬度">{{ detail?.lng }} , {{ detail?.lat }}</el-descriptions-item>
           </el-descriptions>
           <ECharts :options="locationOption" height="320px" />
+        </el-tab-pane>
+
+        <el-tab-pane label="电池单体" name="cells">
+          <el-table :data="detail?.cells">
+            <el-table-column prop="index" label="单体序号" width="100" />
+            <el-table-column prop="voltage" label="电压(V)" />
+            <el-table-column prop="temperature" label="温度(℃)" />
+          </el-table>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -148,9 +163,9 @@ const batteryCurveOption = computed(() => {
       { type: "value", name: "SOC(%)", max: 100 },
     ],
     series: [
-      { name: "电流(A)", type: "line", data: d.batteryCurve.map((p) => p.current) },
-      { name: "电压(V)", type: "line", data: d.batteryCurve.map((p) => p.voltage) },
-      { name: "SOC(%)", type: "line", yAxisIndex: 1, data: d.batteryCurve.map((p) => p.soc) },
+      { name: "电流(A)", type: "line", symbol: "none", data: d.batteryCurve.map((p) => p.current), lineStyle: { color: "#4E83ED" } },
+      { name: "电压(V)", type: "line", symbol: "none", data: d.batteryCurve.map((p) => p.voltage), lineStyle: { color: "#568DFF" } },
+      { name: "SOC(%)", type: "line", symbol: "none", yAxisIndex: 1, data: d.batteryCurve.map((p) => p.soc), lineStyle: { color: "#2563EB" } },
     ],
   };
 });
@@ -165,10 +180,10 @@ const extremeCurveOption = computed(() => {
     xAxis: { type: "category", data: d.extremeCurve.map((p) => p.time.slice(11, 16)) },
     yAxis: [{ type: "value", name: "电压(V)" }, { type: "value", name: "温度(℃)" }],
     series: [
-      { name: "最高电压(V)", type: "line", data: d.extremeCurve.map((p) => p.maxVoltage) },
-      { name: "最低电压(V)", type: "line", data: d.extremeCurve.map((p) => p.minVoltage) },
-      { name: "最高温度(℃)", type: "line", yAxisIndex: 1, data: d.extremeCurve.map((p) => p.maxTemp) },
-      { name: "最低温度(℃)", type: "line", yAxisIndex: 1, data: d.extremeCurve.map((p) => p.minTemp) },
+      { name: "最高电压(V)", type: "line", symbol: "none", data: d.extremeCurve.map((p) => p.maxVoltage), lineStyle: { color: "#2563EB" } },
+      { name: "最低电压(V)", type: "line", symbol: "none", data: d.extremeCurve.map((p) => p.minVoltage), lineStyle: { color: "#6EA4FF" } },
+      { name: "最高温度(℃)", type: "line", symbol: "none", yAxisIndex: 1, data: d.extremeCurve.map((p) => p.maxTemp), lineStyle: { color: "#4E83ED" } },
+      { name: "最低温度(℃)", type: "line", symbol: "none", yAxisIndex: 1, data: d.extremeCurve.map((p) => p.minTemp), lineStyle: { color: "#568DFF" } },
     ],
   };
 });
@@ -186,7 +201,7 @@ const locationOption = computed(() => {
         type: "scatter",
         symbolSize: 20,
         data: [{ value: [d.lng, d.lat], name: d.plateNumber }],
-        itemStyle: { color: "#F56C6C" },
+        itemStyle: { color: "#4E83ED" },
       },
     ],
   };
@@ -203,3 +218,60 @@ onMounted(async () => {
   detail.value = await MonitorAPI.getVehicleDetail(id);
 });
 </script>
+
+<style lang="scss" scoped>
+.detail-page {
+  padding: 24px;
+}
+
+.detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1b2b43;
+}
+
+.detail-sub {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #66758b;
+}
+
+.status-text {
+  margin-left: 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #66758b;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border-radius: 50%;
+
+  &.is-online {
+    background: #79bd85;
+  }
+
+  &.is-offline {
+    background: #7e8b9f;
+  }
+}
+
+.is-alarm {
+  color: #e3828b;
+}
+
+.is-charging {
+  color: #6ea4ff;
+}
+</style>

@@ -56,7 +56,7 @@ const isLogoCollapsed = computed(() => width.value < 768);
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    height: $navbar-height;
+    height: var(--navbar-height);
     background-color: $menu-background;
 
     &-left {
@@ -74,7 +74,7 @@ const isLogoCollapsed = computed(() => width.value < 768);
       height: 100%;
 
       :deep(.logo) {
-        height: $navbar-height;
+        height: var(--navbar-height);
       }
     }
 
@@ -95,21 +95,21 @@ const isLogoCollapsed = computed(() => width.value < 768);
       :deep(.el-menu--horizontal) {
         flex: 1;
         min-width: 0;
-        height: $navbar-height;
+        height: var(--navbar-height);
         overflow: hidden;
-        line-height: $navbar-height;
+        line-height: var(--navbar-height);
         background-color: transparent;
         border: none;
 
         .el-menu-item {
-          height: $navbar-height;
-          line-height: $navbar-height;
+          height: var(--navbar-height);
+          line-height: var(--navbar-height);
         }
 
         .el-sub-menu {
           .el-sub-menu__title {
-            height: $navbar-height;
-            line-height: $navbar-height;
+            height: var(--navbar-height);
+            line-height: var(--navbar-height);
           }
 
           &.has-active-child {
@@ -140,14 +140,14 @@ const isLogoCollapsed = computed(() => width.value < 768);
   }
 
   &__main {
-    height: calc(100vh - $navbar-height);
+    height: calc(100vh - var(--navbar-height));
     overflow-y: auto;
   }
 }
 
 .hasTagsView {
   :deep(.app-main) {
-    height: calc(100vh - $navbar-height - $tags-view-height) !important;
+    height: calc(100vh - var(--navbar-height) - var(--tags-view-height)) !important;
   }
 }
 </style>

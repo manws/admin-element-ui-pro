@@ -3,13 +3,13 @@
     <PageSearch ref="searchRef" :search-config="searchConfig" @query-click="handleQueryClick" @reset-click="handleResetClick" />
     <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
       <template #available="{ row }">
-        <el-tag :type="row.available ? 'success' : 'danger'" size="small">{{ row.available ? "可用" : "禁用" }}</el-tag>
+        <span>{{ row.available ? "可用" : "停用" }}</span>
       </template>
       <template #superUser="{ row }">
-        <el-tag :type="row.superUser ? 'danger' : 'info'" size="small">{{ row.superUser ? "超级用户" : "普通用户" }}</el-tag>
+        <span>{{ row.superUser ? "超级用户" : "普通用户" }}</span>
       </template>
       <template #online="{ row }">
-        <el-tag :type="row.online ? 'success' : 'info'" size="small">{{ row.online ? "在线" : "离线" }}</el-tag>
+        <span>{{ row.online ? "在线" : "离线" }}</span>
       </template>
     </PageContent>
     <PageModal ref="addModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />
@@ -65,9 +65,12 @@ const contentConfig: IContentConfig = {
     { label: "是否超级用户", prop: "superUser", templet: "custom", slotName: "superUser", width: 110 },
     { label: "是否在线", prop: "online", templet: "custom", slotName: "online", width: 90 },
     { label: "登录次数", prop: "loginCount", width: 90, align: "right" },
+    { label: "登录时间", prop: "loginTime", width: 170 },
+    { label: "登录设备", prop: "loginDevice", width: 140 },
     { label: "登录 IP", prop: "loginIp", width: 120 },
-    { label: "登录位置", prop: "loginLocation", minWidth: 120, show: false },
-    { label: "最近在线时间", prop: "lastOnlineTime", width: 170, show: false },
+    { label: "登录端口", prop: "loginPort", width: 90 },
+    { label: "登录位置", prop: "loginLocation", minWidth: 120 },
+    { label: "最近在线时间", prop: "lastOnlineTime", width: 170 },
     { label: "操作", templet: "tool", width: 140, fixed: "right", operat: ["edit", "view", "delete"] },
   ],
 };
@@ -84,6 +87,13 @@ const modalConfig: IModalConfig = {
     { type: "input", label: "邮箱", prop: "email", col: { span: 12 } },
     { type: "switch", label: "是否可用", prop: "available", initialValue: true, col: { span: 12 } },
     { type: "switch", label: "是否超级用户", prop: "superUser", initialValue: false, col: { span: 12 } },
+    { type: "input", label: "登录时间", prop: "loginTime", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "登录设备", prop: "loginDevice", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "登录 IP", prop: "loginIp", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "登录端口", prop: "loginPort", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "登录次数", prop: "loginCount", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "登录位置", prop: "loginLocation", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "最近在线时间", prop: "lastOnlineTime", attrs: { disabled: true }, col: { span: 12 } },
   ],
   formAction: (data) => UserAPI.saveUser(data),
 };

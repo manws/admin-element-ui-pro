@@ -2,6 +2,7 @@ import type { RouteRecordRaw } from "vue-router";
 import NProgress from "@/plugins/nprogress";
 import router from "@/router";
 import { usePermissionStore, useUserStore } from "@/store";
+import { ROLE_ROOT } from "@/constants";
 
 /**
  * 路由权限守卫
@@ -36,6 +37,15 @@ export function setupPermissionGuard() {
 
       const permissionStore = usePermissionStore();
       const userStore = useUserStore();
+
+      if (
+        to.path.startsWith("/system") &&
+        !userStore.userInfo.roles?.includes(ROLE_ROOT)
+      ) {
+        next("/401");
+        NProgress.done();
+        return;
+      }
 
       // 动态路由生成
       if (!permissionStore.isRouteGenerated) {

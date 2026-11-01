@@ -21,7 +21,18 @@ export const VEHICLE_CATEGORIES = [
   "加水车",
 ] as const;
 
-/** 汽车品牌（示例） */
+/** 品牌（与车品牌分列） */
+export const VEHICLE_MAKES = [
+  "比亚迪汽车",
+  "北汽福田",
+  "吉利汽车",
+  "广汽埃安",
+  "长安汽车",
+  "宇通客车",
+  "江淮汽车",
+] as const;
+
+/** 车品牌（示例） */
 export const VEHICLE_BRANDS = [
   "比亚迪",
   "北汽福田",
@@ -91,6 +102,15 @@ export const SATELLITE_TYPES = ["单北斗", "GPS+北斗", "GPS"] as const;
 /** 电池化学体系类型 */
 export const BATTERY_CHEMISTRY = ["磷酸铁锂", "三元锂", "钛酸锂"] as const;
 
+/** 接入方式 */
+export const ACCESS_METHODS = ["协议对接", "OBD", "其他"] as const;
+
+/** 协议类别 */
+export const PROTOCOL_CATEGORIES = ["整车", "其它电池系统"] as const;
+
+/** 费用承担方（无法协议对接时） */
+export const COST_BEARERS = ["车辆使用方", "资产方"] as const;
+
 /** 报告类型 */
 export const REPORT_TYPES: OptionItem[] = [
   { label: "运行监控周报", value: "周报" },
@@ -100,7 +120,7 @@ export const REPORT_TYPES: OptionItem[] = [
   { label: "故障统计分析周报", value: "故障统计周报" },
   { label: "车辆接入统计周报", value: "接入统计周报" },
   { label: "高危报警专项报告", value: "高危报警专项" },
-  { label: "车辆信息核查月报", value: "车辆信息核查月报" },
+  { label: "车辆信息核查报告", value: "车辆信息核查报告" },
 ];
 
 /** 推送通道 */

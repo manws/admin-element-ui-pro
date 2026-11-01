@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地图监控 · 明亮蓝白设计系统</title>
+<style>
+:root{--page:#F4F6FA;--surface:#fff;--primary:#2563EB;--on-primary:#fff;--text:#1B2B43;--muted:#66758B;--sidebar:#17263D;--menu-selected:#203861;--menu-selected-text:#AFC9FF;--menu:#91A1BA;--brand-text:#E9F0FB;--divider:#A9B4C5;--route-strip:#EDF1F6;--route-current:#DFEAFE;--metric-emphasis:#EAF1FE;--grid:#E4E9F1}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--page);color:var(--text);font-family:'Noto Sans SC','Microsoft YaHei',sans-serif}
+img{display:block}button{font:inherit;border:0;background:none;color:inherit;padding:0;cursor:pointer}
+#board{width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:40px;padding-bottom:64px}
+.panel{position:relative}
+.banner{background:var(--primary);padding:28px;display:flex;flex-direction:column;gap:8px}
+.banner h2{margin:0;font-size:28px;font-weight:700;color:var(--on-primary);line-height:36px}
+.banner p{margin:0;font-size:12px;font-weight:400;color:var(--on-primary);opacity:.9;line-height:18px}
+.content{background:var(--page);padding:40px;display:flex;flex-direction:column;gap:24px}
+.card{background:var(--surface);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.card-title{margin:0;font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:500;line-height:24px}
+.note{margin:0;font-size:13px;font-weight:400;color:var(--muted);line-height:20px;white-space:pre-line}
+.two-col{display:flex;gap:24px;align-items:flex-start}
+.half{width:548px;flex:none}
+.wide{width:100%}
+.panel-nav{position:sticky;top:0;z-index:20;background:var(--sidebar);padding:12px 24px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.panel-nav a{color:#E9F0FB;font-size:12px;padding:6px 12px;border-radius:999px;text-decoration:none;line-height:18px}
+.panel-nav a:hover{background:rgba(255,255,255,.14)}
+#top-btn{position:fixed;right:24px;bottom:24px;z-index:30;background:var(--primary);color:#fff;font-size:12px;padding:10px 16px;border-radius:999px;box-shadow:0 8px 20px rgba(23,38,61,.24);display:none}
+.type-spec{font-size:16px;font-weight:500;color:var(--text)}
+.type-row{display:flex;flex-direction:column;gap:6px}
+.type-row span{font-size:12px;color:var(--muted)}
+.swatch-grid{display:flex;flex-wrap:wrap;gap:16px}
+.swatch{width:165px;display:flex;flex-direction:column;gap:8px}
+.chip{width:165px;height:44px}
+.chip-label{font-size:12px;color:var(--text);line-height:18px}
+.radius-row{display:flex;gap:20px}
+.radius-box{width:88px;height:64px}
+.grid-line{width:100%;height:1px;background:var(--grid)}
+.atom-grid-dark{background:var(--sidebar);padding:16px;display:flex;flex-wrap:wrap;gap:20px;border-radius:16px}
+.atom-grid-plain{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.atom-grid-page{background:var(--page);padding:12px;display:flex;flex-wrap:wrap;gap:16px;border-radius:16px}
+.menu-row{width:164px;height:42px;padding:0 12px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--menu)}
+.menu-row.parent{color:var(--brand-text);font-weight:500}
+.menu-sub{width:164px;height:40px;padding:0 28px 0 28px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--menu)}
+.menu-sub.current{background:var(--menu-selected);border-radius:10px;padding-right:12px;color:var(--menu-selected-text);font-weight:500}
+.brand-row{width:164px;height:44px;display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--brand-text)}
+.metric-card{width:247px;height:100px;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.metric-card.emphasis{background:var(--metric-emphasis)}
+.metric-name{height:20px;font-size:13px;color:var(--muted);line-height:20px}
+.metric-value{height:34px;font-family:Inter,Arial,sans-serif;font-weight:600;font-size:28px;line-height:34px}
+.route-chip{display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:12px}
+.route-default{width:58px;height:28px;background:var(--surface);color:var(--muted)}
+.route-current{width:112px;height:28px;background:var(--route-current);color:var(--primary);font-weight:500;gap:10px}
+.breadcrumb{width:776px;height:24px;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+.breadcrumb .sep{font-family:Inter,Arial,sans-serif;color:var(--divider)}
+.breadcrumb strong{font-weight:500;color:var(--text)}
+.account-text{width:39px;height:19px;font-size:13px;font-weight:500;color:var(--text)}
+.icon-grid{background:var(--page);padding:24px;border-radius:16px;display:flex;flex-wrap:wrap;gap:12px}
+.icon-cell{width:140px;padding:12px;border-radius:10px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.icon-cell.dark{background:var(--sidebar)}
+.icon-cell.light{background:var(--surface)}
+.icon-name{font-size:12px;line-height:18px}
+.icon-cell.dark .icon-name{color:#FFFFFF}
+.icon-cell.light .icon-name{color:var(--text)}
+.composite-frame{display:flex;flex-direction:column;gap:12px}
+.sidebar-side{display:flex;gap:32px;align-items:flex-start}
+.sidebar-module{width:196px;height:720px;flex:none;background:var(--sidebar);padding:16px;display:flex;flex-direction:column;gap:8px}
+.sidebar-note{flex:1;background:var(--page);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.topbar-module{width:1084px;height:60px;background:var(--surface);padding:0 24px;display:flex;align-items:center;gap:20px}
+.route-strip-module{width:1084px;height:40px;background:var(--route-strip);padding-left:24px;display:flex;align-items:center;gap:8px}
+.metrics-row-module{width:1036px;height:100px;background:var(--page);display:flex;gap:16px}
+.skeleton{position:relative;width:500px;background:var(--page)}
+.skeleton-total{height:281.25px}
+.skeleton-data{height:277px}
+.sk-block{position:absolute}
+.sk-label{position:absolute;font-size:12px;line-height:17px}
+.layout-card{padding:16px}
+</style></head>
+<body><nav class="panel-nav" aria-label="分区导航"><a href="#p1">01 风格总览</a><a href="#p2">02 字体</a><a href="#p3">03 颜色</a><a href="#p4">04 形态</a><a href="#p5">05 原子组件</a><a href="#p6">06 图标</a><a href="#p7">07 组合模块</a><a href="#p8">08 布局结构</a></nav>
+<div id="board">
+<section class="panel" id="p1"><div class="banner"><h2>01 · 风格总览</h2><p>唯一来源：地图监控 · 明亮蓝白｜1280 × 720 桌面车辆监控</p></div>
+<div class="content"><div class="two-col">
+<div class="card half"><h3 class="card-title">蓝白地图监控设计系统</h3><p class="note">桌面车辆位置监控与里程分析。
+深色导航承载业务层级，白色卡片承载核心数据。
+原稿 1280 × 720；侧栏 196，顶栏 60，路由栏 40。</p></div>
+<div class="card half"><h3 class="card-title">清晰 · 专业 · 克制 · 高效</h3><p class="note">蓝色表示当前位置与强调，四状态颜色服务图表。
+无渐变、无阴影；不补未展示的悬停或禁用状态。
+基础组件与组合模块均可复用，原页面保持不变。</p></div>
+</div></div></section>
+
+<section class="panel" id="p2"><div class="banner"><h2>02 · 字体</h2><p>11 种源文字规格｜完整内联字体、字重、字号、行高与字距</p></div>
+<div class="content"><div class="card wide">
+<p class="type-spec">Noto Sans SC 中文｜Inter 数字与分隔｜全部字距 0</p>
+<div class="type-row"><span style="font-size:18px;font-weight:700;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">管理系统｜Noto Sans SC Bold · 18px · AUTO</span></div>
+<div class="type-row"><span style="font-size:13px;font-weight:400;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">车辆总数 / 首页｜Noto Sans SC Regular · 13px · AUTO</span></div>
+<div class="type-row"><span style="font-size:13px;font-weight:500;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">地图监控 / 管理员｜Noto Sans SC Medium · 13px · AUTO</span></div>
+<div class="type-row"><span style="font-size:13px;font-weight:400;color:#1B2B43;font-family:Inter,Arial,sans-serif">/  Inter Regular · 13px · AUTO</span></div>
+<div class="type-row"><span style="font-size:12px;font-weight:400;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">点击车辆查看详情｜Noto Sans SC Regular · 12px · AUTO</span></div>
+<div class="type-row"><span style="font-size:12px;font-weight:500;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">地图监控｜Noto Sans SC Medium · 12px · AUTO</span></div>
+<div class="type-row"><span style="font-size:28px;font-weight:600;color:#2563EB;font-family:Inter,Arial,sans-serif;line-height:34px">1,936   84%   387   33,188,999</span></div>
+<div class="type-row"><span style="font-size:16px;font-weight:500;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">全场车辆位置分布｜Noto Sans SC Medium · 16px · AUTO</span></div>
+<div class="type-row"><span style="font-size:12px;font-weight:400;color:#1B2B43;font-family:Inter,Arial,sans-serif;line-height:18px">40.095  Inter Regular · 12px · 18px 显式行高</span></div>
+<div class="type-row"><span style="font-size:12px;font-weight:400;color:#1B2B43;font-family:Inter,Arial,sans-serif">116.57  0  30  60  Inter Regular · 12px · AUTO</span></div>
+<div class="type-row"><span style="font-size:14px;font-weight:500;color:#1B2B43;font-family:'Noto Sans SC',sans-serif">按车辆类型统计行驶里程（万 km）｜Noto Sans SC Medium · 14px · AUTO</span></div>
+<p class="note">指标数字：Inter SemiBold 28px / AUTO；纬度显式 18px 不与 AUTO 合并。</p>
+</div></div></section>
+
+<section class="panel" id="p3"><div class="banner"><h2>03 · 颜色</h2><p>24 个原稿颜色｜独立管理，原页面保持不变</p></div>
+<div class="content"><div class="card wide"><h3 class="card-title">24 个颜色变量 · 仅展示真实源色，不制造色阶</h3>
+<div class="swatch-grid">
+<div class="swatch"><div class="chip" style="background:#2563EB"></div><span class="chip-label">主色 #2563EB</span></div>
+<div class="swatch"><div class="chip" style="background:#F4F6FA"></div><span class="chip-label">页面 #F4F6FA</span></div>
+<div class="swatch"><div class="chip" style="background:#FFFFFF"></div><span class="chip-label">白卡 #FFFFFF</span></div>
+<div class="swatch"><div class="chip" style="background:#17263D"></div><span class="chip-label">侧栏 #17263D</span></div>
+<div class="swatch"><div class="chip" style="background:#203861"></div><span class="chip-label">选中底 #203861</span></div>
+<div class="swatch"><div class="chip" style="background:#AFC9FF"></div><span class="chip-label">选中字 #AFC9FF</span></div>
+<div class="swatch"><div class="chip" style="background:#86ACFF"></div><span class="chip-label">选中图标 #86ACFF</span></div>
+<div class="swatch"><div class="chip" style="background:#91A1BA"></div><span class="chip-label">菜单普通 #91A1BA</span></div>
+<div class="swatch"><div class="chip" style="background:#E9F0FB"></div><span class="chip-label">品牌父菜单 #E9F0FB</span></div>
+<div class="swatch"><div class="chip" style="background:#1B2B43"></div><span class="chip-label">主文字 #1B2B43</span></div>
+<div class="swatch"><div class="chip" style="background:#66758B"></div><span class="chip-label">次文字 #66758B</span></div>
+<div class="swatch"><div class="chip" style="background:#A9B4C5"></div><span class="chip-label">分隔 #A9B4C5</span></div>
+<div class="swatch"><div class="chip" style="background:#EDF1F6"></div><span class="chip-label">路由栏 #EDF1F6</span></div>
+<div class="swatch"><div class="chip" style="background:#DFEAFE"></div><span class="chip-label">当前路由 #DFEAFE</span></div>
+<div class="swatch"><div class="chip" style="background:#EAF1FE"></div><span class="chip-label">里程卡 #EAF1FE</span></div>
+<div class="swatch"><div class="chip" style="background:#E6EEFC"></div><span class="chip-label">头像底 #E6EEFC</span></div>
+<div class="swatch"><div class="chip" style="background:#79BD85"></div><span class="chip-label">在线 #79BD85</span></div>
+<div class="swatch"><div class="chip" style="background:#6EA4FF"></div><span class="chip-label">充电中 #6EA4FF</span></div>
+<div class="swatch"><div class="chip" style="background:#E3828B"></div><span class="chip-label">告警 #E3828B</span></div>
+<div class="swatch"><div class="chip" style="background:#7E8B9F"></div><span class="chip-label">离线 #7E8B9F</span></div>
+<div class="swatch"><div class="chip" style="background:#4E83ED"></div><span class="chip-label">里程条形 #4E83ED</span></div>
+<div class="swatch"><div class="chip" style="background:#E4E9F1"></div><span class="chip-label">网格 #E4E9F1</span></div>
+<div class="swatch"><div class="chip" style="background:#568DFF"></div><span class="chip-label">品牌线 #568DFF</span></div>
+<div class="swatch"><div class="chip" style="background:#96B7FF"></div><span class="chip-label">品牌面 #96B7FF</span></div>
+</div></div></div></section>
+
+<section class="panel" id="p4"><div class="banner"><h2>04 · 形态与基础样式</h2><p>16 / 10 / 7 / 3 圆角｜真实间距｜无阴影、无渐变</p></div>
+<div class="content"><div class="two-col">
+<div class="card half"><h3 class="card-title">源圆角：16 / 10 / 7 / 3</h3>
+<div class="radius-row"><div class="radius-box" style="background:#DFEAFE;border-radius:16px"></div><div class="radius-box" style="background:#203861;border-radius:10px"></div><div class="radius-box" style="background:#2563EB;border-radius:7px"></div><div class="radius-box" style="background:#4E83ED;border-radius:3px"></div></div>
+<p class="note">卡片 / 32px 头像：16；选中菜单：10；路由：7；条形：3。</p></div>
+<div class="card half"><h3 class="card-title">真实节奏与表面处理</h3>
+<div class="grid-line"></div>
+<p class="note">0：无间距 / 无内边距
+8：侧栏行间与指标文字；10 / 12：图文间距
+16：侧栏内边距与指标卡间距；18：指标卡内边距
+20：图表间距 / 顶栏间距；24：主内容内边距
+28：子菜单左缩进；40：路由栏高度
+源图表网格 1px；所有组件均无阴影与模糊。
+使用边界：颜色已支持统一修改；圆角和间距保留精确数值，尚不支持统一联动。</p></div>
+</div></div></section>
+
+<section class="panel" id="p5"><div class="banner"><h2>05 · 原子组件</h2><p>源节点复制后转换｜实际展示状态｜原始尺寸与数据</p></div>
+<div class="content">
+<div class="card wide"><h3 class="card-title">侧栏：默认一级 / 展开父级 / 默认子级 / 选中子级</h3>
+<div class="atom-grid-dark">
+<div class="brand-row"><img src="assets/svg/381_513-20261101_234041266.svg" alt="品牌标志" width="26" height="26"><span>管理系统</span></div>
+<div class="menu-row"><img src="assets/svg/381_514-20261101_234041459.svg" alt="首页图标" width="18" height="18"><span>首页</span></div>
+<div class="menu-row parent"><img src="assets/svg/381_516-20261101_234041610.svg" alt="监控图标" width="18" height="18"><span>监控预警</span><img src="assets/svg/381_521-20261101_234041758.svg" alt="展开箭头" width="12" height="12" style="margin-left:auto"></div>
+<div class="menu-sub current"><img src="assets/svg/381_522-20261101_234041937.svg" alt="地图位置图标" width="16" height="16"><span>地图监控</span></div>
+<div class="menu-sub"><img src="assets/svg/381_525-20261101_234042091.svg" alt="车辆图标" width="16" height="16"><span>车辆列表</span></div>
+<div class="menu-sub"><img src="assets/svg/381_529-20261101_234042241.svg" alt="告警图标" width="16" height="16"><span>告警管理</span></div>
+<div class="menu-sub"><img src="assets/svg/381_531-20261101_234042383.svg" alt="充电图标" width="16" height="16"><span>充电热力图</span></div>
+<div class="menu-row"><img src="assets/svg/381_534-20261101_234042528.svg" alt="基础数据图标" width="18" height="18"><span>基础数据</span><img src="assets/svg/381_539-20261101_234042666.svg" alt="可展开箭头" width="12" height="12" style="margin-left:auto"></div>
+<div class="menu-row"><img src="assets/svg/381_540-20261101_234042803.svg" alt="用户管理图标" width="18" height="18"><span>用户管理</span></div>
+<div class="menu-row"><img src="assets/svg/381_543-20261101_234044455.svg" alt="报告图标" width="18" height="18"><span>报告中心</span></div>
+</div></div>
+<div class="card wide"><h3 class="card-title">路由、面包屑与账户原子</h3>
+<div class="atom-grid-plain">
+<div class="route-chip route-default">首页</div>
+<div class="route-chip route-current"><span>地图监控</span><img src="assets/svg/381_562-20261101_234045472.svg" alt="关闭路由图标" width="12" height="12"></div>
+</div>
+<div class="atom-grid-plain" style="margin-top:20px">
+<div class="breadcrumb"><span>首页</span><span class="sep">/</span><span>监控预警</span><span class="sep">/</span><strong>地图监控</strong></div>
+<div class="account-text">管理员</div>
+</div></div>
+<div class="card wide"><h3 class="card-title">四个指标原子 · 247 × 100 · 数值忠实保留</h3>
+<div class="atom-grid-page">
+<div class="metric-card"><div class="metric-name">车辆总数</div><div class="metric-value">1,936</div></div>
+<div class="metric-card"><div class="metric-name">在线率</div><div class="metric-value" style="color:#2563EB">84%</div></div>
+<div class="metric-card"><div class="metric-name">充电车辆数</div><div class="metric-value" style="color:#2563EB">387</div></div>
+<div class="metric-card emphasis"><div class="metric-name">总行驶里程(km)</div><div class="metric-value">33,188,999</div></div>
+</div></div>
+</div></section>
+
+<section class="panel" id="p6"><div class="banner"><h2>06 · 图标</h2><p>17 个源图标语义，含头像｜原始矢量、原色、原尺寸｜不重画路径</p></div>
+<div class="content"><div class="card wide"><h3 class="card-title">全部原始矢量图标</h3>
+<p class="note" style="color:#1B2B43">12 / 16 / 18 / 24 / 26 / 32px 原尺寸；图标布局保持自由定位。深底保留导航色可读性。</p>
+<div class="icon-grid">
+<div class="icon-cell dark"><img src="assets/svg/381_513-20261101_234041266.svg" alt="品牌图标" width="26" height="26"><span class="icon-name">品牌 · 26px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_514-20261101_234041459.svg" alt="首页图标" width="18" height="18"><span class="icon-name">首页 · 18px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_516-20261101_234041610.svg" alt="监控图标" width="18" height="18"><span class="icon-name">监控 · 18px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_521-20261101_234041758.svg" alt="展开箭头" width="12" height="12"><span class="icon-name">展开箭头 · 12px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_522-20261101_234041937.svg" alt="地图位置图标" width="16" height="16"><span class="icon-name">地图位置 · 16px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_525-20261101_234042091.svg" alt="车辆图标" width="16" height="16"><span class="icon-name">车辆 · 16px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_529-20261101_234042241.svg" alt="告警图标" width="16" height="16"><span class="icon-name">告警 · 16px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_531-20261101_234042383.svg" alt="充电图标" width="16" height="16"><span class="icon-name">充电 · 16px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_534-20261101_234042528.svg" alt="基础数据图标" width="18" height="18"><span class="icon-name">基础数据 · 18px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_539-20261101_234042666.svg" alt="可展开箭头" width="12" height="12"><span class="icon-name">可展开箭头 · 12px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_540-20261101_234042803.svg" alt="用户管理图标" width="18" height="18"><span class="icon-name">用户管理 · 18px</span></div>
+<div class="icon-cell dark"><img src="assets/svg/381_543-20261101_234044455.svg" alt="报告图标" width="18" height="18"><span class="icon-name">报告 · 18px</span></div>
+<div class="icon-cell light"><img src="assets/svg/381_547-20261101_234044605.svg" alt="收起侧栏图标" width="24" height="24"><span class="icon-name">收起侧栏 · 24px</span></div>
+<div class="icon-cell light"><img src="assets/svg/381_550-20261101_234044744.svg" alt="全屏图标" width="24" height="24"><span class="icon-name">全屏 · 24px</span></div>
+<div class="icon-cell light"><img src="assets/svg/381_554-20261101_234044889.svg" alt="设置图标" width="24" height="24"><span class="icon-name">设置 · 24px</span></div>
+<div class="icon-cell light"><img src="assets/svg/381_559-20261101_234045325.svg" alt="管理员头像" width="32" height="32"><span class="icon-name">管理员头像 · 32px</span></div>
+<div class="icon-cell light"><img src="assets/svg/381_562-20261101_234045472.svg" alt="关闭路由图标" width="12" height="12"><span class="icon-name">关闭路由 · 12px</span></div>
+</div></div></div></section>
+
+<section class="panel" id="p7"><div class="banner"><h2>07 · 组合组件</h2><p>本轮原子与图标实例装配｜侧栏、顶栏、路由与四指标行</p></div>
+<div class="content">
+<div class="card wide layout-card"><h3 class="card-title">侧栏模块 · 196 × 720 · 原有菜单顺序</h3>
+<div class="sidebar-side">
+<div class="sidebar-module">
+<div class="brand-row"><img src="assets/svg/381_513-20261101_234041266.svg" alt="品牌标志" width="26" height="26"><span>管理系统</span></div>
+<div class="menu-row"><img src="assets/svg/381_514-20261101_234041459.svg" alt="首页图标" width="18" height="18"><span>首页</span></div>
+<div class="menu-row parent"><img src="assets/svg/381_516-20261101_234041610.svg" alt="监控图标" width="18" height="18"><span>监控预警</span><img src="assets/svg/381_521-20261101_234041758.svg" alt="展开箭头" width="12" height="12" style="margin-left:auto"></div>
+<div class="menu-sub current"><img src="assets/svg/381_522-20261101_234041937.svg" alt="地图位置图标" width="16" height="16"><span>地图监控</span></div>
+<div class="menu-sub"><img src="assets/svg/381_525-20261101_234042091.svg" alt="车辆图标" width="16" height="16"><span>车辆列表</span></div>
+<div class="menu-sub"><img src="assets/svg/381_529-20261101_234042241.svg" alt="告警图标" width="16" height="16"><span>告警管理</span></div>
+<div class="menu-sub"><img src="assets/svg/381_531-20261101_234042383.svg" alt="充电图标" width="16" height="16"><span>充电热力图</span></div>
+<div class="menu-row"><img src="assets/svg/381_534-20261101_234042528.svg" alt="基础数据图标" width="18" height="18"><span>基础数据</span><img src="assets/svg/381_539-20261101_234042666.svg" alt="可展开箭头" width="12" height="12" style="margin-left:auto"></div>
+<div class="menu-row"><img src="assets/svg/381_540-20261101_234042803.svg" alt="用户管理图标" width="18" height="18"><span>用户管理</span></div>
+<div class="menu-row"><img src="assets/svg/381_543-20261101_234044455.svg" alt="报告图标" width="18" height="18"><span>报告中心</span></div>
+</div>
+<div class="sidebar-note"><h3 class="card-title">保持原稿导航模型</h3><p class="note">组件宽度196，内部原子宽度164；左右内边距16。
+品牌44高；一级菜单42高；子级菜单40高；行间距8。
+子级左缩进28；当前地图监控为独立选中状态。
+下方留空来自原稿720高侧栏，不是空占位行。
+九个菜单与品牌均为本轮原子实例；编辑原子会同步更新此模块。
+不要额外添加未展示的悬停、禁用、折叠内容或徽标。</p></div>
+</div></div>
+<div class="card wide layout-card"><h3 class="card-title">顶栏 · 1084 × 60 · 操作与账户</h3>
+<div class="composite-frame"><div class="topbar-module">
+<img src="assets/svg/381_547-20261101_234044605.svg" alt="收起侧栏图标" width="24" height="24">
+<div class="breadcrumb" style="flex:1;width:auto"><span>首页</span><span class="sep">/</span><span>监控预警</span><span class="sep">/</span><strong>地图监控</strong></div>
+<img src="assets/svg/381_550-20261101_234044744.svg" alt="全屏图标" width="24" height="24">
+<div style="width:108px;height:36px;display:flex;align-items:center;gap:10px"><img src="assets/svg/381_559-20261101_234045325.svg" alt="管理员头像" width="32" height="32"><span style="font-size:13px;font-weight:500;color:#1B2B43">管理员</span></div>
+<img src="assets/svg/381_554-20261101_234044889.svg" alt="设置图标" width="24" height="24">
+</div></div></div>
+<div class="card wide layout-card"><h3 class="card-title">路由标签条 · 1084 × 40 · 两种源状态</h3>
+<div class="route-strip-module"><div class="route-chip route-default">首页</div><div class="route-chip route-current"><span>地图监控</span><img src="assets/svg/381_562-20261101_234045472.svg" alt="关闭路由图标" width="12" height="12"></div></div></div>
+<div class="card wide layout-card"><h3 class="card-title">四项指标行 · 1036 × 100 · 四等宽卡</h3>
+<div class="metrics-row-module">
+<div class="metric-card"><div class="metric-name">车辆总数</div><div class="metric-value">1,936</div></div>
+<div class="metric-card"><div class="metric-name">在线率</div><div class="metric-value" style="color:#2563EB">84%</div></div>
+<div class="metric-card"><div class="metric-name">充电车辆数</div><div class="metric-value" style="color:#2563EB">387</div></div>
+<div class="metric-card emphasis"><div class="metric-name">总行驶里程(km)</div><div class="metric-value">33,188,999</div></div>
+</div></div>
+</div></section>
+
+<section class="panel" id="p8"><div class="banner"><h2>08 · 布局与页面结构</h2><p>仅真实桌面骨架｜总页面与数据布局｜三重导航层级</p></div>
+<div class="content">
+<div class="card wide"><h3 class="card-title">总页面骨架 · 1280 × 720</h3>
+<div class="skeleton skeleton-total">
+<div class="sk-block" style="left:0;top:0;width:76.56px;height:281.25px;background:#17263D"></div>
+<div class="sk-block" style="left:76.56px;top:0;width:423.44px;height:23.44px;background:#FFFFFF"></div>
+<div class="sk-block" style="left:76.56px;top:23.44px;width:423.44px;height:15.63px;background:#EDF1F6"></div>
+<div class="sk-block" style="left:85.94px;top:48.44px;width:404.69px;height:39.06px;background:#DFEAFE;border-radius:6.25px"></div>
+<div class="sk-block" style="left:85.94px;top:96.88px;width:246.09px;height:175px;background:#FFFFFF;border-radius:6.25px"></div>
+<div class="sk-block" style="left:339.84px;top:96.88px;width:150.78px;height:175px;background:#FFFFFF;border-radius:6.25px"></div>
+<div class="sk-label" style="left:20px;top:120px;color:#FFFFFF">侧栏</div>
+<div class="sk-label" style="left:90px;top:3px">顶栏</div>
+<div class="sk-label" style="left:98px;top:60px">四项核心指标</div>
+<div class="sk-label" style="left:102px;top:112px">车辆位置</div>
+<div class="sk-label" style="left:355px;top:112px">车型里程</div>
+</div>
+<p class="note">196px 深侧栏；60px 顶栏；40px 路由栏。
+主内容左右 / 上下24；指标下间距24；双图间距20。</p></div>
+<div class="card wide"><h3 class="card-title">数据布局骨架 · 四指标与双图</h3>
+<div class="skeleton skeleton-data">
+<div class="sk-block" style="left:0;top:0;width:119.21px;height:48.26px;background:#FFFFFF;border-radius:7.72px"></div>
+<div class="sk-block" style="left:126.93px;top:0;width:119.21px;height:48.26px;background:#FFFFFF;border-radius:7.72px"></div>
+<div class="sk-block" style="left:253.86px;top:0;width:119.21px;height:48.26px;background:#FFFFFF;border-radius:7.72px"></div>
+<div class="sk-block" style="left:380.79px;top:0;width:119.21px;height:48.26px;background:#EAF1FE;border-radius:7.72px"></div>
+<div class="sk-block" style="left:0;top:59.85px;width:304.05px;height:216.22px;background:#FFFFFF;border-radius:7.72px"></div>
+<div class="sk-block" style="left:313.71px;top:59.85px;width:186.29px;height:216.22px;background:#FFFFFF;border-radius:7.72px"></div>
+<div class="sk-label" style="left:10px;top:15px">总数</div>
+<div class="sk-label" style="left:137px;top:15px">在线率</div>
+<div class="sk-label" style="left:264px;top:15px">充电数</div>
+<div class="sk-label" style="left:391px;top:15px">总里程</div>
+<div class="sk-label" style="left:20px;top:90px">位置分布 · 散点图<br>630 × 448</div>
+<div class="sk-label" style="left:327px;top:90px">车型里程 · 条形图<br>386 × 448</div>
+</div>
+<p class="note">四等宽247 × 100；间距16；总宽1036。
+630 × 448 散点图 + 386 × 448 条形图；不制造移动端。</p></div>
+<div class="card wide"><h3 class="card-title">三重导航层级与内容节奏</h3><p class="note">侧栏业务导航：首页 / 监控预警（展开）/ 地图监控（当前子级）。
+顶栏面包屑：首页 / 监控预警 / 地图监控，记录当前位置。
+路由标签条：首页（默认）/ 地图监控（当前、可关闭），承载页面切换。
+导航之间不相互替代。主内容依次为四指标行、位置散点图与车型里程条形图。
+24px 内容内边距；16px 指标间距；24px 指标与图表间距；20px 双图间距。</p></div>
+</div></section>
+</div>
+<button id="top-btn" aria-label="回到顶部">回到顶部</button>
+<script>
+const btn=document.getElementById('top-btn');btn.onclick=()=>scrollTo({top:0,behavior:'smooth'});
+addEventListener('scroll',()=>{btn.style.display=scrollY>400?'block':'none'});
+</script></body></html>

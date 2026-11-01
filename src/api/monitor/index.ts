@@ -15,6 +15,11 @@ import {
   mockSaveVehicle,
   mockDeleteVehicles,
   mockModifyVehicle,
+  mockAlarmStats,
+  mockOnlineSummary,
+  mockAccessQuarterStats,
+  mockGetNotices,
+  mockSaveNotice,
 } from "@/mock/monitor";
 import { mockGetPushRecords } from "@/mock/base";
 import type { Vehicle } from "@/types/api/monitor";
@@ -97,6 +102,26 @@ const MonitorAPI = {
   getPushRecords(params: any): Promise<any> {
     if (isMockEnabled) return Promise.resolve(mockGetPushRecords(params));
     return request({ url: `${BASE_URL}/push-records`, method: "get", params });
+  },
+  getAlarmStats(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockAlarmStats());
+    return request({ url: `${BASE_URL}/alarms/stats`, method: "get" });
+  },
+  getOnlineSummary(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockOnlineSummary());
+    return request({ url: `${BASE_URL}/vehicles/online-summary`, method: "get" });
+  },
+  getAccessQuarterStats(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockAccessQuarterStats());
+    return request({ url: `${BASE_URL}/access/quarter`, method: "get" });
+  },
+  getNotices(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockGetNotices());
+    return request({ url: `${BASE_URL}/notices`, method: "get" });
+  },
+  saveNotice(data: any): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockSaveNotice(data));
+    return request({ url: `${BASE_URL}/notices`, method: "post", data });
   },
 };
 
