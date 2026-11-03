@@ -58,6 +58,34 @@ export const COMPANIES = [
   "海航地服分公司",
 ] as const;
 
+/** 运营分公司多级部门 */
+export const COMPANY_TREE = [
+  {
+    label: "首都机场股份公司",
+    value: "首都机场股份公司",
+    children: [
+      { label: "飞行区管理部", value: "首都机场飞行区管理部" },
+      { label: "机务", value: "首都机场股份公司机务" },
+    ],
+  },
+  {
+    label: "地服",
+    value: "地服",
+    children: [
+      { label: "首都机场地服公司", value: "首都机场地服公司" },
+      { label: "海航地服分公司", value: "海航地服分公司" },
+    ],
+  },
+  {
+    label: "动力与勤务",
+    value: "动力与勤务",
+    children: [
+      { label: "首都机场动力能源公司", value: "首都机场动力能源公司" },
+      { label: "首航勤务分公司", value: "首航勤务分公司" },
+    ],
+  },
+] as const;
+
 /** 在线状态 */
 export const ONLINE_STATUS = [
   { label: "在线", value: true },

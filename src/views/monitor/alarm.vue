@@ -50,11 +50,13 @@
               <el-button type="primary" @click="handleQuery">查询</el-button>
               <el-button @click="handleReset">重置</el-button>
               <el-button type="primary" @click="handleExport">导出</el-button>
+              <span v-if="auditHint" class="audit-hint">{{ auditHint }}</span>
               <el-button @click="levelVisible = true">告警级别</el-button>
             </el-form-item>
           </el-form>
 
-          <el-table v-loading="loading" :data="alarmList">
+          <el-table v-loading="loading" :data="alarmList" @selection-change="onSelect">
+            <el-table-column type="selection" width="48" />
             <el-table-column prop="deviceCode" label="设备识别码" width="160" />
             <el-table-column prop="selfNumber" label="车辆自编号" width="110" />
             <el-table-column prop="vehicleUnit" label="车辆单位" min-width="140" />
@@ -91,14 +93,29 @@
         </el-tab-pane>
 
         <el-tab-pane label="消息推送" name="push">
-          <p class="hint">通过平台短信或微信小程序推送故障告警与满电提示。</p>
+          <div class="rule-grid">
+            <p>严重告警同时走短信、微信小程序、站内信。短信失败自动换通道重试。</p>
+            <p>满电阈值
+              <el-input-number v-model="fullSoc" :min="80" :max="100" /> %
+              ，达到后通知车辆使用方。
+            </p>
+            <p>同一车辆、同一告警，5 分钟内不重复发送短信。状态为「已抑制」的记录即被这条规则拦住，站内信仍保留。</p>
+          </div>
           <el-table v-loading="pushLoading" :data="pushRecords">
             <el-table-column prop="time" label="推送时间" width="180" />
             <el-table-column prop="plateNumber" label="车牌号" width="120" />
             <el-table-column prop="channel" label="推送通道" width="120" />
             <el-table-column prop="type" label="推送类型" width="110" />
             <el-table-column prop="content" label="推送内容" min-width="240" />
-            <el-table-column prop="status" label="状态" width="90" />
+            <el-table-column prop="status" label="状态" width="100" />
+            <el-table-column label="站内信" width="100">
+              <template #default="{ row }">
+                <button v-if="row.channel === '站内信'" type="button" class="text-btn" @click="markRead(row.id)">
+                  {{ readIds.has(row.id) ? "已读" : "未读" }}
+                </button>
+                <span v-else class="hint">—</span>
+              </template>
+            </el-table-column>
           </el-table>
         </el-tab-pane>
 
@@ -124,9 +141,24 @@
       </el-tabs>
     </section>
 
-    <el-dialog v-model="messageVisible" title="原始报文" width="640px">
-      <p class="hint">设备识别码 {{ currentAlarm?.deviceCode }}</p>
-      <pre class="raw-message">{{ currentAlarm?.rawMessage }}</pre>
+    <el-dialog v-model="messageVisible" title="原始报文" width="760px">
+      <p class="hint">设备识别码 {{ currentAlarm?.deviceCode }} · 十六进制与 ASCII 对照</p>
+      <div class="frame">
+        <pre class="raw-message">{{ currentAlarm?.rawMessage }}</pre>
+        <pre class="raw-message">{{ currentAlarm?.rawAscii }}</pre>
+      </div>
+    </el-dialog>
+
+    <el-dialog v-model="severeVisible" title="严重告警" width="640px" :close-on-click-modal="false">
+      <p class="hint">严重告警持续提示，直至确认知晓。这些车辆在总览的重点关注中展示，故障解除后移出。</p>
+      <el-table :data="severeAlarms">
+        <el-table-column prop="faultTime" label="发生时间" width="170" />
+        <el-table-column prop="plateNumber" label="车牌号" width="120" />
+        <el-table-column prop="content" label="内容" min-width="220" />
+      </el-table>
+      <template #footer>
+        <el-button type="primary" @click="severeVisible = false">知道了</el-button>
+      </template>
     </el-dialog>
 
     <el-dialog v-model="levelVisible" title="告警级别" width="480px">
@@ -187,6 +219,12 @@ const messageVisible = ref(false);
 const levelVisible = ref(false);
 const noticeVisible = ref(false);
 const currentAlarm = ref<AlarmRecord>();
+const selectedAlarms = ref<AlarmRecord[]>([]);
+const severeAlarms = ref<AlarmRecord[]>([]);
+const severeVisible = ref(false);
+const fullSoc = ref(100);
+const readIds = ref(new Set<number>());
+const auditHint = ref("");
 const alarmStats = ref({ total: 0, severe: 0, important: 0, normal: 0 });
 const levelConfig = ref([
   { value: 1, label: "严重" },
@@ -277,9 +315,20 @@ function showRawMessage(row: AlarmRecord) {
   messageVisible.value = true;
 }
 
-function handleExport() {
+function onSelect(rows: AlarmRecord[]) {
+  selectedAlarms.value = rows;
+}
+
+function markRead(id: number) {
+  const next = new Set(readIds.value);
+  next.add(id);
+  readIds.value = next;
+}
+
+async function handleExport() {
   const headers = ["设备识别码", "车辆自编号", "车辆单位", "故障类型", "故障码", "故障原因", "告警方式", "故障日期", "故障发生时间", "故障最后更新时间"];
-  const rows = alarmList.value.map((a) => [
+  const source = selectedAlarms.value.length ? selectedAlarms.value : alarmList.value;
+  const rows = source.map((a) => [
     a.deviceCode, a.selfNumber, a.vehicleUnit, a.faultType, a.faultCode, a.faultReason, a.alarmWay, a.faultDate, a.faultTime, a.updateTime,
   ]);
   const csv = [headers.join(","), ...rows.map((r) => r.map((c) => `"${c}"`).join(","))].join("\n");
@@ -290,6 +339,8 @@ function handleExport() {
   link.download = `实时故障_${Date.now()}.csv`;
   link.click();
   URL.revokeObjectURL(url);
+  const logs = await MonitorAPI.recordAudit("导出", `实时故障 ${rows.length} 条`);
+  auditHint.value = logs[0] ? `${logs[0].time} 已记入审计日志` : "已记入审计日志";
 }
 
 function openNotice(row?: NoticeRecord) {
@@ -308,6 +359,8 @@ async function saveNotice() {
 onMounted(async () => {
   alarmStats.value = await MonitorAPI.getAlarmStats();
   notices.value = (await MonitorAPI.getNotices()).list;
+  severeAlarms.value = await MonitorAPI.getFocusAlarms();
+  severeVisible.value = severeAlarms.value.length > 0;
   loadAlarms();
   loadPushRecords();
 });
@@ -349,6 +402,30 @@ onMounted(async () => {
   word-break: break-all;
   background: var(--shell-bg, #f4f6fa);
   border-radius: 16px;
+}
+
+.rule-grid {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--shell-muted, #66758b);
+
+  p {
+    margin: 0;
+  }
+}
+
+.frame {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+
+.audit-hint {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--shell-muted, #66758b);
 }
 
 .level-row {

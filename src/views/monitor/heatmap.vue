@@ -3,11 +3,11 @@
     <section class="panel filter-panel">
       <span class="filter-label">统计周期</span>
       <el-radio-group v-model="period" @change="onPeriodChange">
-        <el-radio-button value="day">日</el-radio-button>
-        <el-radio-button value="week">周</el-radio-button>
-        <el-radio-button value="month">月</el-radio-button>
-        <el-radio-button value="quarter">季</el-radio-button>
-        <el-radio-button value="year">年</el-radio-button>
+        <el-radio-button value="day">今日</el-radio-button>
+        <el-radio-button value="week">本周</el-radio-button>
+        <el-radio-button value="month">本月</el-radio-button>
+        <el-radio-button value="quarter">本季</el-radio-button>
+        <el-radio-button value="year">本年</el-radio-button>
       </el-radio-group>
       <el-date-picker
         v-model="customRange"
@@ -18,7 +18,7 @@
         style="width: 260px"
         @change="onCustomChange"
       />
-      <span class="filter-hint">颜色越深，充电桩使用程度越高</span>
+      <span class="filter-hint">使用率 = 区域累计充电时长 ÷（桩数 × 时段时长）。颜色越深越繁忙。</span>
     </section>
 
     <section class="panel">
@@ -60,15 +60,18 @@ const heatmapOption = computed(() => {
       axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
     },
     visualMap: {
-      min: 0,
-      max: 100,
-      calculable: false,
+      type: "piecewise",
       orient: "horizontal",
       left: "center",
       bottom: 0,
-      text: ["高", "低"],
       textStyle: { color: "#66758B", fontSize: 12 },
-      inRange: { color: ["#E7EDF5", "#C5D7F8", "#7AA4F0", "#3B74E8", "#1B2B43"] },
+      pieces: [
+        { min: 0, max: 20, label: "0%～20%", color: "#E5F2E4" },
+        { min: 20, max: 40, label: "20%～40%", color: "#79BD85" },
+        { min: 40, max: 60, label: "40%～60%", color: "#E6C35C" },
+        { min: 60, max: 80, label: "60%～80%", color: "#E09A4A" },
+        { min: 80, max: 100, label: "80%～100%", color: "#A33B45" },
+      ],
     },
     series: [{ type: "heatmap", data: heatmapData.value.map((p) => [p.x, p.y, p.value]) }],
   };

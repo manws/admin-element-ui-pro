@@ -18,6 +18,7 @@ import {
   ACCESS_METHODS,
   ALARM_WAYS,
   COMPANIES,
+  COMPANY_TREE,
   COST_BEARERS,
   FAULT_TYPES,
   PROTOCOL_CATEGORIES,
@@ -70,6 +71,36 @@ function inScope(company: string): boolean {
   return !scope || company === scope;
 }
 
+function companyMembers(value: string): string[] {
+  for (const node of COMPANY_TREE) {
+    if (node.value === value) return node.children.map((child) => child.value);
+  }
+  return [value];
+}
+
+function formatTime(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+/** 在线车辆的最近上报时间始终落在 60 秒内 */
+function stamp(vehicle: Vehicle): Vehicle {
+  const ageSec = vehicle.online ? vehicle.id % 50 : 180 + (vehicle.id % 90) * 40;
+  return {
+    ...vehicle,
+    lastOnlineTime: formatTime(new Date(Date.now() - ageSec * 1000)),
+    online: ageSec < 60,
+  };
+}
+
+function frameOf(id: number): { hex: string; ascii: string } {
+  const bytes = Array.from({ length: 32 }, (_, index) => (id * 17 + index * 13) & 0xff);
+  return {
+    hex: bytes.map((byte) => byte.toString(16).padStart(2, "0")).join("").toUpperCase(),
+    ascii: bytes.map((byte) => (byte >= 32 && byte < 127 ? String.fromCharCode(byte) : ".")).join(""),
+  };
+}
+
 function addDays(date: string, days: number): string {
   const d = new Date(`${date}T00:00:00`);
   d.setDate(d.getDate() + days);
@@ -100,7 +131,9 @@ function makeVehicle(id: number): Vehicle {
   const category = pick(VEHICLE_CATEGORIES);
   const online = rand() > 0.15;
   const charging = online && rand() > 0.7;
+  const chargingStatus: Vehicle["chargingStatus"] = charging ? (id % 2 === 0 ? "park" : "drive") : "none";
   const alarmFlag = rand() > 0.85;
+  const frame = frameOf(id);
   const soc = num(20, 100, 0);
   const totalMileage = num(8000, 180000, 0);
   const speed = online ? (charging ? 0 : num(0, 60, 0)) : 0;
@@ -143,6 +176,8 @@ function makeVehicle(id: number): Vehicle {
     costBearer: accessMethod === "协议对接" ? "" : pick(COST_BEARERS),
     online,
     charging,
+    chargingStatus,
+    remoteControl: id % 5 !== 0,
     alarmFlag,
     soc,
     voltage: num(300, 640, 1),
@@ -161,6 +196,14 @@ function makeVehicle(id: number): Vehicle {
     cellMinVoltage: num(3.0, 3.6, 3),
     cellMaxTemp: num(25, 45, 1),
     cellMinTemp: num(18, 28, 1),
+    cellMaxIndex: (id % 90) + 1,
+    cellMinIndex: (id % 40) + 1,
+    probeMaxIndex: (id % 16) + 1,
+    probeMinIndex: (id % 8) + 1,
+    gpsAccuracy: Number((0.6 + (id % 20) / 10).toFixed(1)),
+    satelliteCount: 8 + (id % 10),
+    lastFrame: frame.hex,
+    lastFrameAscii: frame.ascii,
     gear: speed > 0 ? "D" : "P",
     insulationResistance: num(50, 500, 0),
     runningMode: pick(["经济", "标准", "运动"]),
@@ -178,6 +221,7 @@ function makeAlarm(id: number): AlarmRecord {
   const level = rand() > 0.7 ? 1 : rand() > 0.5 ? 2 : 3;
   const alarmWay = pick(ALARM_WAYS);
   const faultTime = recentTime(Math.floor(num(1, 720, 0)));
+  const frame = frameOf(id + 800);
 
   return {
     id,
@@ -194,7 +238,9 @@ function makeAlarm(id: number): AlarmRecord {
     faultTime,
     updateTime: recentTime(Math.floor(num(0, 5, 0))),
     content: `${vehicle.selfNumber} 发生${faultType}告警`,
-    rawMessage: `232302FE4C4A464A3030313101${Math.floor(num(1000, 9999, 0)).toString(16)}...`,
+    rawMessage: frame.hex,
+    rawAscii: frame.ascii,
+    recovered: level !== 1 && id % 4 === 0,
   };
 }
 
@@ -232,14 +278,15 @@ function makeMotors(): MotorInfo[] {
   }));
 }
 
-/** 生成历史轨迹点（沿机场滑行道往返） */
-function makeTrack(): TrackPoint[] {
+/** 生成历史轨迹点。默认约 1 万点，覆盖近 6 天，供回放页抽稀。 */
+function makeTrack(count = 48, seed = 1): TrackPoint[] {
   const points: TrackPoint[] = [];
-  const base = { lng: 116.59, lat: 40.078 };
-  for (let i = 0; i < 40; i++) {
-    const t = recentTime(40 - i);
-    const phase = i / 40;
-    const segment: TrackPoint["state"] = phase < 0.1 ? "offline" : phase < 0.25 ? "charging" : phase > 0.7 ? "alarm" : "normal";
+  const base = { lng: 116.59 + ((seed % 17) - 8) * 0.0004, lat: 40.078 };
+  const spanMinutes = 6 * 24 * 60;
+  for (let i = 0; i < count; i++) {
+    const phase = count <= 1 ? 0 : i / (count - 1);
+    const t = formatTime(new Date(Date.now() - (1 - phase) * spanMinutes * 60 * 1000));
+    const segment: TrackPoint["state"] = phase < 0.1 ? "offline" : phase < 0.25 ? "charging" : phase > 0.85 ? "alarm" : "normal";
     points.push({
       time: t,
       lng: base.lng + Math.sin(phase * Math.PI * 2) * 0.012,
@@ -257,6 +304,7 @@ function makeTrack(): TrackPoint[] {
       minVoltage: Number((3.42 - phase * 0.06).toFixed(3)),
       maxTemp: Number((32 + phase * 8).toFixed(1)),
       minTemp: Number((24 + phase * 2).toFixed(1)),
+      alarmContent: segment === "alarm" ? "电池温差超限" : "",
     });
   }
   return points;
@@ -268,22 +316,44 @@ export function mockGetVehicles(params: any): { list: Vehicle[]; total: number }
   const {
     selfNumber,
     vin,
+    vinMode,
     online,
     company,
     brand,
+    category,
+    charging,
+    monitorFlag,
     pageNum = 1,
     pageSize = 10,
   } = params || {};
 
-  if (selfNumber) list = list.filter((v) => v.selfNumber.includes(selfNumber));
-  if (vin) list = list.filter((v) => v.vin.includes(vin));
-  if (online !== undefined && online !== null && online !== "") list = list.filter((v) => v.online === online);
-  if (company) list = list.filter((v) => v.company === company);
-  if (brand) list = list.filter((v) => v.brand === brand);
+  if (selfNumber) list = list.filter((v) => v.selfNumber.includes(String(selfNumber)));
+  if (vin) {
+    const keyword = String(vin);
+    list = list.filter((v) => (vinMode === "exact" ? v.vin === keyword : v.vin.includes(keyword)));
+  }
+  if (online === true || online === "true" || online === false || online === "false") {
+    const flag = online === true || online === "true";
+    list = list.filter((v) => v.online === flag);
+  }
+  if (company) {
+    const selected = Array.isArray(company) ? company[company.length - 1] : company;
+    if (selected) {
+      const members = companyMembers(String(selected));
+      list = list.filter((v) => members.includes(v.company));
+    }
+  }
+  if (Array.isArray(brand) && brand.length) list = list.filter((v) => brand.includes(v.brand));
+  else if (brand) list = list.filter((v) => v.brand === brand);
+  if (category) list = list.filter((v) => v.category === category);
+  if (charging === 1 || charging === "1" || charging === true) {
+    list = list.filter((v) => v.chargingStatus === "park" || v.chargingStatus === "drive");
+  }
+  if (monitorFlag === true || monitorFlag === "true") list = list.filter((v) => v.monitorFlag);
 
   const total = list.length;
   const start = (pageNum - 1) * pageSize;
-  return { list: list.slice(start, start + pageSize), total };
+  return { list: list.slice(start, start + pageSize).map(stamp), total };
 }
 
 /** 获取车辆总数（模拟全场 1900 余辆） */
@@ -293,14 +363,14 @@ export function mockVehicleTotal(): number {
 
 /** 获取单车详情 */
 export function mockGetVehicleDetail(id: number): VehicleDetail {
-  const vehicle = VEHICLES.find((v) => v.id === id) ?? VEHICLES[0];
+  const vehicle = stamp(VEHICLES.find((v) => v.id === id) ?? VEHICLES[0]);
   return {
     ...vehicle,
     batteryCurve: makeCurve(60, id % 20),
     extremeCurve: makeCurve(60, (id * 3) % 20),
     motorList: makeMotors(),
     alarmList: ALARMS.filter((a) => a.selfNumber === vehicle.selfNumber).slice(0, 5),
-    trackPoints: makeTrack(),
+    trackPoints: makeTrack(48, id),
     cells: Array.from({ length: 8 }, (_, i) => ({
       index: i + 1,
       voltage: Number((vehicle.cellMinVoltage + ((vehicle.cellMaxVoltage - vehicle.cellMinVoltage) * i) / 7).toFixed(3)),
@@ -347,6 +417,17 @@ export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number
   if (faultCode) list = list.filter((a) => a.faultCode.includes(faultCode));
   if (faultReason) list = list.filter((a) => a.faultReason.includes(faultReason));
   if (level !== undefined && level !== null && level !== "") list = list.filter((a) => a.level === Number(level));
+  if (params?.recovered === false || params?.recovered === "false") list = list.filter((a) => !a.recovered);
+
+  list = [...list].sort((a, b) => {
+    const rank = (item: AlarmRecord) => {
+      if (!item.recovered && item.level === 1) return 0;
+      if (!item.recovered && item.level === 2) return 1;
+      return 2;
+    };
+    const diff = rank(a) - rank(b);
+    return diff || b.faultTime.localeCompare(a.faultTime);
+  });
 
   const total = list.length;
   const start = (pageNum - 1) * pageSize;
@@ -469,7 +550,36 @@ export function mockHeatmap(): ChargeHeatPoint[] {
 
 /** 车辆位置散点（地图） */
 export function mockVehiclePositions(): Vehicle[] {
-  return VEHICLES.filter((v) => inScope(v.company)).slice(0, 80);
+  return VEHICLES.filter((v) => inScope(v.company) && v.monitorFlag).slice(0, 80).map(stamp);
+}
+
+/** 约 1 万个定位点，供历史回放抽稀 */
+export function mockGetTrack(id: number): { points: TrackPoint[]; rawCount: number } {
+  const points = makeTrack(10000, id);
+  return { points, rawCount: points.length };
+}
+
+/** 未解除的严重告警，每车保留一条 */
+export function mockFocusAlarms(): AlarmRecord[] {
+  const picked = new Map<string, AlarmRecord>();
+  scopedAlarms()
+    .filter((item) => item.level === 1 && !item.recovered)
+    .sort((a, b) => b.faultTime.localeCompare(a.faultTime))
+    .forEach((item) => {
+      if (!picked.has(item.selfNumber)) picked.set(item.selfNumber, item);
+    });
+  return [...picked.values()];
+}
+
+const AUDIT_LOGS: Array<{ time: string; action: string; detail: string }> = [];
+
+export function mockRecordAudit(action: string, detail: string) {
+  AUDIT_LOGS.unshift({ time: formatTime(new Date()), action, detail });
+  return AUDIT_LOGS.slice(0, 20);
+}
+
+export function mockGetAudit() {
+  return AUDIT_LOGS.slice(0, 20);
 }
 
 export function mockOnlineSummary() {

@@ -14,6 +14,7 @@
         style="width: 360px"
       />
       <el-button type="primary" @click="loadDetail">查询</el-button>
+      <span class="hint">单次最长 30 天。{{ thinText }}</span>
     </section>
 
     <section class="chart-row">
@@ -26,7 +27,7 @@
           <span><i class="status-dot is-alarm" />告警段</span>
           <span><i class="status-dot is-offline" />离线断点</span>
         </div>
-        <ECharts :options="trackOption" height="320px" />
+        <div ref="mapEl" class="track-map" />
       </article>
       <article class="panel">
         <p class="kicker">电池</p>
@@ -83,10 +84,14 @@
 <script setup lang="ts">
 defineOptions({ name: "MonitorTrack" });
 
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { ElMessage } from "element-plus";
+import L from "leaflet";
 import MonitorAPI from "@/api/monitor";
 import type { MotorInfo, TrackPoint, Vehicle, VehicleDetail } from "@/types/api/monitor";
+import { simplifyToMax } from "@/utils/geo";
+import { createAmap, toAmapLatLng } from "@/utils/amap";
 
 const route = useRoute();
 const vehicles = ref<Vehicle[]>([]);
@@ -94,11 +99,24 @@ const vehicleId = ref<number>(Number(route.query.id) || 0);
 const dateRange = ref<[Date, Date]>();
 const detail = ref<VehicleDetail>();
 const trackPoints = ref<TrackPoint[]>([]);
+const rawCount = ref(0);
 const currentIndex = ref(0);
 const playing = ref(false);
+const mapEl = ref<HTMLElement>();
+let map: L.Map | null = null;
+let trackLayer: L.LayerGroup | null = null;
+let playMarker: L.CircleMarker | null = null;
 let timer: ReturnType<typeof setInterval> | null = null;
 
 const currentPoint = computed(() => trackPoints.value[currentIndex.value]);
+const thinText = computed(() => (rawCount.value ? `原始 ${rawCount.value.toLocaleString()} 点，抽稀后 ${trackPoints.value.length.toLocaleString()} 点` : ""));
+
+const TRACK_COLOR: Record<TrackPoint["state"], string> = {
+  normal: "#79BD85",
+  charging: "#6EA4FF",
+  alarm: "#E3828B",
+  offline: "#7E8B9F",
+};
 
 const axis = {
   axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
@@ -123,34 +141,69 @@ const linkedCells = computed(() => {
   }));
 });
 
-const trackOption = computed(() => {
+function drawTrack() {
+  if (!map) return;
+  trackLayer?.remove();
+  trackLayer = L.layerGroup().addTo(map);
   const points = trackPoints.value;
-  if (!points.length) return {};
-  const current = points[currentIndex.value];
-  return {
-    grid: { left: 56, right: 16, top: 16, bottom: 32 },
-    xAxis: { type: "value", name: "经度", scale: true, ...axis },
-    yAxis: { type: "value", name: "纬度", scale: true, ...axis },
-    series: [
-      { type: "line", data: points.map((p) => [p.lng, p.lat]), symbol: "none", lineStyle: { color: "#568DFF", width: 2 } },
+  let chunk: TrackPoint[] = [];
+  const flush = () => {
+    if (chunk.length < 2) {
+      chunk = [];
+      return;
+    }
+    const state = chunk[0].state;
+    const line = L.polyline(
+      chunk.map((point) => toAmapLatLng(point)),
       {
-        type: "scatter",
-        symbolSize: 12,
-        data: points.filter((p) => p.state === "charging").map((p) => ({ value: [p.lng, p.lat], itemStyle: { color: "#6EA4FF" } })),
-      },
-      {
-        type: "scatter",
-        symbolSize: 12,
-        data: points.filter((p) => p.state === "alarm").map((p) => ({ value: [p.lng, p.lat], itemStyle: { color: "#E3828B" } })),
-      },
-      {
-        type: "scatter",
-        symbolSize: 12,
-        data: current ? [{ value: [current.lng, current.lat], itemStyle: { color: "#79BD85" } }] : [],
-      },
-    ],
+        color: TRACK_COLOR[state],
+        weight: 4,
+        dashArray: state === "offline" ? "6 8" : undefined,
+      }
+    );
+    if (state === "alarm" && chunk[0].alarmContent) line.bindTooltip(chunk[0].alarmContent);
+    trackLayer?.addLayer(line);
+    chunk = [];
   };
-});
+  points.forEach((point, index) => {
+    if (index > 0 && point.state !== points[index - 1].state) {
+      chunk.push(point);
+      flush();
+    }
+    chunk.push(point);
+  });
+  flush();
+  points
+    .filter((point) => point.state === "alarm" || point.state === "charging")
+    .forEach((point) => {
+      const dot = L.circleMarker(toAmapLatLng(point), {
+        radius: 5,
+        color: TRACK_COLOR[point.state],
+        fillColor: TRACK_COLOR[point.state],
+        fillOpacity: 1,
+        weight: 1,
+      });
+      if (point.alarmContent) dot.bindTooltip(point.alarmContent);
+      trackLayer?.addLayer(dot);
+    });
+  if (!playMarker) {
+    playMarker = L.circleMarker(toAmapLatLng(points[0] ?? { lng: 116.6, lat: 40.08 }), {
+      radius: 7,
+      color: "#2563EB",
+      fillColor: "#2563EB",
+      fillOpacity: 1,
+      weight: 2,
+    }).addTo(map);
+  }
+  movePlayhead();
+  if (points.length) map.fitBounds(L.latLngBounds(points.map((point) => toAmapLatLng(point))), { padding: [24, 24] });
+}
+
+function movePlayhead() {
+  const point = trackPoints.value[currentIndex.value];
+  if (!point || !playMarker) return;
+  playMarker.setLatLng(toAmapLatLng(point));
+}
 
 const batteryOption = computed(() => {
   const curve = detail.value?.batteryCurve ?? [];
@@ -182,16 +235,45 @@ function togglePlay() {
   }
 }
 
-async function loadDetail() {
-  if (!vehicleId.value) return;
-  const data = await MonitorAPI.getVehicleDetail(vehicleId.value);
-  detail.value = data;
-  trackPoints.value = data.trackPoints;
-  currentIndex.value = 0;
+function withinLimit() {
+  if (!dateRange.value) return true;
+  const [start, end] = dateRange.value;
+  const days = (end.getTime() - start.getTime()) / 86400000;
+  if (days > 30) {
+    ElMessage.warning("单次回放最长 30 天");
+    return false;
+  }
+  return true;
 }
+
+async function loadDetail() {
+  if (!vehicleId.value || !withinLimit()) return;
+  const [data, track] = await Promise.all([MonitorAPI.getVehicleDetail(vehicleId.value), MonitorAPI.getTrack(vehicleId.value)]);
+  detail.value = data;
+  let points = track.points as TrackPoint[];
+  if (dateRange.value) {
+    const [start, end] = dateRange.value;
+    const startMs = start.getTime();
+    const endMs = end.getTime();
+    points = points.filter((point) => {
+      const time = new Date(point.time.replace(" ", "T")).getTime();
+      return time >= startMs && time <= endMs;
+    });
+  }
+  rawCount.value = points.length;
+  trackPoints.value = simplifyToMax(points, 500);
+  currentIndex.value = 0;
+  await nextTick();
+  if (!map && mapEl.value) map = createAmap(mapEl.value);
+  drawTrack();
+}
+
+watch(currentIndex, movePlayhead);
 
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer);
+  map?.remove();
+  map = null;
 });
 
 onMounted(async () => {
@@ -238,6 +320,33 @@ onMounted(async () => {
 
 .panel p {
   margin: 0 0 8px;
+  color: var(--shell-muted, #66758b);
+}
+
+.track-map {
+  height: 320px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+:deep(.terminal-label) {
+  background: transparent;
+  border: 0;
+}
+
+:deep(.terminal-label span) {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1b2b43;
+  white-space: nowrap;
+  background: rgb(255 255 255 / 92%);
+  border-radius: 4px;
+}
+
+.hint {
+  font-size: 12px;
   color: var(--shell-muted, #66758b);
 }
 

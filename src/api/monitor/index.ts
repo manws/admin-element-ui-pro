@@ -20,6 +20,10 @@ import {
   mockAccessQuarterStats,
   mockGetNotices,
   mockSaveNotice,
+  mockGetTrack,
+  mockFocusAlarms,
+  mockRecordAudit,
+  mockGetAudit,
 } from "@/mock/monitor";
 import { mockGetPushRecords } from "@/mock/base";
 import type { Vehicle } from "@/types/api/monitor";
@@ -122,6 +126,22 @@ const MonitorAPI = {
   saveNotice(data: any): Promise<any> {
     if (isMockEnabled) return Promise.resolve(mockSaveNotice(data));
     return request({ url: `${BASE_URL}/notices`, method: "post", data });
+  },
+  getTrack(id: number): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockGetTrack(id));
+    return request({ url: `${BASE_URL}/vehicles/${id}/track`, method: "get" });
+  },
+  getFocusAlarms(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockFocusAlarms());
+    return request({ url: `${BASE_URL}/alarms/focus`, method: "get" });
+  },
+  recordAudit(action: string, detail: string): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockRecordAudit(action, detail));
+    return request({ url: `${BASE_URL}/audit`, method: "post", data: { action, detail } });
+  },
+  getAudit(): Promise<any> {
+    if (isMockEnabled) return Promise.resolve(mockGetAudit());
+    return request({ url: `${BASE_URL}/audit`, method: "get" });
   },
 };
 

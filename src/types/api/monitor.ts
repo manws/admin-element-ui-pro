@@ -60,8 +60,12 @@ export interface Vehicle {
   // ===== 实时状态 =====
   /** 在线状态 */
   online: boolean;
-  /** 是否充电 */
+  /** 是否充电（停车充电或行驶充电） */
   charging: boolean;
+  /** 充电状态：park 停车充电 / drive 行驶充电 / none 未充电 */
+  chargingStatus: "park" | "drive" | "none";
+  /** 终端是否支持远程断电离合 */
+  remoteControl: boolean;
   /** 是否告警 */
   alarmFlag: boolean;
   /** 当前 SOC（%） */
@@ -98,6 +102,22 @@ export interface Vehicle {
   cellMaxTemp: number;
   /** 单体最低温度（℃） */
   cellMinTemp: number;
+  /** 最高电压单体序号 */
+  cellMaxIndex: number;
+  /** 最低电压单体序号 */
+  cellMinIndex: number;
+  /** 最高温度探针位置 */
+  probeMaxIndex: number;
+  /** 最低温度探针位置 */
+  probeMinIndex: number;
+  /** 定位精度（米） */
+  gpsAccuracy: number;
+  /** 卫星颗数 */
+  satelliteCount: number;
+  /** 最近一帧上行报文（十六进制） */
+  lastFrame: string;
+  /** 最近一帧上行报文（ASCII） */
+  lastFrameAscii: string;
   /** 档位 */
   gear: string;
   /** 绝缘电阻（kΩ） */
@@ -139,6 +159,10 @@ export interface AlarmRecord {
   content: string;
   /** 原始报文（Hex） */
   rawMessage: string;
+  /** 原始报文 ASCII 对照 */
+  rawAscii: string;
+  /** 故障是否已恢复 */
+  recovered: boolean;
 }
 
 /** 驱动电机信息 */
@@ -198,6 +222,8 @@ export interface TrackPoint {
   minVoltage: number;
   maxTemp: number;
   minTemp: number;
+  /** 告警段悬停说明 */
+  alarmContent?: string;
 }
 
 /** 电池单体 */

@@ -59,7 +59,8 @@ const PUSH_RECORDS: PushRecord[] = [
   { id: 1, time: "2026-10-29 09:12:00", plateNumber: "京A·23456", channel: "短信", type: "故障告警", content: "车辆 JD1023 发生电池温差超限告警", status: "已送达" },
   { id: 2, time: "2026-10-29 09:05:00", plateNumber: "京A·56789", channel: "微信小程序", type: "满电提示", content: "车辆 JD1105 已充满电，SOC 100%", status: "已送达" },
   { id: 3, time: "2026-10-29 08:40:00", plateNumber: "京A·34567", channel: "站内信", type: "故障告警", content: "车辆 JD1078 发生绝缘故障告警", status: "已送达" },
-  { id: 4, time: "2026-10-29 08:12:00", plateNumber: "京A·89012", channel: "短信", type: "故障告警", content: "车辆 JD1099 发生 SOC 跳变告警", status: "失败" },
+  { id: 4, time: "2026-10-29 08:12:00", plateNumber: "京A·89012", channel: "短信", type: "故障告警", content: "车辆 JD1099 发生 SOC 跳变告警", status: "失败重试" },
+  { id: 6, time: "2026-10-29 09:14:00", plateNumber: "京A·23456", channel: "短信", type: "故障告警", content: "车辆 JD1023 发生电池温差超限告警", status: "已抑制" },
   { id: 5, time: "2026-10-28 23:50:00", plateNumber: "京A·12345", channel: "微信小程序", type: "满电提示", content: "车辆 JD1011 已充满电，SOC 100%", status: "已送达" },
 ];
 

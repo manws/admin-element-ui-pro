@@ -128,6 +128,22 @@
     </section>
 
     <article class="panel">
+      <p class="kicker">重点关注</p>
+      <h3>未解除的严重告警</h3>
+      <p v-if="!focusAlarms.length" class="empty-note">当前没有未解除的严重告警。</p>
+      <el-table v-else :data="focusAlarms">
+        <el-table-column prop="faultTime" label="告警发生时间" width="180" />
+        <el-table-column prop="plateNumber" label="车牌号" width="120" />
+        <el-table-column prop="content" label="告警内容" min-width="220" />
+        <el-table-column label="状态" width="100">
+          <template #default>
+            <span class="lamp is-fault">严重</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </article>
+
+    <article class="panel">
       <p class="kicker">告警</p>
       <h3>最新告警</h3>
       <el-table :data="latestAlarms">
@@ -196,6 +212,7 @@ const heatmapData = ref<Array<[number, number, number]>>([]);
 const chargeCurve = ref<Array<{ time: string; power: number }>>([]);
 const topMileage = ref<Vehicle[]>([]);
 const latestAlarms = ref<AlarmRecord[]>([]);
+const focusAlarms = ref<AlarmRecord[]>([]);
 const safetyVisible = ref(false);
 const alarmVisible = ref(false);
 const alarmPlate = ref("");
@@ -331,18 +348,20 @@ async function openAlarmHistory(row: AlarmRecord) {
 }
 
 onMounted(async () => {
-  const [s, heat, curve, top, alarms] = await Promise.all([
+  const [s, heat, curve, top, alarms, focus] = await Promise.all([
     MonitorAPI.getOverviewStats(),
     MonitorAPI.getVehicleHeatmap(),
     MonitorAPI.getChargeCurve(),
     MonitorAPI.getTopMileage(),
     MonitorAPI.getLatestAlarms(),
+    MonitorAPI.getFocusAlarms(),
   ]);
   stats.value = s;
   heatmapData.value = heat;
   chargeCurve.value = curve;
   topMileage.value = top;
   latestAlarms.value = alarms;
+  focusAlarms.value = focus;
 });
 </script>
 
@@ -366,6 +385,12 @@ onMounted(async () => {
 
 .split-row {
   grid-template-columns: 320px 1fr;
+}
+
+.empty-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--shell-muted, #66758b);
 }
 
 .safety-body {
