@@ -228,6 +228,8 @@ function makeAlarm(id: number): AlarmRecord {
     deviceCode: `IMEI${Math.floor(num(100000000000000, 999999999999999, 0))}`,
     selfNumber: vehicle.selfNumber,
     plateNumber: vehicle.plateNumber,
+    vin: vehicle.vin,
+    brand: vehicle.brand,
     vehicleUnit: vehicle.company,
     faultType,
     faultCode: `P${Math.floor(num(1000, 9999, 0))}`,
@@ -241,6 +243,8 @@ function makeAlarm(id: number): AlarmRecord {
     rawMessage: frame.hex,
     rawAscii: frame.ascii,
     recovered: level !== 1 && id % 4 === 0,
+    faultCount: Math.max(1, Math.floor(num(1, 6, 0))),
+    handleStatus: pick(["未处理", "处理中", "已处理"]),
   };
 }
 
@@ -323,11 +327,13 @@ export function mockGetVehicles(params: any): { list: Vehicle[]; total: number }
     category,
     charging,
     monitorFlag,
+    plateNumber,
     pageNum = 1,
     pageSize = 10,
   } = params || {};
 
   if (selfNumber) list = list.filter((v) => v.selfNumber.includes(String(selfNumber)));
+  if (plateNumber) list = list.filter((v) => v.plateNumber.includes(String(plateNumber)));
   if (vin) {
     const keyword = String(vin);
     list = list.filter((v) => (vinMode === "exact" ? v.vin === keyword : v.vin.includes(keyword)));
@@ -402,6 +408,9 @@ export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number
     deviceCode,
     selfNumber,
     plateNumber,
+    vin,
+    company,
+    brand,
     faultType,
     faultCode,
     faultReason,
@@ -412,7 +421,10 @@ export function mockGetAlarms(params: any): { list: AlarmRecord[]; total: number
 
   if (deviceCode) list = list.filter((a) => a.deviceCode.includes(deviceCode));
   if (selfNumber) list = list.filter((a) => a.selfNumber.includes(selfNumber));
-  if (plateNumber) list = list.filter((a) => a.plateNumber === plateNumber);
+  if (plateNumber) list = list.filter((a) => a.plateNumber.includes(String(plateNumber)));
+  if (vin) list = list.filter((a) => a.vin.includes(String(vin)));
+  if (company) list = list.filter((a) => a.vehicleUnit.includes(String(company)));
+  if (brand) list = list.filter((a) => a.brand === brand);
   if (faultType) list = list.filter((a) => a.faultType === faultType);
   if (faultCode) list = list.filter((a) => a.faultCode.includes(faultCode));
   if (faultReason) list = list.filter((a) => a.faultReason.includes(faultReason));

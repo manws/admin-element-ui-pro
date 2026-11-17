@@ -28,41 +28,37 @@
         <el-button type="primary" @click="gotoTrack">历史轨迹回放</el-button>
       </div>
 
+      <h3 class="block-title">基本信息</h3>
+      <el-descriptions :column="3" border>
+        <el-descriptions-item label="所属单位">{{ view?.company }}</el-descriptions-item>
+        <el-descriptions-item label="运行公司">{{ view?.company }}</el-descriptions-item>
+        <el-descriptions-item label="车辆类型">{{ view?.category }}</el-descriptions-item>
+        <el-descriptions-item label="车品牌">{{ view?.brand }}</el-descriptions-item>
+        <el-descriptions-item label="注册日期">{{ view?.factoryTime }}</el-descriptions-item>
+        <el-descriptions-item label="车辆识别码">{{ view?.vin }}</el-descriptions-item>
+        <el-descriptions-item label="车牌号">{{ view?.plateNumber }}</el-descriptions-item>
+        <el-descriptions-item label="车架号">{{ view?.vin }}</el-descriptions-item>
+        <el-descriptions-item label="电池类型">{{ view?.batteryModel }}</el-descriptions-item>
+      </el-descriptions>
+
+      <h3 class="block-title">最近告警信息</h3>
+      <el-table :data="recentAlarms" border>
+        <el-table-column prop="faultTime" label="发生时间" width="180" />
+        <el-table-column prop="faultType" label="告警类型" width="160" />
+        <el-table-column prop="content" label="告警内容" />
+      </el-table>
+
+      <div class="gauge-row">
+        <ECharts :options="voltageGauge" height="220px" />
+        <ECharts :options="currentGauge" height="220px" />
+        <ECharts :options="socGauge" height="220px" />
+      </div>
+      <h3 class="block-title">电压 / 电流 / SOC</h3>
+      <ECharts :options="batteryCurveOption" height="320px" @chart-click="onBatteryClick" />
+      <h3 class="block-title">最高单体 / 最低单体 / 最高温度 / 最低温度</h3>
+      <ECharts :options="extremeCurveOption" height="320px" />
+
       <el-tabs v-model="activeTab">
-        <!-- 基础信息 -->
-        <el-tab-pane label="基础信息" name="base">
-          <el-descriptions :column="3" border>
-            <el-descriptions-item label="车辆类型">{{ view?.vehicleType }}</el-descriptions-item>
-            <el-descriptions-item label="车辆分类">{{ view?.category }}</el-descriptions-item>
-            <el-descriptions-item label="品牌">{{ view?.make }}</el-descriptions-item>
-            <el-descriptions-item label="车品牌">{{ view?.brand }}</el-descriptions-item>
-            <el-descriptions-item label="型号">{{ view?.model }}</el-descriptions-item>
-            <el-descriptions-item label="电池型号">{{ view?.batteryModel }}</el-descriptions-item>
-            <el-descriptions-item label="电池容量">{{ view?.batteryCapacity }} kWh</el-descriptions-item>
-            <el-descriptions-item label="自编号">{{ view?.selfNumber }}</el-descriptions-item>
-            <el-descriptions-item label="车牌号">{{ view?.plateNumber }}</el-descriptions-item>
-            <el-descriptions-item label="VIN 码">{{ view?.vin }}</el-descriptions-item>
-            <el-descriptions-item label="运营公司">{{ view?.company }}</el-descriptions-item>
-            <el-descriptions-item label="接入时间">{{ view?.accessTime }}</el-descriptions-item>
-            <el-descriptions-item label="出厂时间">{{ view?.factoryTime }}</el-descriptions-item>
-            <el-descriptions-item label="是否监控">{{ view?.monitorFlag ? "是" : "否" }}</el-descriptions-item>
-            <el-descriptions-item label="是否可用">{{ view?.available ? "是" : "否" }}</el-descriptions-item>
-            <el-descriptions-item label="安全评分">
-              <span class="readout score" :style="{ color: scoreColor }">{{ view?.safetyScore ?? 0 }}</span>
-            </el-descriptions-item>
-          </el-descriptions>
-        </el-tab-pane>
-
-        <!-- 电池曲线 -->
-        <el-tab-pane label="电池曲线" name="battery">
-          <p class="hint">点击曲线上的时刻，整车状态、极值、电机、告警和定位切到该时刻快照。</p>
-          <ECharts :options="batteryCurveOption" height="420px" @chart-click="onBatteryClick" />
-        </el-tab-pane>
-
-        <!-- 极值曲线 -->
-        <el-tab-pane label="极值曲线" name="extreme">
-          <ECharts :options="extremeCurveOption" height="420px" />
-        </el-tab-pane>
 
         <!-- 整车状态 -->
         <el-tab-pane label="整车状态" name="status">
@@ -142,12 +138,25 @@
           <ECharts :options="locationOption" height="320px" />
         </el-tab-pane>
 
-        <el-tab-pane label="电池单体" name="cells">
-          <el-table :data="view?.cells">
+        <el-tab-pane label="单体电压" name="cellVoltage">
+          <ECharts :options="cellVoltageOption" height="260px" />
+          <el-table :data="view?.cells" border>
             <el-table-column prop="index" label="单体序号" width="100" />
             <el-table-column prop="voltage" label="电压(V)" />
+          </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="单体温度" name="cellTemp">
+          <ECharts :options="cellTempOption" height="260px" />
+          <el-table :data="view?.cells" border>
+            <el-table-column prop="index" label="探针序号" width="100" />
             <el-table-column prop="temperature" label="温度(℃)" />
           </el-table>
+        </el-tab-pane>
+
+        <el-tab-pane label="原始报文" name="raw">
+          <pre class="raw-frame">{{ view?.lastFrame || "暂无报文" }}</pre>
+          <pre class="raw-frame">{{ view?.lastFrameAscii }}</pre>
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -167,7 +176,7 @@ const route = useRoute();
 const router = useRouter();
 
 const detail = ref<VehicleDetail>();
-const activeTab = ref("base");
+const activeTab = ref("status");
 const snapshotIndex = ref<number | null>(null);
 const onlyOpen = ref(false);
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -216,10 +225,49 @@ const shownMotors = computed(() => {
   }));
 });
 
+function gaugeOption(name: string, value: number, max: number, unit: string) {
+  return {
+    series: [
+      {
+        type: "gauge",
+        min: 0,
+        max,
+        progress: { show: true, width: 10 },
+        axisLine: { lineStyle: { width: 10 } },
+        detail: { formatter: `{value}${unit}`, fontSize: 16, offsetCenter: [0, "60%"] },
+        title: { offsetCenter: [0, "85%"], fontSize: 13 },
+        data: [{ value, name }],
+      },
+    ],
+  };
+}
+
+const voltageGauge = computed(() => gaugeOption("总电压", view.value?.voltage ?? 0, 500, "V"));
+const currentGauge = computed(() => gaugeOption("总电流", Math.abs(view.value?.current ?? 0), 200, "A"));
+const socGauge = computed(() => gaugeOption("SOC", view.value?.soc ?? 0, 100, "%"));
+
+const cellVoltageOption = computed(() => ({
+  tooltip: { trigger: "axis" },
+  grid: { left: 48, right: 16, top: 24, bottom: 32 },
+  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index) },
+  yAxis: { type: "value", name: "V" },
+  series: [{ type: "bar", data: (view.value?.cells ?? []).map((cell) => cell.voltage), itemStyle: { color: "#4E83ED" } }],
+}));
+
+const cellTempOption = computed(() => ({
+  tooltip: { trigger: "axis" },
+  grid: { left: 48, right: 16, top: 24, bottom: 32 },
+  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index) },
+  yAxis: { type: "value", name: "℃" },
+  series: [{ type: "bar", data: (view.value?.cells ?? []).map((cell) => cell.temperature), itemStyle: { color: "#E6A16C" } }],
+}));
+
 const alarmRows = computed(() => {
   const list = [...(view.value?.alarmList ?? [])].sort((a, b) => b.faultTime.localeCompare(a.faultTime));
   return onlyOpen.value ? list.filter((item) => !item.recovered) : list;
 });
+
+const recentAlarms = computed(() => alarmRows.value.slice(0, 5));
 
 function chargingText(status?: string) {
   if (status === "park") return "停车充电";
@@ -230,13 +278,6 @@ function chargingText(status?: string) {
 function onBatteryClick(params: { dataIndex?: number }) {
   if (typeof params?.dataIndex === "number") snapshotIndex.value = params.dataIndex;
 }
-
-const scoreColor = computed(() => {
-  const score = detail.value?.safetyScore ?? 0;
-  if (score >= 90) return "var(--shell-carbon, #0f6b56)";
-  if (score >= 80) return "var(--shell-blue, #2563eb)";
-  return "var(--shell-fault, #c2410c)";
-});
 
 const batteryCurveOption = computed(() => {
   const d = detail.value;
@@ -362,5 +403,26 @@ onBeforeUnmount(() => {
 
 .score {
   font-size: 16px;
+}
+
+.block-title {
+  margin: 20px 0 10px;
+  font-size: 16px;
+}
+
+.gauge-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+}
+
+.raw-frame {
+  padding: 12px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  word-break: break-all;
+  white-space: pre-wrap;
+  background: var(--shell-bg, #f4f6fa);
 }
 </style>

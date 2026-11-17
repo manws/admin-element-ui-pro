@@ -29,22 +29,21 @@
       <el-tabs v-model="activeTab">
         <el-tab-pane label="实时告警" name="alarm">
           <el-form :model="queryParams" inline class="query-form">
-            <el-form-item label="设备识别码">
-              <el-input v-model="queryParams.deviceCode" placeholder="IMEI" clearable style="width: 160px" />
+            <el-form-item label="车牌号">
+              <el-input v-model="queryParams.plateNumber" clearable style="width: 140px" />
             </el-form-item>
-            <el-form-item label="车辆自编号">
-              <el-input v-model="queryParams.selfNumber" clearable style="width: 120px" />
+            <el-form-item label="车辆VIN">
+              <el-input v-model="queryParams.vin" clearable style="width: 180px" />
             </el-form-item>
-            <el-form-item label="故障类型">
-              <el-select v-model="queryParams.faultType" placeholder="全部" clearable style="width: 140px">
-                <el-option v-for="t in FAULT_TYPES" :key="t" :label="t" :value="t" />
+            <el-form-item label="运营单位">
+              <el-select v-model="queryParams.company" placeholder="全部" clearable style="width: 200px">
+                <el-option v-for="item in COMPANIES" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
-            <el-form-item label="故障码">
-              <el-input v-model="queryParams.faultCode" clearable style="width: 110px" />
-            </el-form-item>
-            <el-form-item label="故障原因">
-              <el-input v-model="queryParams.faultReason" clearable style="width: 140px" />
+            <el-form-item label="车品牌">
+              <el-select v-model="queryParams.brand" placeholder="全部" clearable style="width: 140px">
+                <el-option v-for="item in VEHICLE_BRANDS" :key="item" :label="item" :value="item" />
+              </el-select>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="handleQuery">查询</el-button>
@@ -56,23 +55,17 @@
           </el-form>
 
           <el-table v-loading="loading" :data="alarmList" @selection-change="onSelect">
-            <el-table-column type="selection" width="48" />
-            <el-table-column prop="deviceCode" label="设备识别码" width="160" />
-            <el-table-column prop="selfNumber" label="车辆自编号" width="110" />
-            <el-table-column prop="vehicleUnit" label="车辆单位" min-width="140" />
-            <el-table-column prop="faultType" label="故障类型" width="120" />
-            <el-table-column prop="faultCode" label="故障码" width="90" />
-            <el-table-column prop="faultReason" label="故障原因" min-width="160" />
-            <el-table-column prop="alarmWay" label="告警方式" width="110" />
-            <el-table-column label="级别" width="160">
-              <template #default="{ row }">
-                <span class="lamp" :class="levelTone(row.level)">{{ levelLabel(row.level) }}</span>
-                <span v-if="row.level === 1" class="key-mark">重点车辆</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="faultDate" label="故障日期" width="110" />
-            <el-table-column prop="faultTime" label="故障发生时间" width="170" />
-            <el-table-column prop="updateTime" label="最后更新时间" width="170" />
+            <el-table-column type="index" label="序号" width="70" />
+            <el-table-column prop="plateNumber" label="车牌号" width="120" />
+            <el-table-column prop="vin" label="车辆VIN" min-width="180" />
+            <el-table-column prop="vehicleUnit" label="车辆单位" min-width="160" />
+            <el-table-column prop="faultCode" label="故障码" width="100" />
+            <el-table-column prop="faultReason" label="故障原因" min-width="180" />
+            <el-table-column prop="faultDate" label="故障日期" width="120" />
+            <el-table-column prop="faultTime" label="发生时间" width="170" />
+            <el-table-column prop="faultCount" label="故障次数" width="100" />
+            <el-table-column prop="alarmWay" label="告警方式" width="120" />
+            <el-table-column prop="handleStatus" label="处理状态" width="110" />
             <el-table-column label="操作" width="80" fixed="right">
               <template #default="{ row }">
                 <button type="button" class="text-btn" @click="showRawMessage(row)">报文</button>
@@ -200,12 +193,10 @@
 defineOptions({ name: "MonitorAlarm" });
 
 import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
 import MonitorAPI from "@/api/monitor";
-import { FAULT_TYPES } from "@/constants/monitor";
+import { COMPANIES, VEHICLE_BRANDS } from "@/constants/monitor";
 import type { AlarmRecord, NoticeRecord, PushRecord } from "@/types/api/monitor";
 
-const route = useRoute();
 const activeTab = ref("alarm");
 const loading = ref(false);
 const pushLoading = ref(false);
@@ -242,22 +233,11 @@ const noticeForm = ref<NoticeRecord>({
 });
 
 const queryParams = ref({
-  deviceCode: "",
-  selfNumber: typeof route.query.selfNumber === "string" ? route.query.selfNumber : "",
-  faultType: "",
-  faultCode: "",
-  faultReason: "",
+  plateNumber: "",
+  vin: "",
+  company: "",
+  brand: "",
 });
-
-function levelLabel(level: number) {
-  return levelConfig.value.find((item) => item.value === level)?.label ?? String(level);
-}
-
-function levelTone(level: number) {
-  if (level === 1) return "is-fault";
-  if (level === 2) return "is-warn";
-  return "";
-}
 
 const alarmTracks = computed(() => {
   const total = alarmStats.value.total;
@@ -306,7 +286,7 @@ function handleQuery() {
 }
 
 function handleReset() {
-  queryParams.value = { deviceCode: "", selfNumber: "", faultType: "", faultCode: "", faultReason: "" };
+  queryParams.value = { plateNumber: "", vin: "", company: "", brand: "" };
   handleQuery();
 }
 

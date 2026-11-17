@@ -1,10 +1,18 @@
 <template>
 <main id="viewport" aria-label="机场车辆安全监控大屏">
 <p class="sr-only">此页面为设计还原演示，使用设计稿中的示例数据，未连接实时数据服务。</p>
-<div id="stage" ref="stageRef"><div id="el-472-1501" class="node surface-node" data-name="安全监控大屏 · 布局优化"><div id="el-472-1502" class="node surface-node" data-name="标题栏"><div id="el-472-1506" class="node surface-node" data-name="左侧状态"><div id="el-472-1518" class="node surface-node" data-name="状态点"></div>
-<span id="el-472-1519" class="node text-node" data-name="状态文字">实时监控 · 示例数据 · 每10秒刷新</span></div>
-<h1 id="el-472-1507" class="node text-node" data-name="大屏标题" title="进入菜单" @click="openMenu">XXX机场车辆安全监控平台</h1>
-<span id="el-472-1508" class="node text-node" data-name="日期时间">{{ clockText }}</span></div>
+<div id="stage" ref="stageRef"><div id="el-472-1501" class="node surface-node" data-name="安全监控大屏 · 布局优化"><header class="topbar" aria-label="首都机场车辆监控平台顶部栏">
+<div class="brand">
+<img class="logo" src="/screen/assets/svg/472_23-20261117_234516026.svg" alt="平台安全标识" width="32" height="32">
+<h1 class="platform-title" title="进入菜单" @click="openMenu">首都机场（飞行区）电动车辆安全运行监控管理平台</h1>
+<div class="monitor-status"><span class="status-dot" aria-hidden="true"></span><span class="status-label">365×24 实时监控中</span></div>
+</div>
+<div class="tools">
+<span class="online-rule">在线判定：最近 60 秒有上报</span>
+<time class="timestamp">{{ clockText }}</time>
+<div class="current-user"><span class="avatar" aria-hidden="true">管</span><span class="username">采购人超级管理员</span></div>
+</div>
+</header>
 <div id="el-472-1503" class="node surface-node" data-name="六类当日告警数 · 示意数据"><div id="el-472-1524" class="node surface-node" data-name="当日告警-热失控前兆"><span id="el-472-1561" class="node text-node" data-name="标签">当日热失控前兆告警</span>
 <div id="el-491-1" class="node surface-node" data-name="告警数量与当日占比"><span id="el-472-1562" class="node text-node" data-name="数值">6</span>
 <span id="el-491-2" class="node text-node" data-name="六类告警占比">占比 26.1%</span></div>
@@ -184,7 +192,6 @@ import { useRouter } from "vue-router";
 const router = useRouter();
 const stageRef = ref<HTMLElement>();
 const clockText = ref("");
-const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
@@ -192,7 +199,7 @@ function pad(value: number) {
 
 function refreshClock() {
   const now = new Date();
-  clockText.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}  ${weekdays[now.getDay()]}  ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  clockText.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}  ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 
 function fitStage() {
@@ -234,12 +241,6 @@ onUnmounted(() => {
 .node{margin:0;padding:0;min-width:0}.text-node{display:block;overflow:hidden;cursor:text;font-synthesis:weight}.vector-resource{display:block;object-fit:fill;user-select:none}
 .text-node::selection{color:#fff;background:#355b79}.surface-node{border:0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-#el-472-1518{position:absolute;width:8px;height:8px;left:0px;top:6px;background:linear-gradient(#7bc67e,#7bc67e);border-radius:50%}
-#el-472-1519{position:absolute;width:225px;height:20px;left:16px;top:0px;font-family:"Monitor SC","Monitor SC",Arial,sans-serif;font-size:14px;font-weight:400;line-height:20.3px;text-align:left;white-space:pre-wrap;color:#a9bed2}
-#el-472-1506{position:absolute;width:310px;height:20px;left:24px;top:22px;border-radius:0px;overflow:hidden}
-#el-472-1507{position:absolute;width:405px;height:43px;left:733.5px;top:10.5px;font-family:"Monitor SC","Monitor SC",Arial,sans-serif;font-size:30px;font-weight:700;line-height:43.5px;text-align:left;white-space:pre-wrap;color:#d8eefb}
-#el-472-1508{position:absolute;width:310px;height:18px;left:1538px;top:23px;font-family:"Inter","Monitor SC",Arial,sans-serif;font-size:15px;font-weight:500;line-height:18px;text-align:right;white-space:pre-wrap;color:#a9bed2}
-#el-472-1502{position:absolute;width:1872px;height:64px;left:24px;top:24px;background:linear-gradient(180deg,#173659 0%,#0a1a30 100%);border-radius:2px;overflow:hidden;box-shadow:inset 0 0 0 1px #315779}
 #el-472-1561{position:absolute;width:190.6665px;height:20px;left:16px;top:12px;font-family:"Monitor SC","Monitor SC",Arial,sans-serif;font-size:14px;font-weight:400;line-height:20px;text-align:left;white-space:pre-wrap;color:#c0d0df}
 #el-472-1562{position:absolute;width:22px;height:44px;left:0px;top:0px;font-family:"Inter","Monitor SC",Arial,sans-serif;font-size:36px;font-weight:600;line-height:44px;text-align:left;white-space:pre-wrap;color:#f28b94}
 #el-491-2{position:absolute;width:62px;height:18px;left:128.6665px;top:26px;font-family:"Monitor SC","Monitor SC",Arial,sans-serif;font-size:12px;font-weight:400;line-height:18px;text-align:left;white-space:pre-wrap;color:#a9bed2}
@@ -510,7 +511,21 @@ onUnmounted(() => {
 #el-476-141{position:absolute;width:464px;height:832px;left:1408px;top:0px;border-radius:0px;overflow:hidden}
 #el-472-1504{position:absolute;width:1872px;height:832px;left:24px;top:224px;border-radius:0px;overflow:hidden}
 #el-472-1501{position:absolute;width:1920px;height:1080px;left:0;top:0;background:linear-gradient(180deg,#142e4d 0%,#071326 55%,#060f1f 100%);border-radius:0px;overflow:hidden}
-#el-472-1507{cursor:pointer}
-#el-472-1507:hover{color:#fff}
+@font-face{font-family:"Monitor Topbar";src:url("/screen/assets/topbar-400.woff2") format("woff2");font-weight:400 600;font-display:swap}
+@font-face{font-family:"Monitor Topbar";src:url("/screen/assets/topbar-700.woff2") format("woff2");font-weight:700;font-display:swap}
+#viewport .topbar{position:absolute;left:24px;top:24px;display:flex;align-items:center;justify-content:space-between;width:1872px;height:64px;padding:0 24px;border-radius:0;background:linear-gradient(180deg,#173659 0%,#0a1a30 100%);box-shadow:inset 0 0 0 1px #315779;overflow:hidden;color:#d8eefb;font-family:"Monitor Topbar","Monitor SC",sans-serif}
+#viewport .brand{display:flex;align-items:center;gap:14px;width:709px;height:32px;flex:none}
+#viewport .logo{display:block;width:32px;height:32px;flex:none}
+#viewport .platform-title{margin:0;width:506px;height:32px;line-height:32px;font-size:22px;font-weight:700;white-space:nowrap;flex:none;cursor:pointer;color:#d8eefb}
+#viewport .platform-title:hover{color:#fff}
+#viewport .monitor-status{display:flex;align-items:center;gap:6px;width:143px;height:25px;padding:4px 10px;border-radius:0;background:#102b46;box-shadow:inset 0 0 0 1px #315779;flex:none}
+#viewport .status-dot{width:8px;height:8px;background:#7bc67e;border-radius:50%;flex:none}
+#viewport .status-label{font-size:12px;font-weight:500;line-height:17px;color:#5bbcef;white-space:nowrap}
+#viewport .tools{display:flex;align-items:center;gap:20px;width:500px;height:32px;flex:none}
+#viewport .online-rule{width:151px;height:17px;font-size:12px;font-weight:400;line-height:17px;color:#a9bed2;white-space:nowrap;flex:none}
+#viewport .timestamp{display:block;width:163px;height:19px;font-family:Inter,Arial,"Monitor Topbar",sans-serif;font-size:16px;font-weight:500;line-height:19px;white-space:pre;flex:none}
+#viewport .current-user{display:flex;align-items:center;gap:10px;width:146px;height:32px;flex:none}
+#viewport .avatar{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:0;background:#173659;box-shadow:inset 0 0 0 1px #315779;color:#d8eefb;font-size:14px;font-weight:500;line-height:20px;flex:none}
+#viewport .username{width:104px;height:19px;line-height:19px;font-size:13px;white-space:nowrap;font-weight:400;flex:none;overflow:hidden}
 
 </style>

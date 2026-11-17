@@ -13,5 +13,7 @@ declare module "vue-router" {
     keepAlive?: boolean;
     breadcrumb?: boolean;
     activeMenu?: string;
+    /** 目录页使用的数据键，见 views/catalog/index.vue */
+    catalog?: string;
   }
 }

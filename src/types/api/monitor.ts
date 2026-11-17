@@ -137,6 +137,10 @@ export interface AlarmRecord {
   selfNumber: string;
   /** 车牌号 */
   plateNumber: string;
+  /** 车辆 VIN */
+  vin: string;
+  /** 车品牌 */
+  brand: string;
   /** 车辆单位 */
   vehicleUnit: string;
   /** 故障类型 */
@@ -163,6 +167,10 @@ export interface AlarmRecord {
   rawAscii: string;
   /** 故障是否已恢复 */
   recovered: boolean;
+  /** 故障次数 */
+  faultCount: number;
+  /** 处理状态 */
+  handleStatus: string;
 }
 
 /** 驱动电机信息 */
@@ -287,6 +295,14 @@ export interface PlatformUser {
   unit: string;
   /** 用户账号 */
   account: string;
+  /** 用户名 */
+  userName: string;
+  /** 运营公司 */
+  company: string;
+  /** 用户权限 */
+  permission: string;
+  /** 有效日期 */
+  validUntil: string;
   /** 用户角色 */
   role: string;
   /** 分公司及部门 */

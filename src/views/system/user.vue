@@ -3,16 +3,7 @@
     <PageSearch ref="searchRef" :search-config="searchConfig" @query-click="handleQueryClick" @reset-click="handleResetClick" />
     <PageContent ref="contentRef" :content-config="contentConfig" @operate-click="handleOperateClick">
       <template #available="{ row }">
-        <span>{{ row.available ? "可用" : "停用" }}</span>
-      </template>
-      <template #superUser="{ row }">
-        <span>{{ row.superUser ? "超级用户" : "普通用户" }}</span>
-      </template>
-      <template #online="{ row }">
-        <span class="status-text">
-          <i class="status-dot" :class="row.online ? 'is-online' : 'is-offline'" />
-          {{ row.online ? "在线" : "离线" }}
-        </span>
+        <span>{{ row.available ? "是" : "否" }}</span>
       </template>
     </PageContent>
     <PageModal ref="addModalRef" :modal-config="modalConfig" @submit-click="handleSubmitClick" />
@@ -27,6 +18,7 @@ import usePage from "@/components/CURD/usePage";
 import type { IContentConfig, IModalConfig, IOperateData, ISearchConfig } from "@/components/CURD/types";
 import UserAPI from "@/api/system/user";
 import { COMPANIES } from "@/constants/monitor";
+import { ElMessage } from "element-plus";
 
 const ROLES = ["超级管理员", "安全监管员", "运营调度员", "维修技师", "企业领导", "外部审计"];
 
@@ -45,9 +37,10 @@ const {
 
 const searchConfig: ISearchConfig = {
   formItems: [
-    { type: "input", label: "用户账号", prop: "account", attrs: { placeholder: "请输入账号" } },
-    { type: "input", label: "用户单位", prop: "unit", attrs: { placeholder: "请输入单位" } },
-    { type: "select", label: "用户角色", prop: "role", options: ROLES.map((r) => ({ label: r, value: r })), attrs: { placeholder: "全部" } },
+    { type: "input", label: "账号", prop: "account", attrs: { placeholder: "请输入账号" } },
+    { type: "input", label: "用户名", prop: "userName", attrs: { placeholder: "请输入用户名" } },
+    { type: "select", label: "运营公司", prop: "company", options: COMPANIES.map((item) => ({ label: item, value: item })), attrs: { placeholder: "全部" } },
+    { type: "input", label: "单位", prop: "unit", attrs: { placeholder: "请输入单位" } },
   ],
 };
 
@@ -57,52 +50,47 @@ const contentConfig: IContentConfig = {
   deleteAction: (ids) => UserAPI.deleteUsers(ids),
   cols: [
     { type: "selection", width: 50 },
-    { type: "index", label: "#", width: 55 },
-    { label: "用户单位", prop: "unit", minWidth: 160 },
-    { label: "用户账号", prop: "account", width: 110 },
-    { label: "用户角色", prop: "role", width: 110 },
-    { label: "分公司及部门", prop: "dept", minWidth: 130 },
-    { label: "手机号", prop: "phone", width: 120 },
-    { label: "邮箱", prop: "email", minWidth: 160 },
-    { label: "是否可用", prop: "available", templet: "custom", slotName: "available", width: 90 },
-    { label: "是否超级用户", prop: "superUser", templet: "custom", slotName: "superUser", width: 110 },
-    { label: "是否在线", prop: "online", templet: "custom", slotName: "online", width: 90 },
-    { label: "登录次数", prop: "loginCount", width: 90, align: "right" },
-    { label: "登录时间", prop: "loginTime", width: 170 },
-    { label: "登录设备", prop: "loginDevice", width: 140 },
-    { label: "登录 IP", prop: "loginIp", width: 120 },
-    { label: "登录端口", prop: "loginPort", width: 90 },
-    { label: "登录位置", prop: "loginLocation", minWidth: 120 },
-    { label: "最近在线时间", prop: "lastOnlineTime", width: 170 },
-    { label: "操作", templet: "tool", width: 140, fixed: "right", operat: ["edit", "view", "delete"] },
+    { type: "index", label: "序号", width: 70 },
+    { label: "账号", prop: "account", width: 120 },
+    { label: "用户名", prop: "userName", width: 120 },
+    { label: "角色", prop: "role", width: 120 },
+    { label: "运营分公司", prop: "company", minWidth: 180 },
+    { label: "单位", prop: "unit", minWidth: 140 },
+    { label: "用户权限", prop: "permission", minWidth: 180 },
+    { label: "是否激活", prop: "available", templet: "custom", slotName: "available", width: 100 },
+    { label: "有效日期", prop: "validUntil", width: 120 },
+    {
+      label: "密码",
+      templet: "tool",
+      width: 220,
+      fixed: "right",
+      operat: [
+        "edit",
+        "delete",
+        { name: "resetPwd", text: "重置", perm: "*:*:*", attrs: { type: "primary", link: true } },
+      ],
+    },
   ],
 };
 
 const modalConfig: IModalConfig = {
   pk: "id",
-  dialog: { title: "用户档案", width: "620px" },
+  dialog: { title: "用户", width: "680px" },
   formItems: [
-    { type: "input", label: "用户单位", prop: "unit", col: { span: 12 }, rules: [{ required: true, message: "请输入用户单位" }] },
-    { type: "input", label: "用户账号", prop: "account", col: { span: 12 }, rules: [{ required: true, message: "请输入用户账号" }] },
-    { type: "select", label: "用户角色", prop: "role", options: ROLES.map((r) => ({ label: r, value: r })), col: { span: 12 } },
-    { type: "select", label: "分公司及部门", prop: "dept", options: COMPANIES.map((c) => ({ label: c, value: c })), col: { span: 12 } },
-    { type: "input", label: "手机号", prop: "phone", col: { span: 12 } },
-    { type: "input", label: "邮箱", prop: "email", col: { span: 12 } },
-    { type: "switch", label: "是否可用", prop: "available", initialValue: true, col: { span: 12 } },
-    { type: "switch", label: "是否超级用户", prop: "superUser", initialValue: false, col: { span: 12 } },
-    { type: "input", label: "登录时间", prop: "loginTime", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "登录设备", prop: "loginDevice", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "登录 IP", prop: "loginIp", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "登录端口", prop: "loginPort", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "登录次数", prop: "loginCount", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "登录位置", prop: "loginLocation", attrs: { disabled: true }, col: { span: 12 } },
-    { type: "input", label: "最近在线时间", prop: "lastOnlineTime", attrs: { disabled: true }, col: { span: 12 } },
+    { type: "input", label: "账号", prop: "account", col: { span: 12 }, rules: [{ required: true, message: "请输入账号" }] },
+    { type: "input", label: "用户名", prop: "userName", col: { span: 12 }, rules: [{ required: true, message: "请输入用户名" }] },
+    { type: "select", label: "角色", prop: "role", options: ROLES.map((item) => ({ label: item, value: item })), col: { span: 12 } },
+    { type: "select", label: "运营分公司", prop: "company", options: COMPANIES.map((item) => ({ label: item, value: item })), col: { span: 12 } },
+    { type: "input", label: "单位", prop: "unit", col: { span: 12 } },
+    { type: "input", label: "用户权限", prop: "permission", col: { span: 12 } },
+    { type: "switch", label: "是否激活", prop: "available", initialValue: true, col: { span: 12 } },
+    { type: "date-picker", label: "有效日期", prop: "validUntil", attrs: { type: "date", valueFormat: "YYYY-MM-DD" }, col: { span: 12 } },
   ],
   formAction: (data) => UserAPI.saveUser(data),
 };
 
 function handleOperateClick(data: IOperateData) {
   if (data.name === "edit") handleEditClick(data.row);
-  if (data.name === "view") handleViewClick(data.row);
+  if (data.name === "resetPwd") ElMessage.success(`已重置 ${data.row.account} 的密码`);
 }
 </script>

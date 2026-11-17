@@ -5,16 +5,9 @@
       <el-select v-model="vehicleId" style="width: 240px" filterable @change="loadDetail">
         <el-option v-for="v in vehicles" :key="v.id" :label="`${v.plateNumber} (${v.selfNumber})`" :value="v.id" />
       </el-select>
-      <el-date-picker
-        v-model="dateRange"
-        type="datetimerange"
-        range-separator="至"
-        start-placeholder="开始时间"
-        end-placeholder="结束时间"
-        style="width: 360px"
-      />
+      <el-date-picker v-model="queryDate" type="date" value-format="YYYY-MM-DD" placeholder="选择日期" />
       <el-button type="primary" @click="loadDetail">查询</el-button>
-      <span class="hint">单次最长 30 天。{{ thinText }}</span>
+      <span class="hint">{{ thinText }}</span>
     </section>
 
     <section class="chart-row">
@@ -32,7 +25,9 @@
       <article class="panel">
         <p class="kicker">电池</p>
         <h3 class="is-sub">电池曲线</h3>
-        <ECharts :options="batteryOption" height="360px" />
+        <ECharts :options="batteryOption" height="280px" />
+        <h3 class="is-sub">极值曲线</h3>
+        <ECharts :options="extremeOption" height="280px" />
       </article>
     </section>
 
@@ -41,42 +36,59 @@
       <h3>回放控制</h3>
       <div class="player">
         <el-button type="primary" @click="togglePlay">{{ playing ? "暂停" : "播放" }}</el-button>
-        <el-slider v-model="currentIndex" :max="Math.max(trackPoints.length - 1, 0)" class="player-slider" @input="onSliderChange" />
+        <div class="timeline">
+          <span>00:00</span>
+          <el-slider v-model="currentIndex" :max="Math.max(trackPoints.length - 1, 0)" class="player-slider" @input="onSliderChange" />
+          <span>23:59</span>
+        </div>
         <span>{{ currentPoint?.time ?? "--" }}</span>
       </div>
 
-      <div class="link-grid">
-        <div>
-          <h4>车辆总状态</h4>
-          <p>状态 {{ currentPoint?.vehicleStatus ?? "--" }}</p>
-          <p>SOC {{ currentPoint?.soc ?? "--" }}%</p>
-          <p>速度 {{ currentPoint?.speed ?? "--" }} km/h</p>
-          <p>电压 {{ currentPoint?.voltage ?? "--" }} V</p>
-          <p>电流 {{ currentPoint?.current ?? "--" }} A</p>
-          <p>功率 {{ currentPoint?.power ?? "--" }} kW</p>
-          <p>档位 {{ currentPoint?.gear ?? "--" }}</p>
-          <p>绝缘电阻 {{ currentPoint?.insulationResistance ?? "--" }} kΩ</p>
-        </div>
-        <div>
-          <h4>极值信息</h4>
-          <p>最高电压 {{ currentPoint?.maxVoltage ?? "--" }} V</p>
-          <p>最低电压 {{ currentPoint?.minVoltage ?? "--" }} V</p>
-          <p>最高温度 {{ currentPoint?.maxTemp ?? "--" }} ℃</p>
-          <p>最低温度 {{ currentPoint?.minTemp ?? "--" }} ℃</p>
-        </div>
-        <div>
-          <h4>驱动电机</h4>
-          <p v-for="motor in linkedMotors" :key="motor.index">
-            {{ motor.index }} 号 {{ motor.status }} · {{ motor.speed }} rpm · {{ motor.temperature }} ℃
-          </p>
-        </div>
-        <div>
-          <h4>电池单体电压 / 温度</h4>
-          <p v-for="cell in linkedCells" :key="cell.index">
-            {{ cell.index }} 号 {{ cell.voltage }} V · {{ cell.temperature }} ℃
-          </p>
-        </div>
+      <div class="gauge-row">
+        <ECharts :options="gauge('总电压', currentPoint?.voltage ?? 0, 500, 'V')" height="200px" />
+        <ECharts :options="gauge('总电流', Math.abs(currentPoint?.current ?? 0), 200, 'A')" height="200px" />
+        <ECharts :options="gauge('SOC', currentPoint?.soc ?? 0, 100, '%')" height="200px" />
+        <ECharts :options="gauge('车速', currentPoint?.speed ?? 0, 80, 'km/h')" height="200px" />
       </div>
+      <el-descriptions :column="3" border class="status-grid">
+        <el-descriptions-item label="车辆状态">{{ currentPoint?.vehicleStatus ?? "--" }}</el-descriptions-item>
+        <el-descriptions-item label="充电状态">{{ currentPoint?.state === "charging" ? "充电" : "未充电" }}</el-descriptions-item>
+        <el-descriptions-item label="运行模式">{{ currentPoint?.vehicleStatus ?? "--" }}</el-descriptions-item>
+        <el-descriptions-item label="当前挡位">{{ currentPoint?.gear ?? "--" }}</el-descriptions-item>
+        <el-descriptions-item label="总行驶里程">{{ detail?.totalMileage ?? "--" }} km</el-descriptions-item>
+        <el-descriptions-item label="绝缘电阻">{{ currentPoint?.insulationResistance ?? "--" }} kΩ</el-descriptions-item>
+      </el-descriptions>
+      <h4>极值信息</h4>
+      <el-descriptions :column="4" border>
+        <el-descriptions-item label="最高单体">{{ currentPoint?.maxVoltage ?? "--" }} V</el-descriptions-item>
+        <el-descriptions-item label="最低单体">{{ currentPoint?.minVoltage ?? "--" }} V</el-descriptions-item>
+        <el-descriptions-item label="最高温度">{{ currentPoint?.maxTemp ?? "--" }} ℃</el-descriptions-item>
+        <el-descriptions-item label="最低温度">{{ currentPoint?.minTemp ?? "--" }} ℃</el-descriptions-item>
+      </el-descriptions>
+      <h4>驱动电机</h4>
+      <el-table :data="linkedMotors" border>
+        <el-table-column prop="index" label="电机序号" width="90" />
+        <el-table-column label="充电状态" width="100">
+          <template #default>{{ currentPoint?.state === "charging" ? "充电" : "未充电" }}</template>
+        </el-table-column>
+        <el-table-column prop="speed" label="电机转速" />
+        <el-table-column prop="torque" label="电机转矩" />
+        <el-table-column prop="temperature" label="电机温度" />
+        <el-table-column prop="controllerVoltage" label="控制器电压" />
+        <el-table-column prop="controllerCurrent" label="控制器电流" />
+      </el-table>
+      <h4>单体电压</h4>
+      <ECharts :options="cellVoltageOption" height="220px" />
+      <el-table :data="linkedCells" border>
+        <el-table-column prop="index" label="序号" width="80" />
+        <el-table-column prop="voltage" label="电压(V)" />
+      </el-table>
+      <h4>单体温度</h4>
+      <ECharts :options="cellTempOption" height="220px" />
+      <el-table :data="linkedCells" border>
+        <el-table-column prop="index" label="序号" width="80" />
+        <el-table-column prop="temperature" label="温度(℃)" />
+      </el-table>
     </section>
   </div>
 </template>
@@ -86,7 +98,6 @@ defineOptions({ name: "MonitorTrack" });
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
 import L from "leaflet";
 import MonitorAPI from "@/api/monitor";
 import type { MotorInfo, TrackPoint, Vehicle, VehicleDetail } from "@/types/api/monitor";
@@ -96,7 +107,7 @@ import { createAmap, toAmapLatLng } from "@/utils/amap";
 const route = useRoute();
 const vehicles = ref<Vehicle[]>([]);
 const vehicleId = ref<number>(Number(route.query.id) || 0);
-const dateRange = ref<[Date, Date]>();
+const queryDate = ref("");
 const detail = ref<VehicleDetail>();
 const trackPoints = ref<TrackPoint[]>([]);
 const rawCount = ref(0);
@@ -134,7 +145,7 @@ const linkedMotors = computed<MotorInfo[]>(() => {
 
 const linkedCells = computed(() => {
   const point = currentPoint.value;
-  return (detail.value?.cells ?? []).slice(0, 4).map((cell) => ({
+  return (detail.value?.cells ?? []).map((cell) => ({
     ...cell,
     voltage: point ? Number((point.minVoltage + (point.maxVoltage - point.minVoltage) * (cell.index / 8)).toFixed(3)) : cell.voltage,
     temperature: point ? Number((point.minTemp + (point.maxTemp - point.minTemp) * ((cell.index % 4) / 3)).toFixed(1)) : cell.temperature,
@@ -235,30 +246,61 @@ function togglePlay() {
   }
 }
 
-function withinLimit() {
-  if (!dateRange.value) return true;
-  const [start, end] = dateRange.value;
-  const days = (end.getTime() - start.getTime()) / 86400000;
-  if (days > 30) {
-    ElMessage.warning("单次回放最长 30 天");
-    return false;
-  }
-  return true;
+function gauge(name: string, value: number, max: number, unit: string) {
+  return {
+    series: [
+      {
+        type: "gauge",
+        min: 0,
+        max,
+        progress: { show: true, width: 8 },
+        axisLine: { lineStyle: { width: 8 } },
+        detail: { formatter: `{value}${unit}`, fontSize: 14, offsetCenter: [0, "64%"] },
+        title: { offsetCenter: [0, "88%"], fontSize: 12 },
+        data: [{ value: Number(value.toFixed(1)), name }],
+      },
+    ],
+  };
 }
 
+const extremeOption = computed(() => {
+  const curve = detail.value?.extremeCurve ?? [];
+  return {
+    tooltip: { trigger: "axis" },
+    legend: { data: ["最高单体", "最低单体", "最高温度", "最低温度"], textStyle: { color: "#66758B", fontSize: 12 } },
+    grid: { left: 48, right: 48, top: 32, bottom: 28 },
+    xAxis: { type: "category", data: curve.map((point) => point.time.slice(11, 16)), ...axis },
+    yAxis: [{ type: "value", ...axis }, { type: "value", ...axis }],
+    series: [
+      { name: "最高单体", type: "line", symbol: "none", data: curve.map((point) => point.maxVoltage) },
+      { name: "最低单体", type: "line", symbol: "none", data: curve.map((point) => point.minVoltage) },
+      { name: "最高温度", type: "line", yAxisIndex: 1, symbol: "none", data: curve.map((point) => point.maxTemp) },
+      { name: "最低温度", type: "line", yAxisIndex: 1, symbol: "none", data: curve.map((point) => point.minTemp) },
+    ],
+  };
+});
+
+const cellVoltageOption = computed(() => ({
+  grid: { left: 40, right: 12, top: 16, bottom: 24 },
+  xAxis: { type: "category", data: linkedCells.value.map((cell) => cell.index) },
+  yAxis: { type: "value" },
+  series: [{ type: "bar", data: linkedCells.value.map((cell) => cell.voltage) }],
+}));
+
+const cellTempOption = computed(() => ({
+  grid: { left: 40, right: 12, top: 16, bottom: 24 },
+  xAxis: { type: "category", data: linkedCells.value.map((cell) => cell.index) },
+  yAxis: { type: "value" },
+  series: [{ type: "bar", data: linkedCells.value.map((cell) => cell.temperature), itemStyle: { color: "#E6A16C" } }],
+}));
+
 async function loadDetail() {
-  if (!vehicleId.value || !withinLimit()) return;
+  if (!vehicleId.value) return;
   const [data, track] = await Promise.all([MonitorAPI.getVehicleDetail(vehicleId.value), MonitorAPI.getTrack(vehicleId.value)]);
   detail.value = data;
   let points = track.points as TrackPoint[];
-  if (dateRange.value) {
-    const [start, end] = dateRange.value;
-    const startMs = start.getTime();
-    const endMs = end.getTime();
-    points = points.filter((point) => {
-      const time = new Date(point.time.replace(" ", "T")).getTime();
-      return time >= startMs && time <= endMs;
-    });
+  if (queryDate.value) {
+    points = points.filter((point) => point.time.startsWith(queryDate.value));
   }
   rawCount.value = points.length;
   trackPoints.value = simplifyToMax(points, 500);
@@ -294,6 +336,25 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
+}
+
+.timeline {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+  align-items: center;
+  min-width: 280px;
+}
+
+.gauge-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 12px 0;
+}
+
+.status-grid,
+h4 {
+  margin-top: 16px;
 }
 
 .player-slider {

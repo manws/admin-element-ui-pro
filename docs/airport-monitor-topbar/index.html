@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>首都机场车辆监控 · 顶部栏</title>
+<style>
+@font-face{font-family:"Monitor SC";src:url("assets/monitor-400.woff2") format("woff2");font-weight:400 600;font-display:swap}
+@font-face{font-family:"Monitor SC";src:url("assets/monitor-700.woff2") format("woff2");font-weight:700;font-display:swap}
+:root{--surface:#0d1628;--border:#1c2d49;--primary-text:#e9f0fb;--secondary-text:#91a1ba;--accent-text:#afc9ff;--badge:#172943;--avatar:#23395b;--online:#7bc67e}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--surface)}body{font-family:"Monitor SC",sans-serif;color:var(--primary-text)}
+.viewport{position:fixed;inset:0;overflow:hidden}
+.stage{position:absolute;left:0;top:0;width:1872px;height:64px;transform-origin:top left}
+.topbar{position:relative;display:flex;align-items:center;justify-content:space-between;width:1872px;height:64px;padding:0 24px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--border);overflow:hidden}
+.brand{display:flex;align-items:center;gap:14px;width:709px;height:32px;flex:none}
+.logo{display:block;width:32px;height:32px;flex:none}
+.platform-title{margin:0;width:506px;height:32px;line-height:32px;font-size:22px;font-weight:700;white-space:nowrap;flex:none}
+.monitor-status{display:flex;align-items:center;gap:6px;width:143px;height:25px;padding:4px 10px;border-radius:999px;background:var(--badge);flex:none}
+.status-dot{width:8px;height:8px;background:var(--online);border-radius:50%;flex:none}
+.status-label{font-size:12px;font-weight:500;line-height:17px;color:var(--accent-text);white-space:nowrap}
+.tools{display:flex;align-items:center;gap:20px;width:500px;height:32px;flex:none}
+.online-rule{width:151px;height:17px;font-size:12px;font-weight:400;line-height:17px;color:var(--secondary-text);white-space:nowrap;flex:none}
+.timestamp{display:block;width:163px;height:19px;font-family:Inter,Arial,"Monitor SC",sans-serif;font-size:16px;font-weight:500;line-height:19px;white-space:pre;flex:none}
+.current-user{display:flex;align-items:center;gap:10px;width:146px;height:32px;flex:none}
+.avatar{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:16px;background:var(--avatar);color:var(--accent-text);font-size:14px;font-weight:500;line-height:20px;flex:none}
+.username{width:104px;height:19px;line-height:19px;font-size:13px;white-space:nowrap;font-weight:400;flex:none}
+</style>
+</head>
+<body>
+<main class="viewport" aria-label="顶部栏设计还原预览">
+<div class="stage" id="stage">
+<header class="topbar" aria-label="首都机场车辆监控平台顶部栏">
+<div class="brand">
+<img class="logo" src="assets/svg/472_23-20261117_234516026.svg" alt="平台安全标识" width="32" height="32">
+<h1 class="platform-title">首都机场（飞行区）电动车辆安全运行监控管理平台</h1>
+<div class="monitor-status"><span class="status-dot" aria-hidden="true"></span><span class="status-label">365×24 实时监控中</span></div>
+</div>
+<div class="tools">
+<span class="online-rule">在线判定：最近 60 秒有上报</span>
+<time class="timestamp" datetime="2029-03-18T13:01:26">2029-03-18  13:01:26</time>
+<div class="current-user"><span class="avatar" aria-hidden="true">管</span><span class="username">采购人超级管理员</span></div>
+</div>
+</header>
+</div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const stage = document.getElementById('stage');
+  function fit() {
+    const scale = Math.min(window.innerWidth / 1872, window.innerHeight / 64);
+    stage.style.transform = `scale(${scale})`;
+    stage.style.left = `${(window.innerWidth - 1872 * scale) / 2}px`;
+    stage.style.top = '0px';
+  }
+  window.addEventListener('resize', fit, { passive: true });
+  fit();
+  if (document.fonts) document.fonts.ready.then(fit);
+})();
+</script>
+</body>
+</html>

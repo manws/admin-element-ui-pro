@@ -82,7 +82,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "vehicle-list",
         component: () => import("@/views/monitor/vehicle-list.vue"),
         name: "MonitorVehicleList",
-        meta: { title: "车辆列表", icon: "nav-vehicle", keepAlive: true },
+        meta: { title: "车辆监控", icon: "nav-vehicle", keepAlive: true },
       },
       {
         path: "vehicle-detail",
@@ -97,16 +97,44 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: { title: "历史轨迹", hidden: true, activeMenu: "/monitor/vehicle-list" },
       },
       {
-        path: "alarm",
-        component: () => import("@/views/monitor/alarm.vue"),
-        name: "MonitorAlarm",
-        meta: { title: "告警管理", icon: "nav-alarm", keepAlive: true },
-      },
-      {
         path: "heatmap",
         component: () => import("@/views/monitor/heatmap.vue"),
         name: "MonitorHeatmap",
         meta: { title: "充电热力图", icon: "nav-heatmap", keepAlive: true },
+      },
+    ],
+  },
+
+  // 告警管理
+  {
+    path: "/alarm",
+    component: Layout,
+    redirect: "/alarm/list",
+    meta: { title: "告警管理", icon: "nav-alarm", alwaysShow: true },
+    children: [
+      {
+        path: "fault-type",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "AlarmFaultType",
+        meta: { title: "故障字典", catalog: "faultType", keepAlive: true },
+      },
+      {
+        path: "fault-code",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "AlarmFaultCode",
+        meta: { title: "车辆故障代码", catalog: "faultCode", keepAlive: true },
+      },
+      {
+        path: "alarm-code",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "AlarmAlarmCode",
+        meta: { title: "车辆告警代码", catalog: "alarmCode", keepAlive: true },
+      },
+      {
+        path: "list",
+        component: () => import("@/views/monitor/alarm.vue"),
+        name: "MonitorAlarm",
+        meta: { title: "告警列表", icon: "nav-alarm", keepAlive: true },
       },
     ],
   },
@@ -145,12 +173,62 @@ export const constantRoutes: RouteRecordRaw[] = [
     ],
   },
 
+  // 字典管理
+  {
+    path: "/dict",
+    component: Layout,
+    redirect: "/dict/unit",
+    meta: { title: "字典管理", icon: "el-icon-Collection", alwaysShow: true },
+    children: [
+      {
+        path: "unit",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "DictUnit",
+        meta: { title: "单位管理", catalog: "orgUnit", keepAlive: true },
+      },
+      {
+        path: "brand",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "DictBrand",
+        meta: { title: "车品牌管理", catalog: "vehicleBrand", keepAlive: true },
+      },
+      {
+        path: "vehicle",
+        component: () => import("@/views/dict/vehicle-info.vue"),
+        name: "DictVehicleInfo",
+        meta: { title: "车辆信息管理", keepAlive: true },
+      },
+    ],
+  },
+
+  // 设备管理
+  {
+    path: "/device",
+    component: Layout,
+    redirect: "/device/list",
+    meta: { title: "设备管理", icon: "el-icon-Cpu", alwaysShow: true },
+    children: [
+      {
+        path: "list",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "DeviceList",
+        meta: { title: "设备管理", catalog: "device", keepAlive: true },
+      },
+      {
+        path: "protocol",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "DeviceProtocol",
+        meta: { title: "协议管理", catalog: "protocol", keepAlive: true },
+      },
+    ],
+  },
+
   // 授权管理
   {
     path: "/system",
     component: Layout,
     redirect: "/system/user",
-    meta: { title: "授权管理", icon: "el-icon-user" },
+    meta: { title: "授权管理", icon: "el-icon-user", alwaysShow: true },
     children: [
       {
         path: "user",
@@ -158,20 +236,57 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: "SystemUser",
         meta: { title: "用户管理", icon: "nav-user", keepAlive: true },
       },
+      {
+        path: "role",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "SystemRole",
+        meta: { title: "用户角色", catalog: "role", keepAlive: true },
+      },
+      {
+        path: "role-level",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "SystemRoleLevel",
+        meta: { title: "角色级别", catalog: "roleLevel", keepAlive: true },
+      },
+      {
+        path: "grant",
+        component: () => import("@/views/system/grant.vue"),
+        name: "SystemGrant",
+        meta: { title: "资源授权", keepAlive: true },
+      },
+      {
+        path: "resource",
+        component: () => import("@/views/system/resource.vue"),
+        name: "SystemResource",
+        meta: { title: "系统资源", keepAlive: true },
+      },
     ],
   },
 
-  // 报告中心
+  // 报告信息
   {
     path: "/report",
     component: Layout,
-    meta: { title: "报告中心", icon: "nav-report" },
+    redirect: "/report/center",
+    meta: { title: "报告信息", icon: "nav-report", alwaysShow: true },
     children: [
       {
-        path: "",
+        path: "center",
         component: () => import("@/views/report/index.vue"),
         name: "ReportCenter",
-        meta: { title: "报告中心", icon: "nav-report", keepAlive: true },
+        meta: { title: "运行报告", icon: "nav-report", keepAlive: true },
+      },
+      {
+        path: "simple",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "ReportSimple",
+        meta: { title: "简单报告", catalog: "simpleReport", keepAlive: true },
+      },
+      {
+        path: "charge",
+        component: () => import("@/views/catalog/index.vue"),
+        name: "ReportCharge",
+        meta: { title: "充电报告", catalog: "chargeReport", keepAlive: true },
       },
     ],
   },
