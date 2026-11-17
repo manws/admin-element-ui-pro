@@ -199,7 +199,7 @@ async function handleVerify() {
     };
 
     await userStore.login(param);
-    const redirectPath = (route.query.redirect as string) || "/";
+    const redirectPath = (route.query.redirect as string) || "/screen";
     await router.push(decodeURIComponent(redirectPath));
   } catch (error: any) {
     ElMessage.error(error?.message || "登录失败");

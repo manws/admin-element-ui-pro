@@ -24,10 +24,17 @@ export const constantRoutes: RouteRecordRaw[] = [
   },
 
   {
+    path: "/screen",
+    name: "SafetyScreen",
+    component: () => import("@/views/screen/index.vue"),
+    meta: { hidden: true, title: "安全监控大屏" },
+  },
+
+  {
     path: "/",
     name: "/",
     component: Layout,
-    redirect: "/dashboard",
+    redirect: "/screen",
     children: [
       {
         path: "dashboard",

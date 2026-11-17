@@ -29,9 +29,9 @@ export function setupPermissionGuard() {
         return;
       }
 
-      // 已登录访问登录页，重定向到首页
+      // 已登录访问登录页，进入安全监控大屏
       if (to.path === "/login") {
-        next({ path: "/" });
+        next({ path: "/screen" });
         return;
       }
 
