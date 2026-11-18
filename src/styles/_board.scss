@@ -33,7 +33,7 @@ html.sidebar-color-blue {
 
   .apron,
   .ledger,
-  .panel,
+  .board-page .panel,
   .metric {
     min-width: 0;
     background: linear-gradient(145deg, rgb(15 43 70 / 95%), rgb(5 20 37 / 96%));
@@ -280,7 +280,7 @@ html.sidebar-color-blue {
     }
   }
 
-  .panel {
+  .board-page .panel {
     padding: 20px 20px 16px;
 
     h3 {
@@ -291,7 +291,7 @@ html.sidebar-color-blue {
     }
   }
 
-  .panel-head {
+  .board-page .panel-head {
     display: flex;
     gap: 12px;
     align-items: flex-start;
