@@ -212,7 +212,7 @@ function fitStage() {
 }
 
 function openMenu() {
-  router.push("/dashboard");
+  router.push("/monitor/map");
 }
 
 let timer = 0;

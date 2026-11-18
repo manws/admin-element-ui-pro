@@ -293,14 +293,14 @@ html.sidebar-color-blue {
     }
   }
 
-  // 经典蓝侧边栏：父级只提亮文字，选中态落在当前子项
-  html.sidebar-color-blue:not(.dark) & {
+  // 经典蓝侧边栏：父级只提亮文字，选中态落在当前子项。顶部胶囊另有样式。
+  html.sidebar-color-blue:not(.dark) .el-menu:not(.el-menu--horizontal) & {
     &.has-active-child > .el-sub-menu__title {
-      color: #e9f0fb !important;
+      color: #eaf9ff !important;
       background-color: transparent !important;
 
       .menu-icon {
-        color: #e9f0fb !important;
+        color: #eaf9ff !important;
       }
     }
   }

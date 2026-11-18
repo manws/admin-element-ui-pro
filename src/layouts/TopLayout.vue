@@ -114,11 +114,11 @@ const isLogoCollapsed = computed(() => width.value < 768);
 
           &.has-active-child {
             .el-sub-menu__title {
-              color: var(--el-color-primary) !important;
-              border-bottom: 2px solid var(--el-color-primary) !important;
+              color: var(--menu-active-text) !important;
+              border-bottom-color: transparent !important;
 
               .menu-icon {
-                color: var(--el-color-primary) !important;
+                color: var(--menu-active-text) !important;
               }
             }
           }

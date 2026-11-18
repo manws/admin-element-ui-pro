@@ -118,7 +118,7 @@ const routePathMap = computed(() => {
 const isFirstView = computed(() => {
   if (!selectedTag.value) return false;
   return (
-    selectedTag.value.path === "/dashboard" ||
+    selectedTag.value.path === "/monitor/map" ||
     selectedTag.value.fullPath === visitedViews.value[1]?.fullPath
   );
 });

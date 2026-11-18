@@ -52,19 +52,19 @@ const heatmapOption = computed(() => {
     xAxis: {
       type: "category",
       data: zones,
-      axisLabel: { fontSize: 12, color: "#66758B", fontFamily: "Inter, sans-serif" },
+      axisLabel: { fontSize: 12, color: "#8FB4D4", fontFamily: "Inter, sans-serif" },
     },
     yAxis: {
       type: "category",
       data: rows,
-      axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
+      axisLabel: { fontSize: 12, lineHeight: 18, color: "#8FB4D4", fontFamily: "Inter, sans-serif" },
     },
     visualMap: {
       type: "piecewise",
       orient: "horizontal",
       left: "center",
       bottom: 0,
-      textStyle: { color: "#66758B", fontSize: 12 },
+      textStyle: { color: "#8FB4D4", fontSize: 12 },
       pieces: [
         { min: 0, max: 20, label: "0%～20%", color: "#E5F2E4" },
         { min: 20, max: 40, label: "20%～40%", color: "#79BD85" },

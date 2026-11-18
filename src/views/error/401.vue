@@ -8,7 +8,7 @@
         <h6>如有疑问请联系管理员</h6>
         <div class="flex flex-col items-start gap-1.5 text-sm">
           <span>或者你可以：</span>
-          <el-link type="primary" @click="router.push('/dashboard')">返回首页</el-link>
+          <el-link type="primary" @click="router.push('/screen')">返回首页</el-link>
         </div>
       </el-col>
       <el-col :xs="24" :span="12">

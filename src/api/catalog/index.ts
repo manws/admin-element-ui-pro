@@ -1,11 +1,12 @@
 import { isMockEnabled } from "@/mock";
 import { mockCatalogPage, mockCatalogRemove, mockCatalogSave } from "@/mock/catalog";
+import type { PageResult } from "@/types/api/common";
 import request from "@/utils/request";
 
 const BASE_URL = "/api/v1/catalog";
 
 const CatalogAPI = {
-  page(key: string, params: Record<string, any>) {
+  page(key: string, params: Record<string, any>): Promise<PageResult<Record<string, any>>> {
     if (isMockEnabled) return Promise.resolve(mockCatalogPage(key, params));
     return request({ url: `${BASE_URL}/${key}`, method: "get", params });
   },

@@ -35,18 +35,8 @@ export const constantRoutes: RouteRecordRaw[] = [
     name: "/",
     component: Layout,
     redirect: "/screen",
+    meta: { hidden: true },
     children: [
-      {
-        path: "dashboard",
-        component: () => import("@/views/dashboard/index.vue"),
-        name: "Dashboard",
-        meta: {
-          title: "dashboard",
-          icon: "homepage",
-          affix: true,
-          keepAlive: true,
-        },
-      },
       {
         path: "401",
         component: () => import("@/views/error/401.vue"),
@@ -58,6 +48,12 @@ export const constantRoutes: RouteRecordRaw[] = [
         meta: { hidden: true },
       },
     ],
+  },
+
+  {
+    path: "/dashboard",
+    redirect: "/monitor/map",
+    meta: { hidden: true },
   },
 
   // ============================================
@@ -76,7 +72,7 @@ export const constantRoutes: RouteRecordRaw[] = [
         path: "map",
         component: () => import("@/views/monitor/map.vue"),
         name: "MonitorMap",
-        meta: { title: "地图监控", icon: "nav-location", keepAlive: true },
+        meta: { title: "地图监控", icon: "nav-location", affix: true, keepAlive: true },
       },
       {
         path: "vehicle-list",

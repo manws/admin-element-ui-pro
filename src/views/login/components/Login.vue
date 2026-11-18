@@ -246,9 +246,9 @@ function toOtherForm(type: "register" | "resetPwd") {
 .login-form__title {
   width: 100%;
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  line-height: normal;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
   color: var(--brand-text);
   text-align: left;
 }
@@ -295,12 +295,14 @@ function toOtherForm(type: "register" | "resetPwd") {
 
 .login-form__actions .login-form__ghost {
   color: var(--brand-text);
-  background-color: var(--brand-mint);
+  background-color: transparent;
+  border: 1px solid var(--brand-border);
 
   &:hover,
   &:focus {
     color: var(--brand-text);
-    background-color: var(--brand-border);
+    background-color: rgb(92 225 255 / 12%);
+    border-color: var(--brand-primary);
   }
 }
 

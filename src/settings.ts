@@ -48,7 +48,7 @@ export const defaults = {
   theme: prefersDark ? ThemeMode.DARK : ThemeMode.LIGHT,
   themeColor: "#4080FF",
   sidebarColorScheme: SidebarColor.CLASSIC_BLUE,
-  layout: LayoutMode.LEFT,
+  layout: LayoutMode.TOP,
   size: ComponentSize.DEFAULT,
   language: LanguageEnum.ZH_CN,
   showTagsView: true,

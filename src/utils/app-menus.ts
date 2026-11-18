@@ -18,7 +18,7 @@ function walk(routes: RouteRecordRaw[], parentPath: string, parentTitle: string,
     if (route.meta?.hidden) return;
     const path = joinPath(parentPath, route.path);
     const rawTitle = typeof route.meta?.title === "string" ? route.meta.title : "";
-    const title = rawTitle === "dashboard" ? "总览" : rawTitle;
+    const title = rawTitle;
     if (title) {
       bucket.push({ title, path, parent: parentTitle });
     }

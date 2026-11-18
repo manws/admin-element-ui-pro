@@ -58,13 +58,14 @@ const formComponents = {
 
 <style lang="scss" scoped>
 .auth-view {
-  --brand-primary: #087f5b;
-  --brand-primary-dark: #066045;
-  --brand-mint: #eaf6f0;
-  --brand-border: #d3e8dd;
-  --brand-text: #174d3a;
-  --brand-text-sub: #426454;
-  --brand-surface: #fff;
+  --brand-primary: #5ce1ff;
+  --brand-primary-dark: #8af0ff;
+  --brand-ink: #04202c;
+  --brand-mint: #07111c;
+  --brand-border: #2f6f90;
+  --brand-text: #f4fbff;
+  --brand-text-sub: #b7d4e6;
+  --brand-surface: #16344e;
 
   position: relative;
   display: flex;
@@ -73,7 +74,9 @@ const formComponents = {
   min-height: 100vh;
   overflow-x: hidden;
   color: var(--brand-text);
-  background-color: var(--brand-surface);
+  background:
+    radial-gradient(900px 520px at 78% 42%, rgb(92 225 255 / 16%), transparent 62%),
+    #02060e;
 }
 
 .auth-view__toolbar {
@@ -84,10 +87,11 @@ const formComponents = {
   display: inline-flex;
   gap: 0.25rem;
   padding: 0.25rem 0.5rem;
-  background-color: var(--brand-surface);
+  color: var(--brand-text);
+  background-color: rgb(7 17 28 / 88%);
   border: 1px solid var(--brand-border);
   border-radius: 999px;
-  box-shadow: 0 6px 18px rgb(8 127 91 / 8%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
 
   .toolbar-item {
     display: flex;
@@ -99,7 +103,8 @@ const formComponents = {
     transition: background-color 0.3s ease;
 
     &:hover {
-      background-color: var(--brand-mint);
+      color: var(--brand-ink);
+      background-color: var(--brand-primary);
     }
   }
 }
@@ -121,11 +126,12 @@ const formComponents = {
 .auth-visual__name {
   width: 100%;
   margin: 0;
-  font-size: 24px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: normal;
-  color: var(--brand-text);
+  line-height: 1.2;
+  color: var(--brand-primary);
   text-align: left;
+  letter-spacing: 0.18em;
 }
 
 .auth-visual__group {
@@ -139,9 +145,9 @@ const formComponents = {
 .auth-visual__headline {
   width: 100%;
   margin: 0;
-  font-size: clamp(24px, 2vw, 32px);
-  font-weight: 600;
-  line-height: normal;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
   color: var(--brand-text);
   text-align: left;
 }
@@ -162,8 +168,10 @@ const formComponents = {
   width: 100%;
   height: clamp(300px, 46vh, 560px);
   overflow: hidden;
-  background: var(--brand-border);
+  background: #0a1826;
+  border: 1px solid rgb(92 225 255 / 35%);
   border-radius: 24px;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 35%);
 
   img {
     display: block;
@@ -177,7 +185,7 @@ const formComponents = {
   margin-top: auto;
 }
 
-/* 右侧：白色凭据登录区 */
+/* 右侧：抬亮的操作台，和夜色背景分开 */
 .auth-panel {
   display: flex;
   flex: 1;
@@ -186,7 +194,10 @@ const formComponents = {
   min-width: 0;
   padding: clamp(32px, 6vw, 96px);
   overflow: hidden;
-  background: var(--brand-surface);
+  background:
+    linear-gradient(180deg, rgb(92 225 255 / 55%), rgb(92 225 255 / 0%)) 0 0 / 100% 3px no-repeat,
+    var(--brand-surface);
+  box-shadow: -24px 0 48px rgb(0 0 0 / 28%);
 }
 
 .auth-panel__inner {
@@ -219,21 +230,21 @@ const formComponents = {
   :deep(.el-input__wrapper) {
     height: 52px;
     padding: 0 16px;
-    background-color: var(--brand-surface);
-    border: 1px solid var(--brand-border);
+    background-color: #071018;
+    border: 1px solid #3d7ea3;
     border-radius: 11px;
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
     transition:
       border-color 0.18s ease,
       box-shadow 0.18s ease;
 
     &:hover {
-      border-color: #a9d3c0;
+      border-color: #7fe9ff;
     }
 
     &.is-focus {
       border-color: var(--brand-primary);
-      box-shadow: 0 0 0 3px rgb(8 127 91 / 12%);
+      box-shadow: 0 0 0 3px rgb(92 225 255 / 28%);
     }
   }
 
@@ -272,32 +283,29 @@ const formComponents = {
   }
 
   :deep(.el-button--primary) {
+    color: var(--brand-ink);
     background-color: var(--brand-primary);
+    box-shadow: 0 10px 28px rgb(92 225 255 / 28%);
 
     &:hover,
     &:focus {
+      color: var(--brand-ink);
       background-color: var(--brand-primary-dark);
     }
   }
 }
 
-/* 应用内暗黑主题 */
+/* 暗色开关下仍保持运营中心的深蓝，不再切回绿色 */
 .dark .auth-view {
-  --brand-mint: #10231b;
-  --brand-border: #2c4038;
-  --brand-text: #e7f3ee;
-  --brand-text-sub: #9fb9ac;
-  --brand-surface: #141b18;
-
   .auth-view__toolbar {
     box-shadow: 0 6px 18px rgb(0 0 0 / 45%);
   }
 
   .auth-form :deep(.el-input__wrapper) {
-    background-color: #1b241f;
+    background-color: rgb(5 20 37 / 72%);
 
     &:hover {
-      border-color: #3d564b;
+      border-color: rgb(79 168 232 / 55%);
     }
   }
 }

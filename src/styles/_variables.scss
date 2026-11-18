@@ -51,46 +51,85 @@ $sidebar-logo-text-color: var(--sidebar-logo-text-color);
 // 3. 主题模式
 // ============================================
 
-// 浅色主题 - 经典蓝侧边栏（对齐地图监控明亮蓝白设计稿）
+// 经典蓝：对齐地图监控深色运营中心（浅色/暗色都走这套）
 html.sidebar-color-blue {
-  --menu-background: #17263d;
-  --menu-text: #91a1ba;
-  --menu-active-text: #afc9ff;
-  --menu-hover: rgb(255 255 255 / 6%);
-  --menu-active-background: #203861;
+  --menu-background: #06182b;
+  --menu-text: #8fb4d4;
+  --menu-active-text: #eaf9ff;
+  --menu-hover: rgb(53 132 186 / 12%);
+  --menu-active-background: rgb(27 91 140 / 55%);
   --sidebar-logo-background: transparent;
-  --sidebar-logo-text-color: #e9f0fb;
-}
+  --sidebar-logo-text-color: #eaf9ff;
 
-html.sidebar-color-blue:not(.dark) {
   --sidebar-width: 196px;
   --sidebar-width-collapsed: 72px;
-  --navbar-height: 60px;
-  --tags-view-height: 40px;
+  --navbar-height: 64px;
+  --tags-view-height: 46px;
 
-  // 设计稿色板：页面底、卡片、文字、强调蓝
-  --shell-bg: #f4f6fa;
-  --shell-surface: #fff;
-  --shell-text: #1b2b43;
-  --shell-muted: #66758b;
-  --shell-blue: #2563eb;
-  --shell-soft: #eaf1fe;
-  --shell-slash: #a9b4c5;
-  --shell-tabs: #edf1f6;
-  --shell-tab-active: #dfeafe;
+  --shell-bg: #03111f;
+  --shell-surface: #081d33;
+  --shell-text: #eaf9ff;
+  --shell-muted: #8fb4d4;
+  --shell-blue: #7ee7ff;
+  --shell-soft: rgb(15 43 70 / 95%);
+  --shell-slash: rgb(143 180 212 / 45%);
+  --shell-tabs: #050f1c;
+  --shell-tab-active: rgb(27 91 140 / 55%);
+  --shell-line: rgb(43 111 157 / 34%);
+  --shell-groove: rgb(76 165 218 / 18%);
+  --shell-carbon: #5ee3bf;
+  --shell-fault: #ff9e7a;
+  --shell-warn: #ffcf8a;
+  --shell-apron: #4fbfff;
+  --shell-readout: Inter, "Segoe UI", Arial, sans-serif;
 
-  // 内容页（总览落地后）。壳层导航不用这些色。
-  --shell-line: #e6ebf2;
-  --shell-groove: #e7edf5;
-  --shell-carbon: #0f6b56;
-  --shell-fault: #c2410c;
-  --shell-warn: #a16207;
-  --shell-apron: #c4a035;
-  --shell-readout: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  --el-color-primary: #4fa8e8;
+  --el-color-primary-light-3: #7ec4f2;
+  --el-color-primary-light-5: #8fb4d4;
+  --el-color-primary-light-7: #153b59;
+  --el-color-primary-light-8: #0b223a;
+  --el-color-primary-light-9: #081d33;
+  --el-color-primary-dark-2: #2f7eb8;
+  --el-bg-color: #081d33;
+  --el-bg-color-page: #03111f;
+  --el-bg-color-overlay: #0b223a;
+  --el-text-color-primary: #eaf9ff;
+  --el-text-color-regular: #d5eaf8;
+  --el-text-color-secondary: #8fb4d4;
+  --el-text-color-placeholder: #6e90a8;
+  --el-text-color-disabled: #56758c;
+  --el-border-color: #153b59;
+  --el-border-color-light: rgb(76 165 218 / 28%);
+  --el-border-color-lighter: rgb(76 165 218 / 16%);
+  --el-border-color-extra-light: rgb(76 165 218 / 10%);
+  --el-fill-color: rgb(15 43 70 / 90%);
+  --el-fill-color-light: rgb(53 132 186 / 14%);
+  --el-fill-color-lighter: rgb(53 132 186 / 8%);
+  --el-fill-color-blank: rgb(5 20 37 / 72%);
+  --el-mask-color: rgb(2 8 20 / 72%);
+  --el-box-shadow: 0 12px 34px rgb(0 0 0 / 28%);
+  --el-box-shadow-light: 0 12px 34px rgb(0 0 0 / 28%);
+  color-scheme: dark;
 }
 
-// 暗黑主题
-html.dark {
+html.sidebar-color-blue .auth-view {
+  --el-color-primary: #5ce1ff;
+  --el-color-primary-dark-2: #8af0ff;
+  --el-bg-color: #16344e;
+  --el-bg-color-overlay: #0c2236;
+  --el-text-color-primary: #f4fbff;
+  --el-text-color-regular: #d7eef8;
+  --el-text-color-secondary: #b7d4e6;
+  --el-text-color-placeholder: #8fb4c9;
+  --el-border-color: #2f6f90;
+  --el-border-color-light: #3d7ea3;
+  --el-fill-color-blank: #071018;
+  --el-fill-color-light: rgb(92 225 255 / 12%);
+  color-scheme: dark;
+}
+
+// 暗黑主题（经典蓝有自己的运营中心配色，不在这里覆盖）
+html.dark:not(.sidebar-color-blue) {
   --menu-background: var(--el-bg-color-overlay);
   --menu-text: #fff;
   --menu-active-text: var(--el-menu-active-color);

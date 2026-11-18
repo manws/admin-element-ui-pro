@@ -130,8 +130,8 @@ const TRACK_COLOR: Record<TrackPoint["state"], string> = {
 };
 
 const axis = {
-  axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
-  splitLine: { lineStyle: { color: "#E4E9F1", width: 1 } },
+  axisLabel: { fontSize: 12, lineHeight: 18, color: "#8FB4D4", fontFamily: "Inter, sans-serif" },
+  splitLine: { lineStyle: { color: "rgba(76, 165, 218, 0.16)", width: 1 } },
 };
 
 const linkedMotors = computed<MotorInfo[]>(() => {
@@ -220,7 +220,7 @@ const batteryOption = computed(() => {
   const curve = detail.value?.batteryCurve ?? [];
   return {
     tooltip: { trigger: "axis" },
-    legend: { data: ["电流", "电压", "SOC"], textStyle: { color: "#66758B", fontSize: 12 } },
+    legend: { data: ["电流", "电压", "SOC"], textStyle: { color: "#8FB4D4", fontSize: 12 } },
     grid: { left: 48, right: 48, top: 32, bottom: 28 },
     xAxis: { type: "category", data: curve.map((p) => p.time.slice(11, 16)), ...axis },
     yAxis: [{ type: "value", ...axis }, { type: "value", max: 100, ...axis }],
@@ -267,7 +267,7 @@ const extremeOption = computed(() => {
   const curve = detail.value?.extremeCurve ?? [];
   return {
     tooltip: { trigger: "axis" },
-    legend: { data: ["最高单体", "最低单体", "最高温度", "最低温度"], textStyle: { color: "#66758B", fontSize: 12 } },
+    legend: { data: ["最高单体", "最低单体", "最高温度", "最低温度"], textStyle: { color: "#8FB4D4", fontSize: 12 } },
     grid: { left: 48, right: 48, top: 32, bottom: 28 },
     xAxis: { type: "category", data: curve.map((point) => point.time.slice(11, 16)), ...axis },
     yAxis: [{ type: "value", ...axis }, { type: "value", ...axis }],

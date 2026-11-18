@@ -1,7 +1,6 @@
-import { SidebarColor, ThemeMode } from "@/enums";
-import type { LayoutMode } from "@/enums";
+import { LayoutMode, SidebarColor, ThemeMode } from "@/enums";
 import { applyTheme, generateThemeColors, toggleDarkMode, toggleSidebarColor } from "@/utils/theme";
-import { STORAGE_KEYS } from "@/constants";
+import { APP_PREFIX, STORAGE_KEYS } from "@/constants";
 import { defaults } from "@/settings";
 
 export const useSettingsStore = defineStore("setting", () => {
@@ -17,6 +16,12 @@ export const useSettingsStore = defineStore("setting", () => {
 
   // 布局
   const layout = useStorage<LayoutMode>(STORAGE_KEYS.LAYOUT, defaults.layout as LayoutMode);
+  // 默认导航改为顶部。已保存的旧左侧布局只迁移一次，之后仍可在设置里改回去。
+  const navTopApplied = useStorage(`${APP_PREFIX}:ui:nav_top_v1`, false);
+  if (!navTopApplied.value) {
+    layout.value = LayoutMode.TOP;
+    navTopApplied.value = true;
+  }
   const sidebarColorScheme = useStorage(
     STORAGE_KEYS.SIDEBAR_COLOR_SCHEME,
     defaults.sidebarColorScheme

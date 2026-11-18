@@ -162,6 +162,13 @@ defineExpose({
 :deep(.el-input-number .el-input__inner) {
   text-align: left;
 }
+
+:deep(.el-input),
+:deep(.el-select) {
+  width: 200px;
+  min-width: 200px;
+}
+
 .el-form-item {
   margin-right: 0;
   margin-bottom: 0;

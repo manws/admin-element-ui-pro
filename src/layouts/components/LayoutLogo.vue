@@ -1,14 +1,14 @@
 <template>
-  <div class="logo">
-    <transition enter-active-class="animate__animated animate__fadeInLeft">
-      <router-link :key="+collapse" class="wh-full flex-center" to="/">
-        <img :src="logo" class="w20px h20px" />
-        <span v-if="!collapse" class="title">
-          {{ appConfig.title }}
-        </span>
-      </router-link>
-    </transition>
-  </div>
+  <el-tooltip content="返回首页" placement="bottom" effect="dark" popper-class="shell-tooltip" :show-after="200">
+    <div class="logo">
+      <transition enter-active-class="animate__animated animate__fadeInLeft">
+        <router-link :key="+collapse" class="brand" to="/screen">
+          <img :src="logo" class="brand__mark" alt="" />
+          <span v-if="!collapse" class="title">{{ appConfig.title }}</span>
+        </router-link>
+      </transition>
+    </div>
+  </el-tooltip>
 </template>
 
 <script lang="ts" setup>
@@ -28,14 +28,33 @@ defineProps({
   width: 100%;
   height: var(--navbar-height);
   background-color: $sidebar-logo-background;
+}
 
-  .title {
-    flex-shrink: 0;
-    margin-left: 10px;
-    font-size: 14px;
-    font-weight: bold;
-    color: $sidebar-logo-text-color;
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: max-content;
+  height: 100%;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 1px solid #7ee7ff;
+    outline-offset: 3px;
   }
+}
+
+.brand__mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: $sidebar-logo-text-color;
 }
 </style>
 
@@ -67,7 +86,6 @@ defineProps({
     width: var(--sidebar-width-collapsed);
   }
 
-  // 隐藏文字，只显示图标
   .logo .title {
     display: none;
   }

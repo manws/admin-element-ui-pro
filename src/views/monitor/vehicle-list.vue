@@ -167,13 +167,13 @@ onMounted(load);
   }
 
   &.is-online {
-    color: #0f6b56;
-    background: #e7f6ef;
+    color: #5ee3bf;
+    background: rgb(94 227 191 / 14%);
   }
 
   &.is-offline {
-    color: #b42318;
-    background: #fdecea;
+    color: #ff9e7a;
+    background: rgb(255 158 122 / 14%);
   }
 }
 

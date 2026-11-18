@@ -161,9 +161,9 @@ const measureText = computed(() => {
 });
 
 const axis = {
-  axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "Inter, sans-serif" },
-  axisLine: { lineStyle: { color: "#E4E9F1" } },
-  splitLine: { lineStyle: { color: "#E4E9F1", width: 1 } },
+  axisLabel: { fontSize: 12, lineHeight: 18, color: "#8FB4D4", fontFamily: "Inter, sans-serif" },
+  axisLine: { lineStyle: { color: "rgba(76, 165, 218, 0.28)" } },
+  splitLine: { lineStyle: { color: "rgba(76, 165, 218, 0.16)", width: 1 } },
 };
 
 function vehicleColor(v: Vehicle): string {

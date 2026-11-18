@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06182a">
+  <title>地图监控 · VELOCE 车队运营中心</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-top: #05213b;
+      --bg-mid: #03111f;
+      --bg-bottom: #020814;
+      --nav: #061a2d;
+      --nav-deep: #050f1c;
+      --panel: #081d33;
+      --panel-strong: #0b223a;
+      --line: #153b59;
+      --line-soft: rgba(76, 165, 218, .18);
+      --text: #eaf9ff;
+      --text-secondary: #8fb4d4;
+      --muted: #6e90a8;
+      --cyan: #7ee7ff;
+      --blue: #4fa8e8;
+      --green: #5ee3bf;
+      --orange: #ff9e7a;
+      --offline: #80a6c4;
+      --font-sans: "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif;
+      --font-number: Inter, "Segoe UI", Arial, sans-serif;
+      --shadow-panel: 0 12px 34px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(113, 207, 255, .035);
+    }
+    * { box-sizing: border-box; }
+    html, body { min-width: 320px; min-height: 100%; margin: 0; }
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 42%, var(--bg-bottom) 100%);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { color: inherit; font: inherit; }
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+    .top-glint { height: 1px; background: linear-gradient(90deg, transparent, rgba(125,232,255,.55), transparent); }
+    .main-nav {
+      min-height: 64px; display: flex; align-items: center; gap: 18px;
+      padding: 0 28px; border-bottom: 1px solid rgba(89,196,255,.2);
+      background: linear-gradient(180deg, #0a2440 0%, #06182b 100%);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; text-decoration: none; color: inherit; }
+    .brand-mark { width: 34px; height: 34px; display: block; filter: drop-shadow(0 2px 8px rgba(27, 156, 224, .2)); }
+    .brand-copy { display: flex; flex-direction: column; gap: 1px; }
+    .brand-name { font-family: "Playfair Display", Georgia, serif; font-size: 17px; line-height: 19px; font-weight: 700; letter-spacing: .15px; }
+    .brand-sub { color: #7fb2d6; font-size: 9px; line-height: 12px; white-space: nowrap; }
+    .primary-links { display: flex; align-items: center; gap: 5px; margin-left: 4px; }
+    .nav-link {
+      min-height: 36px; display: inline-flex; align-items: center; gap: 7px;
+      padding: 0 13px; border: 1px solid transparent; border-radius: 9px;
+      background: transparent; color: var(--text-secondary); cursor: pointer;
+      font-size: 13px; white-space: nowrap; transition: .18s ease;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(53, 132, 186, .12); }
+    .nav-link.active {
+      color: var(--text); font-weight: 600;
+      border-color: rgba(79, 191, 255, .48);
+      background: linear-gradient(180deg, rgba(27, 91, 140, .58), rgba(10, 46, 77, .72));
+      box-shadow: inset 0 1px 0 rgba(172, 231, 255, .12), 0 0 14px rgba(40, 153, 223, .08);
+    }
+    .chevron { width: 7px; height: 7px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg) translateY(-2px); opacity: .82; }
+    .nav-link.active .chevron { transform: rotate(225deg) translate(-1px,-1px); }
+    .nav-spacer { flex: 1; }
+    .user-actions { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+    .notify {
+      width: 36px; height: 36px; position: relative; padding: 0; border: 0; border-radius: 9px;
+      background: transparent; cursor: pointer; transition: .18s ease;
+    }
+    .notify:hover, .notify[aria-pressed="true"] { background: rgba(77, 167, 218, .15); }
+    .notify img { display: block; width: 36px; height: 36px; }
+    .unread { position: absolute; width: 6px; height: 6px; right: 7px; top: 6px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 7px rgba(255,90,90,.6); }
+    .divider { height: 20px; border-left: 1px solid rgba(89,196,255,.45); }
+    .account {
+      min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 5px;
+      border: 1px solid rgba(78, 157, 209, .2); border-radius: 18px; background: rgba(4, 19, 34, .58);
+      cursor: pointer; transition: .18s ease;
+    }
+    .account:hover { border-color: rgba(89,196,255,.5); background: rgba(9,35,58,.85); }
+    .avatar { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(140deg,#2979c4,#104a9a); color: #cfe9f7; font-size: 11px; font-weight: 500; box-shadow: 0 0 10px rgba(60,160,245,.22); }
+    .account-name { font-size: 12px; color: #e8f7ff; white-space: nowrap; }
+    .account-arrow { width: 12px; height: 12px; }
+    .sub-nav {
+      min-height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 28px;
+      border-bottom: 1px solid rgba(89,196,255,.15); background: var(--nav-deep);
+      box-shadow: 0 1px 9px rgba(44, 180, 255, .06);
+    }
+    .sub-link { min-height: 28px; padding: 0 12px; border: 1px solid transparent; border-radius: 16px; background: transparent; color: var(--text-secondary); font-size: 11.5px; cursor: pointer; white-space: nowrap; transition: .18s ease; }
+    .sub-link:hover { color: var(--text); background: rgba(59, 132, 183, .12); }
+    .sub-link.active { color: var(--text); border-color: rgba(79,191,255,.52); background: linear-gradient(180deg,rgba(27,91,140,.55),rgba(10,46,77,.72)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+    .content { width: 100%; flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 28px 28px 24px; min-height: 0; }
+    .page-heading { min-height: 52px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .heading-copy h1 { margin: 0 0 4px; color: var(--text); font-size: 22px; font-weight: 600; line-height: 1.3; letter-spacing: .1px; }
+    .heading-copy p { margin: 0; color: #8fafc6; font-size: 12px; line-height: 1.5; }
+    .sync-pill { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; padding: 5px 11px; border: 1px solid rgba(67,166,216,.2); border-radius: 16px; background: rgba(12,37,58,.65); color: #9dbbd0; font: 11.5px var(--font-number); white-space: nowrap; }
+    .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 9px rgba(125,232,255,.55); }
+    .section-label { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; color: #aec9dc; font-size: 12px; font-weight: 500; letter-spacing: .15px; }
+    .section-label::before { content: ""; width: 3px; height: 14px; border-radius: 2px; background: #4fbfff; box-shadow: 0 0 9px rgba(79,191,255,.25); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .kpi-card {
+      min-width: 0; min-height: 104px; display: flex; flex-direction: column; justify-content: center; gap: 5px;
+      padding: 17px 18px; border: 1px solid rgba(43,111,157,.34); border-radius: 14px;
+      background: linear-gradient(145deg, rgba(15,43,70,.95), rgba(5,20,37,.96));
+      box-shadow: var(--shadow-panel); transition: border-color .2s ease, transform .2s ease;
+    }
+    .kpi-card:first-child { border-color: rgba(54,151,207,.48); box-shadow: inset 0 1px 0 rgba(135,217,255,.06), 0 0 14px rgba(35,139,201,.05); }
+    .kpi-card:hover { transform: translateY(-2px); border-color: rgba(85,193,245,.55); }
+    .kpi-label { color: #8fb4cd; font-size: 12px; line-height: 18px; }
+    .kpi-value { color: var(--text); font: 600 30px/1.22 var(--font-number); letter-spacing: -.45px; white-space: nowrap; }
+    .kpi-value.accent { color: var(--cyan); }
+    .analytics { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+    .chart-grid { min-height: 350px; flex: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+    .chart-card { min-width: 0; min-height: 350px; position: relative; overflow: hidden; border: 1px solid rgba(35,100,145,.36); border-radius: 15px; background: linear-gradient(145deg, rgba(9,32,55,.98), rgba(4,18,34,.98)); box-shadow: var(--shadow-panel); }
+    .chart-card::before { content: ""; height: 1px; position: absolute; z-index: 1; top: 0; left: 0; right: 0; background: linear-gradient(90deg, rgba(99,194,245,.44), rgba(99,194,245,.08) 62%, transparent); }
+    .map-card { padding: 20px 20px 16px; }
+    .card-heading { min-height: 47px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .card-heading h3 { margin: 0; color: var(--text); font-size: 17px; font-weight: 500; line-height: 24px; }
+    .card-heading p { margin: 1px 0 0; color: var(--muted); font-size: 11px; line-height: 18px; }
+    .legend { flex: 0 0 auto; display: flex; align-items: center; gap: 14px; margin-top: -1px; padding: 7px 11px; border: 1px solid rgba(47,111,158,.28); border-radius: 20px; background: rgba(5,25,43,.72); }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; color: #7fa6c4; font-size: 12px; white-space: nowrap; }
+    .legend-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; }
+    .plot-label { color: #7c9eb6; font-size: 11px; line-height: 16px; }
+    .latitude-label { margin: 1px 0 3px; }
+    .scatter-layout { display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 7px; align-items: stretch; }
+    .latitude-ticks { display: flex; flex-direction: column; justify-content: space-between; padding: 0 0 0 0; color: #7fa6c4; font: 11px/1 var(--font-number); }
+    .scatter-svg { display: block; width: 100%; height: auto; min-height: 170px; object-fit: fill; }
+    .longitude-ticks { display: grid; grid-template-columns: repeat(7, 1fr); margin: 6px 0 0 56px; color: #7fa6c4; font: 11px/1.2 var(--font-number); }
+    .longitude-ticks span { text-align: center; transform: translateX(-50%); }
+    .longitude-ticks span:first-child { text-align: left; transform: none; }
+    .longitude-ticks span:last-child { text-align: right; transform: none; }
+    .longitude-label { margin: 11px 1px 0 auto; text-align: right; }
+    .bar-card { padding: 20px 20px 17px; }
+    .bar-card h3 { margin: 0; min-height: 44px; color: var(--text); font-size: 15px; font-weight: 500; line-height: 24px; }
+    .bar-chart { display: grid; grid-template-columns: 108px minmax(0,1fr); align-items: stretch; gap: 4px; padding-top: 2px; }
+    .bar-labels { display: grid; grid-template-rows: repeat(10, 1fr); align-items: center; padding: 0 6px 0 0; color: #8fb4cd; font-size: 11.5px; }
+    .bar-labels span { text-align: right; white-space: nowrap; }
+    .bar-svg { display: block; width: 100%; height: auto; min-height: 214px; overflow: visible; }
+    .bar-axis { display: grid; grid-template-columns: repeat(7,1fr); margin: 5px 0 0 112px; padding-right: 1px; color: #7c9eb6; font: 11px/1.2 var(--font-number); }
+    .bar-axis span { text-align: center; transform: translateX(-50%); }
+    .bar-axis span:first-child { text-align: left; transform: none; }
+    .bar-axis span:last-child { text-align: right; transform: none; }
+    .toast { position: fixed; z-index: 10; right: 22px; top: 76px; padding: 11px 15px; border: 1px solid rgba(79,191,255,.4); border-radius: 10px; background: #0b2540; color: #dff6ff; box-shadow: 0 12px 30px rgba(0,0,0,.28); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: .2s ease; }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (min-width: 1450px) {
+      .content { padding-inline: 34px; gap: 23px; }
+      .main-nav, .sub-nav { padding-inline: 34px; }
+      .kpi-grid { gap: 17px; }
+      .chart-grid { gap: 19px; }
+      .chart-card { min-height: 400px; }
+    }
+    @media (max-width: 980px) {
+      .main-nav { gap: 12px; padding-inline: 18px; }
+      .primary-links { gap: 1px; }
+      .nav-link { padding-inline: 9px; font-size: 12px; }
+      .content { padding: 24px 18px 20px; }
+      .sub-nav { padding-inline: 18px; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .chart-card { min-height: 380px; }
+      .map-card { min-height: 390px; }
+      .bar-card { min-height: 390px; }
+    }
+    @media (max-width: 680px) {
+      .main-nav { min-height: 58px; gap: 10px; padding-inline: 14px; }
+      .brand-mark { width: 30px; height: 30px; }
+      .brand-name { font-size: 15px; }
+      .brand-sub { font-size: 8px; }
+      .primary-links { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+      .primary-links::-webkit-scrollbar, .sub-nav::-webkit-scrollbar { display: none; }
+      .nav-link { min-height: 32px; padding-inline: 9px; font-size: 11px; }
+      .user-actions { gap: 7px; }
+      .account { padding-right: 6px; }
+      .account-name, .account-arrow, .divider { display: none; }
+      .sub-nav { min-height: 42px; gap: 4px; padding-inline: 12px; overflow-x: auto; scrollbar-width: none; }
+      .sub-link { padding-inline: 10px; font-size: 11px; }
+      .content { gap: 18px; padding: 21px 13px 16px; }
+      .page-heading { align-items: flex-start; min-height: 48px; gap: 8px; }
+      .heading-copy h1 { font-size: 20px; }
+      .heading-copy p { max-width: 235px; font-size: 11px; }
+      .sync-pill { gap: 6px; padding: 5px 8px; font-size: 10px; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
+      .kpi-card { min-height: 90px; padding: 14px 13px; border-radius: 12px; }
+      .kpi-label { font-size: 11px; }
+      .kpi-value { font-size: clamp(21px, 6vw, 28px); }
+      .section-label { margin-bottom: 9px; }
+      .chart-grid { gap: 12px; }
+      .chart-card { min-height: 310px; border-radius: 13px; }
+      .map-card, .bar-card { padding: 16px 13px 14px; }
+      .card-heading { min-height: 52px; gap: 8px; }
+      .card-heading h3 { font-size: 15px; }
+      .card-heading p { font-size: 10px; }
+      .legend { gap: 8px; padding: 6px 8px; }
+      .legend-item { gap: 4px; font-size: 10px; }
+      .legend-dot { width: 6px; height: 6px; }
+      .scatter-layout { grid-template-columns: 42px minmax(0,1fr); gap: 4px; }
+      .latitude-ticks, .longitude-ticks, .plot-label { font-size: 9px; }
+      .longitude-ticks { margin-left: 46px; }
+      .map-card { min-height: 320px; }
+      .bar-card { min-height: 330px; }
+      .bar-card h3 { min-height: 41px; font-size: 14px; }
+      .bar-chart { grid-template-columns: 88px minmax(0,1fr); gap: 3px; }
+      .bar-labels { padding-right: 3px; font-size: 10px; }
+      .bar-svg { min-height: 218px; }
+      .bar-axis { margin-left: 91px; font-size: 9px; }
+      .toast { right: 12px; top: 66px; }
+    }
+    @media (max-width: 380px) {
+      .main-nav { gap: 7px; padding-inline: 10px; }
+      .brand { gap: 6px; }
+      .brand-mark { width: 28px; height: 28px; }
+      .primary-links { margin-left: 0; }
+      .nav-link { padding-inline: 7px; }
+      .content { padding-inline: 10px; }
+      .heading-copy p { max-width: 185px; }
+      .legend { gap: 6px; }
+      .legend-item { font-size: 9px; }
+      .bar-chart { grid-template-columns: 78px minmax(0,1fr); }
+      .bar-axis { margin-left: 81px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-glint" aria-hidden="true"></div>
+    <header>
+      <nav class="main-nav" aria-label="主导航">
+        <a class="brand" href="#overview" aria-label="VELOCE 车队运营中心首页">
+          <img class="brand-mark" src="assets/svg/391_349-20261118_004136019.svg" alt="">
+          <span class="brand-copy"><span class="brand-name">VELOCE</span><span class="brand-sub">车队运营中心</span></span>
+        </a>
+        <div class="primary-links">
+          <button class="nav-link" type="button">首页</button>
+          <button class="nav-link active" type="button" aria-current="page">监控预警 <span class="chevron" aria-hidden="true"></span></button>
+          <button class="nav-link" type="button">基础数据 <span class="chevron" aria-hidden="true"></span></button>
+          <button class="nav-link" type="button">用户管理</button>
+          <button class="nav-link" type="button">报告中心</button>
+        </div>
+        <span class="nav-spacer"></span>
+        <div class="user-actions">
+          <button class="notify" type="button" aria-label="通知" aria-pressed="false">
+            <img src="assets/svg/391_359-20261118_004136222.svg" alt="">
+            <span class="unread" aria-hidden="true"></span>
+          </button>
+          <span class="divider" aria-hidden="true"></span>
+          <button class="account" type="button" aria-label="管理员账户">
+            <span class="avatar">管</span><span class="account-name">管理员</span>
+            <img class="account-arrow" src="assets/svg/393_6-20261118_004136292.svg" alt="">
+          </button>
+        </div>
+      </nav>
+      <nav class="sub-nav" aria-label="监控预警子导航">
+        <button class="sub-link active" type="button" aria-current="page">地图监控</button>
+        <button class="sub-link" type="button">车辆列表</button>
+        <button class="sub-link" type="button">告警管理</button>
+        <button class="sub-link" type="button">充电热力图</button>
+      </nav>
+    </header>
+    <main class="content" id="overview">
+      <section class="page-heading" aria-labelledby="page-title">
+        <div class="heading-copy">
+          <h1 id="page-title">地图监控</h1>
+          <p>全场车辆实时分布与运行状态</p>
+        </div>
+        <div class="sync-pill"><span class="sync-dot" aria-hidden="true"></span><span>数据同步于 12:04:32</span></div>
+      </section>
+      <section aria-labelledby="kpi-title">
+        <h2 class="section-label" id="kpi-title">核心指标</h2>
+        <div class="kpi-grid">
+          <article class="kpi-card"><div class="kpi-label">车辆总数</div><div class="kpi-value">1,936</div></article>
+          <article class="kpi-card"><div class="kpi-label">在线率</div><div class="kpi-value accent">84%</div></article>
+          <article class="kpi-card"><div class="kpi-label">充电车辆数</div><div class="kpi-value accent">387</div></article>
+          <article class="kpi-card"><div class="kpi-label">总行驶里程(km)</div><div class="kpi-value">33,188,999</div></article>
+        </div>
+      </section>
+      <section class="analytics" aria-labelledby="analytics-title">
+        <h2 class="section-label" id="analytics-title">分布与统计</h2>
+        <div class="chart-grid">
+          <article class="chart-card map-card" aria-labelledby="map-title">
+            <div class="card-heading">
+              <div><h3 id="map-title">全场车辆位置分布</h3><p>点击车辆查看详情</p></div>
+              <div class="legend" aria-label="车辆状态图例">
+                <span class="legend-item"><i class="legend-dot" style="background:var(--green)"></i>在线</span>
+                <span class="legend-item"><i class="legend-dot" style="background:var(--cyan)"></i>充电中</span>
+                <span class="legend-item"><i class="legend-dot" style="background:var(--orange)"></i>告警</span>
+                <span class="legend-item"><i class="legend-dot" style="background:var(--offline)"></i>离线</span>
+              </div>
+            </div>
+            <div class="plot-label latitude-label">纬度</div>
+            <div class="scatter-layout">
+              <div class="latitude-ticks" aria-hidden="true"><span>40.095</span><span>40.090</span><span>40.085</span><span>40.080</span><span>40.075</span><span>40.070</span><span>40.065</span></div>
+              <img class="scatter-svg" src="assets/svg/391_388-20261118_004136352.svg" alt="车辆位置散点分布图，横轴经度 116.57 至 116.63，纵轴纬度 40.065 至 40.095">
+            </div>
+            <div class="longitude-ticks" aria-hidden="true"><span>116.57</span><span>116.58</span><span>116.59</span><span>116.6</span><span>116.61</span><span>116.62</span><span>116.63</span></div>
+            <div class="plot-label longitude-label">经度</div>
+          </article>
+          <article class="chart-card bar-card" aria-labelledby="bar-title">
+            <h3 id="bar-title">按车辆类型统计行驶里程（万 km）</h3>
+            <div class="bar-chart">
+              <div class="bar-labels" aria-hidden="true"><span>牵引车</span><span>行李传送车</span><span>客梯车</span><span>除冰车</span><span>飞机引导车</span><span>升降平台车</span><span>摆渡车</span><span>勤务车</span><span>行李牵引车</span><span>加水车</span></div>
+              <img class="bar-svg" src="assets/svg/391_404-20261118_004136436.svg" alt="横向条形图，牵引车 34、行李传送车 57、客梯车和除冰车 69、飞机引导车 71、升降平台车 73、摆渡车 78、勤务车 79、行李牵引车 83、加水车 165 万公里">
+            </div>
+            <div class="bar-axis" aria-hidden="true"><span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150</span><span>180</span></div>
+          </article>
+        </div>
+      </section>
+    </main>
+    <div class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script>
+    const toast = document.querySelector('.toast');
+    let toastTimer;
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('visible'), 1900);
+    }
+    document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', () => {
+      document.querySelectorAll('.nav-link').forEach(item => { item.classList.remove('active'); item.removeAttribute('aria-current'); });
+      link.classList.add('active'); link.setAttribute('aria-current', 'page');
+      showToast(`${link.textContent.trim()} · 页面切换中`);
+    }));
+    document.querySelectorAll('.sub-link').forEach(link => link.addEventListener('click', () => {
+      document.querySelectorAll('.sub-link').forEach(item => { item.classList.remove('active'); item.removeAttribute('aria-current'); });
+      link.classList.add('active'); link.setAttribute('aria-current', 'page');
+      showToast(`${link.textContent.trim()} · 视图已切换`);
+    }));
+    const notify = document.querySelector('.notify');
+    notify.addEventListener('click', () => {
+      const pressed = notify.getAttribute('aria-pressed') !== 'true';
+      notify.setAttribute('aria-pressed', String(pressed));
+      showToast(pressed ? '暂无新的通知' : '通知面板已收起');
+    });
+    document.querySelector('.account').addEventListener('click', () => showToast('管理员账户'));
+  </script>
+</body>
+</html>

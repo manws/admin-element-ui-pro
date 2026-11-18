@@ -234,13 +234,21 @@ function gaugeOption(name: string, value: number, max: number, unit: string) {
         max,
         progress: { show: true, width: 10 },
         axisLine: { lineStyle: { width: 10 } },
-        detail: { formatter: `{value}${unit}`, fontSize: 16, offsetCenter: [0, "60%"] },
-        title: { offsetCenter: [0, "85%"], fontSize: 13 },
+        detail: { formatter: `{value}${unit}`, fontSize: 16, offsetCenter: [0, "60%"], color: "#eaf9ff" },
+        title: { offsetCenter: [0, "85%"], fontSize: 13, color: "#8fb4d4" },
+        axisLabel: { color: "#8fb4d4" },
         data: [{ value, name }],
       },
     ],
   };
 }
+
+const chartAxis = {
+  axisLabel: { color: "#8FB4D4" },
+  axisLine: { lineStyle: { color: "rgba(76, 165, 218, 0.28)" } },
+  splitLine: { lineStyle: { color: "rgba(76, 165, 218, 0.16)" } },
+  nameTextStyle: { color: "#8FB4D4" },
+};
 
 const voltageGauge = computed(() => gaugeOption("总电压", view.value?.voltage ?? 0, 500, "V"));
 const currentGauge = computed(() => gaugeOption("总电流", Math.abs(view.value?.current ?? 0), 200, "A"));
@@ -249,16 +257,16 @@ const socGauge = computed(() => gaugeOption("SOC", view.value?.soc ?? 0, 100, "%
 const cellVoltageOption = computed(() => ({
   tooltip: { trigger: "axis" },
   grid: { left: 48, right: 16, top: 24, bottom: 32 },
-  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index) },
-  yAxis: { type: "value", name: "V" },
+  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index), ...chartAxis },
+  yAxis: { type: "value", name: "V", ...chartAxis },
   series: [{ type: "bar", data: (view.value?.cells ?? []).map((cell) => cell.voltage), itemStyle: { color: "#4E83ED" } }],
 }));
 
 const cellTempOption = computed(() => ({
   tooltip: { trigger: "axis" },
   grid: { left: 48, right: 16, top: 24, bottom: 32 },
-  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index) },
-  yAxis: { type: "value", name: "℃" },
+  xAxis: { type: "category", data: (view.value?.cells ?? []).map((cell) => cell.index), ...chartAxis },
+  yAxis: { type: "value", name: "℃", ...chartAxis },
   series: [{ type: "bar", data: (view.value?.cells ?? []).map((cell) => cell.temperature), itemStyle: { color: "#E6A16C" } }],
 }));
 
@@ -284,12 +292,12 @@ const batteryCurveOption = computed(() => {
   if (!d) return {};
   return {
     tooltip: { trigger: "axis" },
-    legend: { data: ["电流(A)", "电压(V)", "SOC(%)"] },
+    legend: { data: ["电流(A)", "电压(V)", "SOC(%)"], textStyle: { color: "#8FB4D4" } },
     grid: { left: 60, right: 60, top: 40, bottom: 40 },
-    xAxis: { type: "category", data: d.batteryCurve.map((p) => p.time.slice(11, 16)) },
+    xAxis: { type: "category", data: d.batteryCurve.map((p) => p.time.slice(11, 16)), ...chartAxis },
     yAxis: [
-      { type: "value", name: "电流/电压" },
-      { type: "value", name: "SOC(%)", max: 100 },
+      { type: "value", name: "电流/电压", ...chartAxis },
+      { type: "value", name: "SOC(%)", max: 100, ...chartAxis },
     ],
     series: [
       { name: "电流(A)", type: "line", symbol: "circle", symbolSize: 6, data: d.batteryCurve.map((p) => p.current), lineStyle: { color: "#4E83ED" } },
@@ -304,10 +312,10 @@ const extremeCurveOption = computed(() => {
   if (!d) return {};
   return {
     tooltip: { trigger: "axis" },
-    legend: { data: ["最高电压(V)", "最低电压(V)", "最高温度(℃)", "最低温度(℃)", "温差(℃)"] },
+    legend: { data: ["最高电压(V)", "最低电压(V)", "最高温度(℃)", "最低温度(℃)", "温差(℃)"], textStyle: { color: "#8FB4D4" } },
     grid: { left: 60, right: 60, top: 40, bottom: 40 },
-    xAxis: { type: "category", data: d.extremeCurve.map((p) => p.time.slice(11, 16)) },
-    yAxis: [{ type: "value", name: "电压(V)" }, { type: "value", name: "温度(℃)" }],
+    xAxis: { type: "category", data: d.extremeCurve.map((p) => p.time.slice(11, 16)), ...chartAxis },
+    yAxis: [{ type: "value", name: "电压(V)", ...chartAxis }, { type: "value", name: "温度(℃)", ...chartAxis }],
     series: [
       { name: "最高电压(V)", type: "line", symbol: "none", data: d.extremeCurve.map((p) => p.maxVoltage), lineStyle: { color: "#2563EB" } },
       { name: "最低电压(V)", type: "line", symbol: "none", data: d.extremeCurve.map((p) => p.minVoltage), lineStyle: { color: "#6EA4FF" } },
@@ -331,8 +339,8 @@ const locationOption = computed(() => {
   return {
     tooltip: { trigger: "item" },
     grid: { left: 50, right: 20, top: 20, bottom: 40 },
-    xAxis: { type: "value", name: "经度", scale: true },
-    yAxis: { type: "value", name: "纬度", scale: true },
+    xAxis: { type: "value", name: "经度", scale: true, ...chartAxis },
+    yAxis: { type: "value", name: "纬度", scale: true, ...chartAxis },
     series: [
       {
         type: "scatter",

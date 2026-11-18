@@ -202,9 +202,9 @@ import type { AlarmRecord, OverviewStats, Vehicle } from "@/types/api/monitor";
 const RING = 2 * Math.PI * 34;
 
 const axis = {
-  axisLabel: { fontSize: 12, lineHeight: 18, color: "#66758B", fontFamily: "PingFang SC, Helvetica Neue, sans-serif" },
-  axisLine: { lineStyle: { color: "#E6EBF2" } },
-  splitLine: { lineStyle: { color: "#E6EBF2", width: 1 } },
+  axisLabel: { fontSize: 12, lineHeight: 18, color: "#8FB4D4", fontFamily: "PingFang SC, Helvetica Neue, sans-serif" },
+  axisLine: { lineStyle: { color: "rgba(76, 165, 218, 0.28)" } },
+  splitLine: { lineStyle: { color: "rgba(76, 165, 218, 0.16)", width: 1 } },
 };
 
 const stats = ref<OverviewStats>();
@@ -302,8 +302,8 @@ const heatmapOption = computed(() => {
       orient: "horizontal",
       left: "center",
       bottom: 0,
-      textStyle: { color: "#66758B", fontSize: 12 },
-      inRange: { color: ["#E7EDF5", "#C5D7F8", "#7AA4F0", "#3B74E8", "#1B2B43"] },
+      textStyle: { color: "#8FB4D4", fontSize: 12 },
+      inRange: { color: ["#0b223a", "#123a5c", "#1d6ea8", "#4fa8e8", "#7ee7ff"] },
     },
     series: [{ type: "heatmap", data: heatmapData.value }],
   };
@@ -313,7 +313,7 @@ const chargeCurveOption = computed(() => ({
   tooltip: { trigger: "axis" },
   grid: { left: 56, right: 16, top: 16, bottom: 32 },
   xAxis: { type: "category", data: chargeCurve.value.map((p) => p.time), boundaryGap: false, ...axis },
-  yAxis: { type: "value", name: "kW", ...axis, nameTextStyle: { color: "#66758B", fontSize: 12 } },
+  yAxis: { type: "value", name: "kW", ...axis, nameTextStyle: { color: "#8FB4D4", fontSize: 12 } },
   series: [
     {
       name: "充电功率",

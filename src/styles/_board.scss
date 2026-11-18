@@ -1,14 +1,14 @@
 /**
- * 经典蓝内容页构件。只在浅色经典蓝生效。
+ * 经典蓝内容页构件。对齐地图监控深色运营中心。
  * 用法见 .cursor/skills/classic-blue-shell/pages.md
  */
 
-html.sidebar-color-blue:not(.dark) {
+html.sidebar-color-blue {
   .board-page {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 24px;
+    padding: 28px;
     color: var(--shell-text);
   }
 
@@ -36,9 +36,12 @@ html.sidebar-color-blue:not(.dark) {
   .panel,
   .metric {
     min-width: 0;
-    background: var(--shell-surface);
-    border: 1px solid var(--shell-line);
-    border-radius: 16px;
+    background: linear-gradient(145deg, rgb(15 43 70 / 95%), rgb(5 20 37 / 96%));
+    border: 1px solid rgb(43 111 157 / 34%);
+    border-radius: 14px;
+    box-shadow:
+      0 12px 34px rgb(0 0 0 / 16%),
+      inset 0 1px 0 rgb(113 207 255 / 3.5%);
   }
 
   .apron {
@@ -384,7 +387,9 @@ html.sidebar-color-blue:not(.dark) {
     --el-table-header-text-color: var(--shell-muted);
     --el-table-text-color: var(--shell-text);
     --el-table-border-color: var(--shell-groove);
-    --el-table-row-hover-bg-color: #f7f9fc;
+    --el-table-bg-color: transparent;
+    --el-table-tr-bg-color: transparent;
+    --el-table-row-hover-bg-color: rgb(53 132 186 / 12%);
   }
 
   .chart-row > *,

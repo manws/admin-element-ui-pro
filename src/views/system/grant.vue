@@ -36,7 +36,7 @@ const menus = listAppMenus();
 const grants = reactive<Record<string, Record<string, boolean>>>({
   ROOT: Object.fromEntries(menus.map((item) => [item.path, true])),
   SAFETY: Object.fromEntries(menus.map((item) => [item.path, !item.path.startsWith("/system")])),
-  DISPATCH: Object.fromEntries(menus.map((item) => [item.path, item.path.startsWith("/monitor") || item.path === "/dashboard"])),
+  DISPATCH: Object.fromEntries(menus.map((item) => [item.path, item.path.startsWith("/monitor")])),
 });
 
 const roleCode = ref("ROOT");

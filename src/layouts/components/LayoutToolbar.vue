@@ -23,14 +23,37 @@
       </div>
     </template>
 
+    <!-- 系统设置 -->
+    <div
+      v-if="defaults.showSettings"
+      class="navbar-actions__item"
+      @click="handleSettingsClick"
+    >
+      <div class="i-svg:setting" />
+    </div>
+
+    <div class="navbar-actions__item navbar-actions__notify" @click="handleNotify">
+      <span class="notify-bell" aria-hidden="true">
+        <svg viewBox="0 0 18 18" width="18" height="18">
+          <path
+            fill="currentColor"
+            d="M9 1.2a5.2 5.2 0 0 0-5.2 5.2c0 1.6-.3 2.8-.8 3.7-.4.7-.2 1.4.4 1.6h11.2c.6-.2.8-.9.4-1.6-.5-.9-.8-2.1-.8-3.7A5.2 5.2 0 0 0 9 1.2Zm0 1.4a3.8 3.8 0 0 1 3.8 3.8c0 1.8.4 3.2.9 4.1H4.3c.5-.9.9-2.3.9-4.1A3.8 3.8 0 0 1 9 2.6ZM7.4 14.2a1.6 1.6 0 0 0 3.2 0H7.4Z"
+          />
+        </svg>
+        <i class="notify-dot" />
+      </span>
+    </div>
+    <span class="navbar-actions__divider" aria-hidden="true" />
+
     <!-- 用户菜单 -->
     <div class="navbar-actions__item">
       <el-dropdown trigger="click">
         <div class="user-profile">
-          <el-avatar :size="28" :src="userStore.userInfo.avatar || defaultAvatar" />
+          <el-avatar :size="26" :src="userStore.userInfo.avatar || defaultAvatar" />
           <span class="user-profile__name">{{
             userStore.userInfo.userName || userStore.userInfo.userCode || "用户"
           }}</span>
+          <span class="user-profile__arrow" aria-hidden="true" />
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -40,15 +63,6 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-    </div>
-
-    <!-- 系统设置 -->
-    <div
-      v-if="defaults.showSettings"
-      class="navbar-actions__item"
-      @click="handleSettingsClick"
-    >
-      <div class="i-svg:setting" />
     </div>
   </div>
 </template>
@@ -130,6 +144,10 @@ function logout() {
  */
 function handleSettingsClick() {
   settingStore.$patch({ settingsVisible: true });
+}
+
+function handleNotify() {
+  ElMessage.info("暂无新的通知");
 }
 </script>
 
